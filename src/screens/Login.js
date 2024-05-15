@@ -191,6 +191,7 @@ const styles = StyleSheet.create({
     signInBold: {
         color: '#4E5A8C',
         textDecorationLine: 'underline',
+        // style 수정
     }
 });
 
