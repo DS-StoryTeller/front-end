@@ -1,16 +1,16 @@
 import React, { useState } from 'react'
-import { Text, View, StyleSheet, TextInput, TouchableOpacity, Image } from "react-native"
+import { Text, View, StyleSheet, TextInput, TouchableOpacity, Image, Button } from "react-native"
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Logo from '../../assets/images/logo.png';
 
-const Login = () => {
+const Login = ({ navigation }) => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
 
     return (
         <SafeAreaView style={styles.container}>
-            <Image source={Logo} style={styles.logo}/>
-        
+            <Image source={Logo} style={styles.logo} />
+
             <View style={styles.bigBox}>
                 <View style={styles.textBox}>
                     <Text style={styles.text}>
@@ -43,7 +43,13 @@ const Login = () => {
                     >
                         <Text style={styles.buttonText}>로그인</Text>
                     </TouchableOpacity>
-
+                </View>
+                <View style={styles.orContainer}>
+                    <View style={styles.orHorizontal} />
+                    <View>
+                        <Text style={styles.orText}>OR</Text>
+                    </View>
+                    <View style={styles.orHorizontal} />
                 </View>
                 <View style={styles.socialButtonContainer}>
                     <TouchableOpacity
@@ -51,8 +57,20 @@ const Login = () => {
                     >
                         <Text style={styles.socialButtonText}>카카오로 로그인하기</Text>
                     </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.socialButton}
+                    >
+                        <Text style={styles.socialButtonText}>구글로 로그인하기</Text>
+                    </TouchableOpacity>
                 </View>
-                <Text style={styles.signIn}>계정이 없다면?<Text style={styles.signInBold}>회원가입</Text></Text>
+                <View style={styles.signInContainer}>
+                    <Text style={styles.signIn}>계정이 없다면?  </Text>
+                    <TouchableOpacity onPress={() => navigation.navigate('Signin')}>
+                        <Text style={styles.signInBold}>회원가입</Text>
+                    </TouchableOpacity>
+                </View>
+
+
             </View>
         </SafeAreaView>
     )
@@ -65,7 +83,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
- 
+
     logo: {
         width: '8%',
         height: '15%',
@@ -125,13 +143,28 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 20,
     },
+    orContainer: {
+        width: '85%',
+        marginTop: 10,
+        flexDirection: 'row',
+        alignItems: 'center', 
+    },
+    orHorizontal: {
+        flex: 1, 
+        height: 1, 
+        backgroundColor: 'black', 
+    },
+    orText: {
+        width: 50,
+        textAlign: 'center',
+    },
     socialButtonContainer: {
         width: '85%',
-        marginTop: 15,
     },
     socialButton: {
         width: '100%',
         height: 35,
+        marginTop: 10,
         backgroundColor: 'white',
         justifyContent: 'center',
         alignItems: 'center',
@@ -143,11 +176,16 @@ const styles = StyleSheet.create({
         color: '#393939',
         fontSize: 15,
     },
+    signInContainer: {
+        marginTop: 10,
+        marginBottom: 10,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     signIn: {
         fontSize: 13,
         color: '#393939',
-        marginTop: 10,
-        marginBottom: 10,
         textAlign: 'center'
     },
     signInBold: {
