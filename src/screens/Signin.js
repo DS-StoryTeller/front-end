@@ -178,6 +178,7 @@ const styles = StyleSheet.create({
     subTitle: {
         color: '#393939',
         fontSize: 15,
+        //브랜치 맞추려고 넣은 주석
     }
 });
 
