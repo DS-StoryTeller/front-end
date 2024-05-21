@@ -13,14 +13,14 @@ const Login = ({ navigation }) => {
 
             <View style={styles.bigBox}>
                 <View style={styles.textBox}>
-                    <Text style={styles.text}>
-                        <Text style={styles.title}>StoryTeller</Text>
+                    <Text style={styles.titleText}>
+                        <Text style={styles.titleApp}>StoryTeller</Text>
                         에
                     </Text>
-                    <Text style={styles.text}>오신것을 환영합니다</Text>
+                    <Text style={styles.titleText}>오신것을 환영합니다</Text>
                 </View>
                 <View style={styles.inputContainer}>
-                    <Text>이메일</Text>
+                    <Text style={styles.subTitle}>이메일</Text>
                     <TextInput
                         placeholder='example@naver.com'
                         value={email}
@@ -29,7 +29,7 @@ const Login = ({ navigation }) => {
                     />
                 </View>
                 <View style={styles.inputContainer}>
-                    <Text>비밀번호</Text>
+                    <Text style={styles.subTitle}>비밀번호</Text>
                     <TextInput
                         placeholder='비밀번호를 입력해주세요'
                         value={password}
@@ -90,8 +90,8 @@ const styles = StyleSheet.create({
         margin: 5,
     },
     bigBox: {
-        width: '40%',
-        height: '75%',
+        width: '35%',
+        height: '70%',
         backgroundColor: 'white',
         borderRadius: 30,
         padding: 10,
@@ -116,13 +116,13 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         marginLeft: 20,
     },
-    title: {
+    titleApp: {
         alignItems: 'left',
         fontSize: 23,
         color: '#4E5A8C'
 
     },
-    text: {
+    titleText: {
         fontSize: 20,
         color: '#393939'
     },
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     },
     button: {
         width: '100%',
-        height: 40,
+        height: 45,
         backgroundColor: '#4E5A8C',
         justifyContent: 'center',
         alignItems: 'center',
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     },
     socialButton: {
         width: '100%',
-        height: 35,
+        height: 40,
         marginTop: 10,
         backgroundColor: 'white',
         justifyContent: 'center',
@@ -191,7 +191,10 @@ const styles = StyleSheet.create({
     signInBold: {
         color: '#4E5A8C',
         textDecorationLine: 'underline',
-        // style 수정
+    },
+    subTitle: {
+        color: '#393939',
+        fontSize: 15,
     }
 });
 
