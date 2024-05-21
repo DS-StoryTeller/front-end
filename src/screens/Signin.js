@@ -1,3 +1,4 @@
+//signin.js
 import React, { useState } from 'react'
 import { Text, View, StyleSheet, TextInput, TouchableOpacity, Image, Button } from "react-native"
 import { SafeAreaView } from 'react-native-safe-area-context'
