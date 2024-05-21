@@ -9,10 +9,12 @@ import BookRead from './src/screens/BookRead';
 import Quiz from './src/screens/Quiz';
 import Profile from './src/screens/Profile';
 
+
 const App = () => {
     const Stack = createNativeStackNavigator();
 
-    return (
+  
+return (
         <NavigationContainer>
           <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Login" component={Login} />

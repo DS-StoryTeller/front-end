@@ -90,8 +90,8 @@ const styles = StyleSheet.create({
         margin: 5,
     },
     bigBox: {
-        width: '37%',
-        height: '75%',
+        width: '35%',
+        height: '70%',
         backgroundColor: 'white',
         borderRadius: 30,
         padding: 10,
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     },
     button: {
         width: '100%',
-        height: 40,
+        height: 45,
         backgroundColor: '#4E5A8C',
         justifyContent: 'center',
         alignItems: 'center',
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     },
     socialButton: {
         width: '100%',
-        height: 35,
+        height: 40,
         marginTop: 10,
         backgroundColor: 'white',
         justifyContent: 'center',
