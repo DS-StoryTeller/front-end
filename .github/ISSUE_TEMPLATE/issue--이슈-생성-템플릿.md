@@ -17,6 +17,6 @@ assignees: ''
 
 ### ✔ 체크리스트
 
-- [ ]: TODO
-- [ ]: TODO
-- [ ]: TODO
+- [ ] : TODO
+- [ ] : TODO
+- [ ] : TODO
