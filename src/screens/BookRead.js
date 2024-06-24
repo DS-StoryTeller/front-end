@@ -3,6 +3,7 @@ import { StyleSheet, Text, ImageBackground, View, TouchableOpacity, Alert } from
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Page1 from '../../assets/images/page1.png';
 import Ionic from 'react-native-vector-icons/Ionicons';
+import ProgressBar from '../components/ProgressBar';
 
 const BookRead = () => {
     const [title, setTitle] = useState('');
@@ -22,7 +23,6 @@ const BookRead = () => {
                         </TouchableOpacity>
                     </View>
                     <Text style={styles.bookTitle}>Unveiling the Enchanted Cave</Text>
-
                 </View>
 
                 <View style={styles.textBox}>
@@ -31,6 +31,7 @@ const BookRead = () => {
                         {"\n"}One bright morning, as Eunseo ventured deeper into the woods than she had ever gone before, she stumbled upon a mysterious cave hidden beneath the thick foliage.
                     </Text>
                 </View>
+                <ProgressBar pages={'13'} now={'4'}/>
             </ImageBackground>
         </SafeAreaView>
     )
