@@ -5,20 +5,31 @@ import Page1 from '../../assets/images/page1.png';
 import Ionic from 'react-native-vector-icons/Ionicons';
 import ProgressBar from '../components/ProgressBar';
 import SettingModal from '../components/SettingModal';
+import YesNoModal from '../components/YesNoModal';
 
 const BookRead = () => {
     const [title, setTitle] = useState('');
     const [text, setText] = useState('');
     
-    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isSettingModalVisible, setIsSettingModalVisible] = useState(false);
+    const [isYesNoModalVisible, setIsYesNoModalVisible] = useState(false);
 
-    const openModal = () => {
-        setIsModalVisible(true);
+    const openSettingModal = () => {
+        setIsSettingModalVisible(true);
     };
 
-    const closeModal = () => {
-        setIsModalVisible(false);
+    const closeSettingModal = () => {
+        setIsSettingModalVisible(false);
     };
+
+    const openYesNoModal = () => {
+        setIsYesNoModalVisible(true);
+    };
+
+    const closeYesNoModal = () => {
+        setIsYesNoModalVisible(false);
+    };
+
 
 
     return (
@@ -27,13 +38,19 @@ const BookRead = () => {
 
                 <View style={styles.titleBox}>
                     <View style={styles.iconBox}>
-                        <TouchableOpacity style={styles.icon} onPress={(e) => Alert('')} >
+                        <TouchableOpacity style={styles.icon}  onPress={openYesNoModal} >
                             <Ionic name="home" size={35} color="white" />
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.icon} onPress={openModal} >
+                        <YesNoModal isVisible={isYesNoModalVisible} onClose={closeYesNoModal} 
+                            title={"정말 중단하시겠습니까?"} 
+                            subtitle={`다시 동화를 읽을 때 \n 현재 페이지부터 읽으실 수 있습니다.`}
+                            buttonText1={"중단하기"}
+                            linkTo={'BookShelf'}
+                            buttonText2={"취소"}/>
+                        <TouchableOpacity style={styles.icon} onPress={openSettingModal} >
                             <Ionic name="settings" size={35} color="white" />
                         </TouchableOpacity>
-                        <SettingModal isVisible={isModalVisible} onClose={closeModal} />
+                        <SettingModal isVisible={isSettingModalVisible} onClose={closeSettingModal} />
                     </View>
                     <Text style={styles.bookTitle}>Unveiling the Enchanted Cave</Text>
                 </View>
