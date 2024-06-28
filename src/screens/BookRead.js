@@ -1,13 +1,25 @@
-import React, { useState } from 'react'
+import React, {   useState  } from 'react'
 import { StyleSheet, Text, ImageBackground, View, TouchableOpacity, Alert } from "react-native"
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Page1 from '../../assets/images/page1.png';
 import Ionic from 'react-native-vector-icons/Ionicons';
 import ProgressBar from '../components/ProgressBar';
+import SettingModal from '../components/SettingModal';
 
 const BookRead = () => {
     const [title, setTitle] = useState('');
     const [text, setText] = useState('');
+    
+    const [isModalVisible, setIsModalVisible] = useState(false);
+
+    const openModal = () => {
+        setIsModalVisible(true);
+    };
+
+    const closeModal = () => {
+        setIsModalVisible(false);
+    };
+
 
     return (
         <SafeAreaView style={styles.container}>
@@ -15,12 +27,13 @@ const BookRead = () => {
 
                 <View style={styles.titleBox}>
                     <View style={styles.iconBox}>
-                        <TouchableOpacity style={styles.icon} onPress={() => Alert('')} >
+                        <TouchableOpacity style={styles.icon} onPress={(e) => Alert('')} >
                             <Ionic name="home" size={35} color="white" />
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.icon} onPress={() => Alert('')} >
+                        <TouchableOpacity style={styles.icon} onPress={openModal} >
                             <Ionic name="settings" size={35} color="white" />
                         </TouchableOpacity>
+                        <SettingModal isVisible={isModalVisible} onClose={closeModal} />
                     </View>
                     <Text style={styles.bookTitle}>Unveiling the Enchanted Cave</Text>
                 </View>
