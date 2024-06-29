@@ -32,9 +32,7 @@ const SpeedFilter = ({handleSpeedFilter}) => {
 const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
-        justifyContent: 'space-around',
         alignItems: 'center',
-        width: '80%',
     },
     button: {
         padding: 7,

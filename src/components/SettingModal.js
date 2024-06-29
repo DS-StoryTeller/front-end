@@ -68,14 +68,14 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
     },
     modalView: {
-        width: '45%',
-        height: '45%',
+        width: '40%',
+        height: '40%',
         backgroundColor: "white",
         borderRadius: 20,
         padding: 15,
         position: 'absolute',
-        top: '23%',
-        left: '27.5%',
+        top: '28%',
+        left: '30%',
     },
     IconTitle: {
         flexDirection: 'row',
