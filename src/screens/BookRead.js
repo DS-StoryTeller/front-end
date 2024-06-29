@@ -1,13 +1,15 @@
-import React, {   useState  } from 'react'
+import React, { useState, useEffect } from 'react'
 import { StyleSheet, Text, ImageBackground, View, TouchableOpacity, Alert } from "react-native"
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { useFocusEffect } from '@react-navigation/native';
 import Page1 from '../../assets/images/page1.png';
 import Ionic from 'react-native-vector-icons/Ionicons';
 import ProgressBar from '../components/ProgressBar';
 import SettingModal from '../components/SettingModal';
 import YesNoModal from '../components/YesNoModal';
+import NextStep from '../components/NextStep';
 
-const BookRead = () => {
+const BookRead = ({ navigation }) => {
     const [title, setTitle] = useState('');
     const [text, setText] = useState('');
     
@@ -30,7 +32,26 @@ const BookRead = () => {
         setIsYesNoModalVisible(false);
     };
 
+    const [nextStepVisible, setNextStepVisible] = useState(false);
+    const [timer, setTimer] = useState(null); // 타이머 상태 추가
 
+    useFocusEffect(
+        React.useCallback(() => {
+            setNextStepVisible(false); // 상태 초기화
+            if (timer) {
+                clearTimeout(timer); // 기존 타이머 클리어
+            }
+            const newTimer = setTimeout(() => {
+                setNextStepVisible(true);
+            }, 3000); // 10초 후에 nextStepVisible 상태를 true로 변경
+
+            setTimer(newTimer); // 타이머 상태 업데이트
+
+            return () => {
+                clearTimeout(newTimer); // 언마운트 시 타이머 클리어
+            };
+        }, [navigation])
+    );
 
     return (
         <SafeAreaView style={styles.container}>
@@ -62,6 +83,7 @@ const BookRead = () => {
                     </Text>
                 </View>
                 <ProgressBar pages={'13'} now={'4'}/>
+                {nextStepVisible && <NextStep />}
             </ImageBackground>
         </SafeAreaView>
     )
