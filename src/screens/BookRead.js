@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { StyleSheet, Text, ImageBackground, View, TouchableOpacity, Alert, Image, Modal } from "react-native"
+import React, { useState, useEffect, useRef } from 'react'
+import { StyleSheet, Text, ImageBackground, View, TouchableOpacity, Alert,  Animated, Modal } from "react-native"
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useFocusEffect } from '@react-navigation/native';
 import Page1 from '../../assets/images/page1.png';
@@ -38,6 +38,7 @@ const BookRead = ({ navigation }) => {
     const [nextStepVisible, setNextStepVisible] = useState(false);
     const [timer, setTimer] = useState(null); // 타이머 상태 추가
 
+
     useFocusEffect(
         React.useCallback(() => {
             setNextStepVisible(false); // 상태 초기화
@@ -46,17 +47,19 @@ const BookRead = ({ navigation }) => {
             }
             const newTimer = setTimeout(() => {
                 setNextStepVisible(true);
+                startBlinking();
             }, 3000); // 3초 후에 nextStepVisible 상태를 true로 변경
 
             setTimer(newTimer); // 타이머 상태 업데이트
 
             return () => {
                 clearTimeout(newTimer); // 언마운트 시 타이머 클리어
+                blinkAnim.stopAnimation();
             };
         }, [navigation])
     );
 
-   // 모르는 단어 조희
+    // 모르는 단어 조희
     const [wordMeaning, setWordMeaning] = useState('');
     const [isWordModalVisible, setIsWordModalVisible] = useState(false);
 
@@ -89,7 +92,27 @@ const BookRead = ({ navigation }) => {
 
     const bookText = `Once upon a time, in the quaint village of Willowbrook, there lived a young girl named Eunseo. \n Eunseo was known for her adventurous spirit and her love for exploring the enchanted forests that surrounded her home. \n One bright morning, as Eunseo ventured deeper into the woods than she had ever gone before, she stumbled upon a mysterious cave hidden beneath the thick foliage.`;
 
-    const words = bookText.split(/(\s+)/); 
+    const words = bookText.split(/(\s+)/);
+
+    // 단어 클릭 메세지 깜빡거림
+    const blinkAnim = useRef(new Animated.Value(1)).current;
+
+    const startBlinking = () => {
+        Animated.loop(
+            Animated.sequence([
+                Animated.timing(blinkAnim, {
+                    toValue: 0,
+                    duration: 500,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(blinkAnim, {
+                    toValue: 1,
+                    duration: 500,
+                    useNativeDriver: true,
+                }),
+            ]),
+        ).start();
+    };
 
 
     return (
@@ -111,6 +134,7 @@ const BookRead = ({ navigation }) => {
                         </TouchableOpacity>
                         <SettingModal isVisible={isSettingModalVisible} onClose={closeSettingModal} />
                     </View>
+                    
                 </ImageBackground>
 
                 <View style={styles.textBox}>
@@ -120,10 +144,18 @@ const BookRead = ({ navigation }) => {
                     <Text style={styles.bookText}>
                         {words.map((word, index) => renderWord(word, index))}
                     </Text>
+                    
                 </View>
-                <ProgressBar pages={'13'} now={'4'} />
-                {nextStepVisible && <NextStep />}
-{/* 
+                {nextStepVisible && (
+                    <>
+                         <Animated.View style={[styles.wordBox, { opacity: blinkAnim }]}>
+                    <Text style={styles.wordText}>Click on a word {"\n"} you don't know</Text>
+                </Animated.View>
+                        <NextStep />
+                    </>
+                )}
+                  <ProgressBar pages={'13'} now={'4'} />
+                {/*             
                 <Modal
                     visible={isWordModalVisible}
                     transparent={true}
@@ -161,14 +193,14 @@ const styles = StyleSheet.create({
         width: '35%',
         justifyContent: 'center',
         position: 'absolute',
-        top: '5%',
+        top: '3%',
         left: '57%',
         borderRadius: 10,
         padding: 10,
 
     },
     bookTitle: {
-        fontSize: 35,
+        fontSize: 38,
         fontWeight: 'bold',
         color: 'black',
         textAlign: 'center',
@@ -184,11 +216,27 @@ const styles = StyleSheet.create({
     },
 
     bookText: {
-        fontSize: 20,
+        fontSize: 18,
         color: '#000000',
         textAlign: 'center',
     },
-    
+    wordBox: {
+        width: 130,
+        height: 70,
+        position: 'absolute',
+        bottom: '10%',
+        left: '80%',
+        borderTopWidth: 1,
+        borderBottomWidth: 1,
+        borderColor: 'rgba(78,90,140,0.8)', 
+        borderStyle: 'solid',
+        justifyContent: 'center',
+    },
+    wordText: {
+        textAlign: 'center',
+        fontSize: 18,
+        color: 'rgba(78,90,140,0.8)',
+    }
     // modalContainer: {
     //     flex: 1,
     //     justifyContent: 'center',
