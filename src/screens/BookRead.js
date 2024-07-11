@@ -12,7 +12,11 @@ import BookBg from '../../assets/images/bookBg.png';
 
 const BookRead = ({ navigation }) => {
     const [title, setTitle] = useState('');
-    const [text, setText] = useState('');
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPageCount, setTotalPageCount] = useState(0);
+    const [bookText, setBookText] = useState('');
+    const [coverImage, setCoverImage] = useState('');
+    const [pageImage, setPageImage] = useState('');
 
     // 모달창
     const [isSettingModalVisible, setIsSettingModalVisible] = useState(false);
@@ -79,20 +83,6 @@ const BookRead = ({ navigation }) => {
         setWordMeaning('');
     };
 
-    const renderWord = (word, index) => {
-        if (word.trim() === '') {
-            return <Text key={index} style={styles.bookText}>{word}</Text>;
-        }
-        return (
-            <TouchableOpacity key={index} onPress={() => handleWordClick(word.trim())}>
-                <Text style={styles.bookText}>{word}</Text>
-            </TouchableOpacity>
-        );
-    };
-
-    const bookText = `Once upon a time, in the quaint village of Willowbrook, there lived a young girl named Eunseo. \n Eunseo was known for her adventurous spirit and her love for exploring the enchanted forests that surrounded her home. \n One bright morning, as Eunseo ventured deeper into the woods than she had ever gone before, she stumbled upon a mysterious cave hidden beneath the thick foliage.`;
-
-    const words = bookText.split(/(\s+)/);
 
     // 단어 클릭 메세지 깜빡거림
     const blinkAnim = useRef(new Animated.Value(1)).current;
@@ -114,6 +104,89 @@ const BookRead = ({ navigation }) => {
         ).start();
     };
 
+    useEffect(() => {
+        const fetchBookDetails = async () => {
+            try {
+                const response = await fetch('http://192.168.219.102:8080/books/detail?profileId=1&bookId=1', {
+                    headers: {
+                        'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6InNlbGYiLCJjYXRlZ29yeSI6ImFjY2VzcyIsInVzZXJuYW1lIjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIwNjgxMTAyLCJleHAiOjE3MjA3Njc1MDJ9.PSG2xJ1sNo9VOTLkz2XiZeqtLmZe9Adi1ykvtim8Kn4'
+                    }
+                });
+    
+                const result = await response.json();
+    
+                if (result.status === 200) {
+                    const bookData = result.data;
+                    setTitle(bookData.title);
+                    setCurrentPage(bookData.currentPage);
+                    setTotalPageCount(bookData.totalPageCount);
+                    setCoverImage(bookData.coverImage);
+                    if (bookData.pages && bookData.pages.length > 0) {
+                        const currentPageData = bookData.pages[bookData.currentPage];
+                        setBookText(currentPageData.content);
+                        setPageImage(currentPageData.image);
+                    }
+                } else {
+                    Alert.alert('Error', 'Failed to retrieve book details');
+                }
+            } catch (error) {
+                Alert.alert('Error', 'Failed to fetch book details');
+            }
+        };
+    
+        fetchBookDetails();
+    }, []);
+    
+    // 페이지 갱신
+    const fetchPageDetails = async (pageNumber) => {
+        try {
+            const response = await fetch(`http://192.168.219.102:8080/books/detail?profileId=1&bookId=1&page=${pageNumber}`, {
+                headers: {
+                    'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6InNlbGYiLCJjYXRlZ29yeSI6ImFjY2VzcyIsInVzZXJuYW1lIjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIwNjgxMTAyLCJleHAiOjE3MjA3Njc1MDJ9.PSG2xJ1sNo9VOTLkz2XiZeqtLmZe9Adi1ykvtim8Kn4'
+                }
+            });
+    
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+    
+            const result = await response.json();
+            if (result.status === 200) {
+                const pageData = result.data.pages[pageNumber];
+                console.log(`Page ${pageNumber} content:`, pageData.content); 
+                setBookText(pageData.content);
+                setPageImage(pageData.image);
+                setCurrentPage(pageNumber);
+            } else {
+                Alert.alert('Error', 'Failed to retrieve page details');
+            }
+        } catch (error) {
+            console.error('Fetch error:', error);
+            Alert.alert('Error', 'Failed to fetch page details');
+        }
+    };
+
+    const goNextStep = () => {
+        const nextPage = currentPage + 1;
+        if (nextPage < totalPageCount) {
+            fetchPageDetails(nextPage);
+        } else {
+            Alert.alert('End of book', 'You have reached the end of the book.');
+        }
+    };
+
+    const renderWord = (word, index) => {
+        if (word.trim() === '') {
+            return <Text key={index} style={styles.bookText}>{word}</Text>;
+        }
+        return (
+            <TouchableOpacity key={index} onPress={() => handleWordClick(word.trim())}>
+                <Text style={styles.bookText}>{word}</Text>
+            </TouchableOpacity>
+        );
+    };
+
+    const words = bookText.split(/(\s+)/);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -139,11 +212,14 @@ const BookRead = ({ navigation }) => {
 
                 <View style={styles.textBox}>
                     <View style={styles.titleBox}>
-                        <Text style={styles.bookTitle}>Unveiling the Enchanted Cave</Text>
+                        <Text style={styles.bookTitle}>{title}</Text>
                     </View>
-                    <Text style={styles.bookText}>
+                    {/* <Text style={styles.bookText}>
                         {words.map((word, index) => renderWord(word, index))}
-                    </Text>
+                    </Text> */}
+                    <View style={styles.bookTextContainer}>
+                        {words.map((word, index) => renderWord(word, index))}
+                    </View>
                     
                 </View>
                 {nextStepVisible && (
@@ -151,10 +227,12 @@ const BookRead = ({ navigation }) => {
                          <Animated.View style={[styles.wordBox, { opacity: blinkAnim }]}>
                     <Text style={styles.wordText}>Click on a word {"\n"} you don't know</Text>
                 </Animated.View>
-                        <NextStep />
+                        <NextStep goNextStep={goNextStep}/>
                     </>
                 )}
-                  <ProgressBar pages={'13'} now={'4'} />
+                 {totalPageCount > 0 && currentPage >= 0 && (
+                    <ProgressBar pages={totalPageCount.toString()} now={currentPage.toString()} />
+                )}
                 {/*             
                 <Modal
                     visible={isWordModalVisible}
@@ -199,6 +277,11 @@ const styles = StyleSheet.create({
         padding: 10,
 
     },
+     bookTextContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+    },
     bookTitle: {
         fontSize: 38,
         fontWeight: 'bold',
@@ -219,6 +302,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
         color: '#000000',
         textAlign: 'center',
+        lineHeight: 30,
     },
     wordBox: {
         width: 130,
