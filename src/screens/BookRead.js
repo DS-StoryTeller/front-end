@@ -109,10 +109,9 @@ const BookRead = ({ navigation }) => {
             try {
                 const response = await fetch('http://192.168.219.102:8080/books/detail?profileId=1&bookId=1', {
                     headers: {
-                        'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6InNlbGYiLCJjYXRlZ29yeSI6ImFjY2VzcyIsInVzZXJuYW1lIjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIwNjgxMTAyLCJleHAiOjE3MjA3Njc1MDJ9.PSG2xJ1sNo9VOTLkz2XiZeqtLmZe9Adi1ykvtim8Kn4'
+                        'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6InNlbGYiLCJjYXRlZ29yeSI6ImFjY2VzcyIsInVzZXJuYW1lIjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIwODM4MDI1LCJleHAiOjE3MjA5MjQ0MjV9.8tTUNayEusGSzpphFKipxMZvSYcMexSL8k9Bzmm8FpI'
                     }
                 });
-    
                 const result = await response.json();
     
                 if (result.status === 200) {
@@ -133,7 +132,6 @@ const BookRead = ({ navigation }) => {
                 Alert.alert('Error', 'Failed to fetch book details');
             }
         };
-    
         fetchBookDetails();
     }, []);
     
@@ -142,18 +140,13 @@ const BookRead = ({ navigation }) => {
         try {
             const response = await fetch(`http://192.168.219.102:8080/books/detail?profileId=1&bookId=1&page=${pageNumber}`, {
                 headers: {
-                    'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6InNlbGYiLCJjYXRlZ29yeSI6ImFjY2VzcyIsInVzZXJuYW1lIjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIwNjgxMTAyLCJleHAiOjE3MjA3Njc1MDJ9.PSG2xJ1sNo9VOTLkz2XiZeqtLmZe9Adi1ykvtim8Kn4'
+                    'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6InNlbGYiLCJjYXRlZ29yeSI6ImFjY2VzcyIsInVzZXJuYW1lIjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIwODM4MDI1LCJleHAiOjE3MjA5MjQ0MjV9.8tTUNayEusGSzpphFKipxMZvSYcMexSL8k9Bzmm8FpI'
                 }
             });
-    
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
     
             const result = await response.json();
             if (result.status === 200) {
                 const pageData = result.data.pages[pageNumber];
-                console.log(`Page ${pageNumber} content:`, pageData.content); 
                 setBookText(pageData.content);
                 setPageImage(pageData.image);
                 setCurrentPage(pageNumber);
@@ -161,7 +154,6 @@ const BookRead = ({ navigation }) => {
                 Alert.alert('Error', 'Failed to retrieve page details');
             }
         } catch (error) {
-            console.error('Fetch error:', error);
             Alert.alert('Error', 'Failed to fetch page details');
         }
     };
@@ -171,7 +163,7 @@ const BookRead = ({ navigation }) => {
         if (nextPage < totalPageCount) {
             fetchPageDetails(nextPage);
         } else {
-            Alert.alert('End of book', 'You have reached the end of the book.');
+            navigation.navigate('Quiz')
         }
     };
 
@@ -214,14 +206,11 @@ const BookRead = ({ navigation }) => {
                     <View style={styles.titleBox}>
                         <Text style={styles.bookTitle}>{title}</Text>
                     </View>
-                    {/* <Text style={styles.bookText}>
-                        {words.map((word, index) => renderWord(word, index))}
-                    </Text> */}
                     <View style={styles.bookTextContainer}>
                         {words.map((word, index) => renderWord(word, index))}
                     </View>
-                    
                 </View>
+
                 {nextStepVisible && (
                     <>
                          <Animated.View style={[styles.wordBox, { opacity: blinkAnim }]}>
