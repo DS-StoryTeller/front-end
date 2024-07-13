@@ -43,26 +43,6 @@ const BookRead = ({ navigation }) => {
     const [timer, setTimer] = useState(null); // 타이머 상태 추가
 
 
-    useFocusEffect(
-        React.useCallback(() => {
-            setNextStepVisible(false); // 상태 초기화
-            if (timer) {
-                clearTimeout(timer); // 기존 타이머 클리어
-            }
-            const newTimer = setTimeout(() => {
-                setNextStepVisible(true);
-                startBlinking();
-            }, 3000); // 3초 후에 nextStepVisible 상태를 true로 변경
-
-            setTimer(newTimer); // 타이머 상태 업데이트
-
-            return () => {
-                clearTimeout(newTimer); // 언마운트 시 타이머 클리어
-                blinkAnim.stopAnimation();
-            };
-        }, [navigation])
-    );
-
     // 모르는 단어 조희
     const [wordMeaning, setWordMeaning] = useState('');
     const [isWordModalVisible, setIsWordModalVisible] = useState(false);
@@ -103,6 +83,32 @@ const BookRead = ({ navigation }) => {
             ]),
         ).start();
     };
+
+    const showNextStep = () => {
+        setNextStepVisible(false); // 상태 초기화
+        if (timer) {
+            clearTimeout(timer); // 기존 타이머 클리어
+        }
+        const newTimer = setTimeout(() => {
+            setNextStepVisible(true);
+            startBlinking();
+        }, 3000); // 3초 후에 nextStepVisible 상태를 true로 변경
+
+        setTimer(newTimer); // 타이머 상태 업데이트
+    };
+
+    useFocusEffect(
+        React.useCallback(() => {
+            showNextStep();
+
+            return () => {
+                if (timer) {
+                    clearTimeout(timer); // 언마운트 시 타이머 클리어
+                }
+                blinkAnim.stopAnimation();
+            };
+        }, [navigation])
+    );
 
     useEffect(() => {
         const fetchBookDetails = async () => {
@@ -150,6 +156,7 @@ const BookRead = ({ navigation }) => {
                 setBookText(pageData.content);
                 setPageImage(pageData.image);
                 setCurrentPage(pageNumber);
+                showNextStep();// 페이지 변경 후 nextStepVisible 상태와 깜빡임 애니메이션 설정
             } else {
                 Alert.alert('Error', 'Failed to retrieve page details');
             }
