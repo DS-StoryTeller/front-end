@@ -14,7 +14,7 @@ const SettingModal = ({ isVisible, onClose, handleSizeFilter, profileId, bookId,
     
     const handleSizeFilterLocal = (size) => {
         setSize(size);
-        handleSizeFilter(size); // 부모 컴포넌트로 전달
+        handleSizeFilter(size); 
     }
     
     

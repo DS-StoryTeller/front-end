@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { StyleSheet, Text, ImageBackground, View, TouchableOpacity, Alert,  Animated, Modal } from "react-native"
+import { StyleSheet, Text, ImageBackground, View, TouchableOpacity, Alert, Animated, Modal } from "react-native"
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useFocusEffect } from '@react-navigation/native';
 import Page1 from '../../assets/images/page1.png';
@@ -17,7 +17,7 @@ const BookRead = ({ navigation }) => {
     const [bookText, setBookText] = useState('');
     const [coverImage, setCoverImage] = useState('');
     const [pageImage, setPageImage] = useState('');
-    const [fontSize, setFontSize] = useState(18); 
+    const [fontSize, setFontSize] = useState(18);
 
     // 모달창
     const [isSettingModalVisible, setIsSettingModalVisible] = useState(false);
@@ -64,6 +64,7 @@ const BookRead = ({ navigation }) => {
         setWordMeaning('');
     };
 
+   
 
     // 단어 클릭 메세지 깜빡거림
     const blinkAnim = useRef(new Animated.Value(1)).current;
@@ -120,7 +121,7 @@ const BookRead = ({ navigation }) => {
                     }
                 });
                 const result = await response.json();
-    
+
                 if (result.status === 200) {
                     const bookData = result.data;
                     setTitle(bookData.title);
@@ -141,7 +142,7 @@ const BookRead = ({ navigation }) => {
         };
         fetchBookDetails();
     }, []);
-    
+
     // 페이지 갱신
     const fetchPageDetails = async (pageNumber) => {
         try {
@@ -150,7 +151,7 @@ const BookRead = ({ navigation }) => {
                     'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6InNlbGYiLCJjYXRlZ29yeSI6ImFjY2VzcyIsInVzZXJuYW1lIjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIwOTYwNDMzLCJleHAiOjE3MjEwNDY4MzN9.pmipEswgyx0qLfBECT8JMYaJxLc-pTIikCLqZ4NlS9g'
                 }
             });
-    
+
             const result = await response.json();
             if (result.status === 200) {
                 const pageData = result.data.pages[pageNumber];
@@ -175,17 +176,47 @@ const BookRead = ({ navigation }) => {
         }
     };
 
+    // 하이라이트 기능
+    const [highlightedWord, setHighlightedWord] = useState(null);
+    const [highlightModalVisible, setHighlightModalVisible] = useState(false);
+    const [highlightedWords, setHighlightedWords] = useState([]);
+    const [highlightModalPosition, setHighlightModalPosition] = useState({ top: 0, left: 0 });
+
+    const handleLongPress = (word, event) => {
+        const { pageY, pageX } = event.nativeEvent;
+        setHighlightedWord(word);
+        setHighlightModalPosition({ top: pageY - 57, left: pageX - 75 }); // 단어 위치 위로 모달 배치
+        setHighlightModalVisible(true);
+    };
+
+    const confirmHighlight = () => {
+        setHighlightedWords([...highlightedWords, highlightedWord]);
+        setHighlightModalVisible(false);
+    };
+
+    const cancelHighlight = () => {
+        if (highlightedWords.includes(highlightedWord)) {
+            setHighlightedWords(highlightedWords.filter(word => word !== highlightedWord));
+        }
+        setHighlightedWord(null);
+        setHighlightModalVisible(false);
+    };
+
     const renderWord = (word, index) => {
+        const isHighlighted = highlightedWords.includes(word.trim());
         if (word.trim() === '') {
-            return <Text key={index} style={styles.bookText}>{word}</Text>;
+            return <Text key={index} style={[styles.bookText, { fontSize }]}>{word}</Text>;
         }
         return (
-            <TouchableOpacity key={index} onPress={() => handleWordClick(word.trim())}>
-                <Text style={[styles.bookText, { fontSize }]}>{word}</Text>
+            <TouchableOpacity
+                key={index}
+                onPress={() => handleWordClick(word.trim())}
+                onLongPress={(event) => handleLongPress(word.trim(), event)}
+            >
+                <Text style={[styles.bookText, { fontSize }, isHighlighted && styles.highlightedText]}>{word}</Text>
             </TouchableOpacity>
         );
     };
-
     const words = bookText.split(/(\s+)/);
 
     const handleSizeFilter = (fontSizeValue) => {
@@ -204,9 +235,11 @@ const BookRead = ({ navigation }) => {
         }
     };
 
-    const profileId = 1; // 실제 프로필 ID 값을 할당하세요
-    const bookId = 1; // 실제 책 ID 값을 할당하세요
+    const profileId = 1;
+    const bookId = 1;
     const initialSize = fontSize === 14 ? "작게" : fontSize === 18 ? "기본" : "크게";
+
+
     return (
         <SafeAreaView style={styles.container}>
             <ImageBackground source={BookBg} >
@@ -224,9 +257,9 @@ const BookRead = ({ navigation }) => {
                         <TouchableOpacity style={styles.icon} onPress={openSettingModal} >
                             <Ionic name="settings" size={35} color="white" />
                         </TouchableOpacity>
-                        <SettingModal isVisible={isSettingModalVisible} onClose={closeSettingModal} handleSizeFilter={handleSizeFilter} profileId={profileId} bookId={bookId} initialSize={initialSize}  />
+                        <SettingModal isVisible={isSettingModalVisible} onClose={closeSettingModal} handleSizeFilter={handleSizeFilter} profileId={profileId} bookId={bookId} initialSize={initialSize} />
                     </View>
-                    
+
                 </ImageBackground>
 
                 <View style={styles.textBox}>
@@ -235,20 +268,38 @@ const BookRead = ({ navigation }) => {
                     </View>
                     <View style={styles.bookTextContainer}>
                         {words.map((word, index) => renderWord(word, index))}
+                        
                     </View>
                 </View>
 
                 {nextStepVisible && (
                     <>
-                         <Animated.View style={[styles.wordBox, { opacity: blinkAnim }]}>
-                    <Text style={styles.wordText}>Click on a word {"\n"} you don't know</Text>
-                </Animated.View>
-                        <NextStep goNextStep={goNextStep}/>
+                        <Animated.View style={[styles.wordBox, { opacity: blinkAnim }]}>
+                            <Text style={styles.wordText}>Click on a word {"\n"} you don't know</Text>
+                        </Animated.View>
+                        <NextStep goNextStep={goNextStep} />
                     </>
                 )}
-                 {totalPageCount > 0 && currentPage >= 0 && (
+                {totalPageCount > 0 && currentPage >= 0 && (
                     <ProgressBar pages={totalPageCount.toString()} now={currentPage.toString()} />
                 )}
+                 <Modal
+                    visible={highlightModalVisible}
+                    transparent={true}
+                    animationType="fade"
+                    onRequestClose={cancelHighlight}
+                >
+                    <View style={[styles.highlightModal, highlightModalPosition]}>
+                        <View style={styles.highlightModalButtons}>
+                            <TouchableOpacity onPress={confirmHighlight}>
+                                <Text style={styles.highlightModalText}>하이라이트</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={cancelHighlight}>
+                                <Text style={styles.highlightModalText}>취소</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </Modal>
                 {/*             
                 <Modal
                     visible={isWordModalVisible}
@@ -293,7 +344,7 @@ const styles = StyleSheet.create({
         padding: 10,
 
     },
-     bookTextContainer: {
+    bookTextContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'center',
@@ -328,7 +379,7 @@ const styles = StyleSheet.create({
         left: '80%',
         borderTopWidth: 1,
         borderBottomWidth: 1,
-        borderColor: 'rgba(78,90,140,0.8)', 
+        borderColor: 'rgba(78,90,140,0.8)',
         borderStyle: 'solid',
         justifyContent: 'center',
     },
@@ -336,28 +387,24 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 18,
         color: 'rgba(78,90,140,0.8)',
-    }
-    // modalContainer: {
-    //     flex: 1,
-    //     justifyContent: 'center',
-    //     alignItems: 'center',
-    //     backgroundColor: 'rgba(0,0,0,0.5)',
-    // },
-    // modalContent: {
-    //     width: '80%',
-    //     padding: 20,
-    //     backgroundColor: 'white',
-    //     borderRadius: 10,
-    //     alignItems: 'center',
-    // },
-    // modalText: {
-    //     fontSize: 20,
-    //     marginBottom: 20,
-    // },
-    // closeButton: {
-    //     fontSize: 18,
-    //     color: '#0000EE',
-    // },
+    },
+    highlightedText: {
+        backgroundColor: 'yellow',
+    },
+    highlightModal: {
+        position: 'absolute', 
+        padding: 10,
+        backgroundColor: 'white',
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    highlightModalButtons: {
+        flexDirection: 'row',
+        justifyContent:'space-between',
+    },
+    highlightModalText: {   
+       paddingHorizontal: 10,
+    },
 
 })
 export default BookRead
