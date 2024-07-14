@@ -4,25 +4,27 @@ import Ionic from 'react-native-vector-icons/Ionicons';
 import SpeedFilter from './SpeedFilter';
 import SizeFilter from './SizeFilter';
 
-const SettingModal = ({ isVisible, onClose }) => {
+const SettingModal = ({ isVisible, onClose, handleSizeFilter, profileId, bookId, initialSize }) => {
     const [speed, setSpeed] = useState("1.0배속");
-    const [size, setSize] = useState("기본");
+    const [size, setSize] = useState(initialSize);
 
     const handleSpeedFilter = (speed) => {
         setSpeed(speed);
     }
     
-    const handleSizeFilter = (size) => {
+    const handleSizeFilterLocal = (size) => {
         setSize(size);
+        handleSizeFilter(size); // 부모 컴포넌트로 전달
     }
+    
     
     useEffect(() => {
         setSpeed("1.0배속");
     }, []);
 
     useEffect(() => {
-        setSize("기본");
-    }, []);
+        setSize(initialSize);
+    }, [initialSize]);
 
     return (
         <Modal
@@ -49,7 +51,7 @@ const SettingModal = ({ isVisible, onClose }) => {
                 <View style={styles.buttonContainer}>
                     <Text style={styles.subtitle}>글자 크기</Text>
                     <View style={styles.buttonGroup}>
-                        <SizeFilter handleSizeFilter={handleSizeFilter} />
+                        <SizeFilter handleSizeFilter={handleSizeFilterLocal} profileId={profileId} bookId={bookId} initialSize={size} />
                     </View>
                 </View>
             </View>

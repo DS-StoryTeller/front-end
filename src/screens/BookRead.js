@@ -17,6 +17,7 @@ const BookRead = ({ navigation }) => {
     const [bookText, setBookText] = useState('');
     const [coverImage, setCoverImage] = useState('');
     const [pageImage, setPageImage] = useState('');
+    const [fontSize, setFontSize] = useState(18); 
 
     // 모달창
     const [isSettingModalVisible, setIsSettingModalVisible] = useState(false);
@@ -115,7 +116,7 @@ const BookRead = ({ navigation }) => {
             try {
                 const response = await fetch('http://192.168.219.102:8080/books/detail?profileId=1&bookId=1', {
                     headers: {
-                        'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6InNlbGYiLCJjYXRlZ29yeSI6ImFjY2VzcyIsInVzZXJuYW1lIjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIwODM4MDI1LCJleHAiOjE3MjA5MjQ0MjV9.8tTUNayEusGSzpphFKipxMZvSYcMexSL8k9Bzmm8FpI'
+                        'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6InNlbGYiLCJjYXRlZ29yeSI6ImFjY2VzcyIsInVzZXJuYW1lIjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIwOTYwNDMzLCJleHAiOjE3MjEwNDY4MzN9.pmipEswgyx0qLfBECT8JMYaJxLc-pTIikCLqZ4NlS9g'
                     }
                 });
                 const result = await response.json();
@@ -146,7 +147,7 @@ const BookRead = ({ navigation }) => {
         try {
             const response = await fetch(`http://192.168.219.102:8080/books/detail?profileId=1&bookId=1&page=${pageNumber}`, {
                 headers: {
-                    'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6InNlbGYiLCJjYXRlZ29yeSI6ImFjY2VzcyIsInVzZXJuYW1lIjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIwODM4MDI1LCJleHAiOjE3MjA5MjQ0MjV9.8tTUNayEusGSzpphFKipxMZvSYcMexSL8k9Bzmm8FpI'
+                    'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6InNlbGYiLCJjYXRlZ29yeSI6ImFjY2VzcyIsInVzZXJuYW1lIjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIwOTYwNDMzLCJleHAiOjE3MjEwNDY4MzN9.pmipEswgyx0qLfBECT8JMYaJxLc-pTIikCLqZ4NlS9g'
                 }
             });
     
@@ -180,13 +181,32 @@ const BookRead = ({ navigation }) => {
         }
         return (
             <TouchableOpacity key={index} onPress={() => handleWordClick(word.trim())}>
-                <Text style={styles.bookText}>{word}</Text>
+                <Text style={[styles.bookText, { fontSize }]}>{word}</Text>
             </TouchableOpacity>
         );
     };
 
     const words = bookText.split(/(\s+)/);
 
+    const handleSizeFilter = (fontSizeValue) => {
+        switch (fontSizeValue) {
+            case "SMALL":
+                setFontSize(14);
+                break;
+            case "MEDIUM":
+                setFontSize(18);
+                break;
+            case "LARGE":
+                setFontSize(22);
+                break;
+            default:
+                setFontSize(18);
+        }
+    };
+
+    const profileId = 1; // 실제 프로필 ID 값을 할당하세요
+    const bookId = 1; // 실제 책 ID 값을 할당하세요
+    const initialSize = fontSize === 14 ? "작게" : fontSize === 18 ? "기본" : "크게";
     return (
         <SafeAreaView style={styles.container}>
             <ImageBackground source={BookBg} >
@@ -204,7 +224,7 @@ const BookRead = ({ navigation }) => {
                         <TouchableOpacity style={styles.icon} onPress={openSettingModal} >
                             <Ionic name="settings" size={35} color="white" />
                         </TouchableOpacity>
-                        <SettingModal isVisible={isSettingModalVisible} onClose={closeSettingModal} />
+                        <SettingModal isVisible={isSettingModalVisible} onClose={closeSettingModal} handleSizeFilter={handleSizeFilter} profileId={profileId} bookId={bookId} initialSize={initialSize}  />
                     </View>
                     
                 </ImageBackground>
