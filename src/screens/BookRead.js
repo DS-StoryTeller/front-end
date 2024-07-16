@@ -19,6 +19,10 @@ const BookRead = ({ navigation }) => {
     const [pageImage, setPageImage] = useState('');
     const [fontSize, setFontSize] = useState(18);
 
+    const profileId = 1;
+    const bookId = 1;
+    const initialSize = fontSize === 14 ? "작게" : fontSize === 18 ? "기본" : "크게";
+
     // 모달창
     const [isSettingModalVisible, setIsSettingModalVisible] = useState(false);
     const [isYesNoModalVisible, setIsYesNoModalVisible] = useState(false);
@@ -64,7 +68,7 @@ const BookRead = ({ navigation }) => {
         setWordMeaning('');
     };
 
-   
+
 
     // 단어 클릭 메세지 깜빡거림
     const blinkAnim = useRef(new Animated.Value(1)).current;
@@ -112,67 +116,67 @@ const BookRead = ({ navigation }) => {
         }, [navigation])
     );
 
-    useEffect(() => {
-        const fetchBookDetails = async () => {
-            try {
-                const response = await fetch('http://192.168.219.102:8080/books/detail?profileId=1&bookId=1', {
-                    headers: {
-                        'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6InNlbGYiLCJjYXRlZ29yeSI6ImFjY2VzcyIsInVzZXJuYW1lIjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIwOTYwNDMzLCJleHAiOjE3MjEwNDY4MzN9.pmipEswgyx0qLfBECT8JMYaJxLc-pTIikCLqZ4NlS9g'
-                    }
-                });
-                const result = await response.json();
 
-                if (result.status === 200) {
-                    const bookData = result.data;
-                    setTitle(bookData.title);
-                    setCurrentPage(bookData.currentPage);
-                    setTotalPageCount(bookData.totalPageCount);
-                    setCoverImage(bookData.coverImage);
-                    if (bookData.pages && bookData.pages.length > 0) {
-                        const currentPageData = bookData.pages[bookData.currentPage];
-                        setBookText(currentPageData.content);
-                        setPageImage(currentPageData.image);
-                    }
-                } else {
-                    Alert.alert('Error', 'Failed to retrieve book details');
-                }
-            } catch (error) {
-                Alert.alert('Error', 'Failed to fetch book details');
-            }
-        };
-        fetchBookDetails();
-    }, []);
-
-    // 페이지 갱신
+    // 페이지 세부정보 조회
     const fetchPageDetails = async (pageNumber) => {
         try {
-            const response = await fetch(`http://192.168.219.102:8080/books/detail?profileId=1&bookId=1&page=${pageNumber}`, {
+            const response = await fetch(`http://192.168.219.102:8080/pages/detail?profileId=${profileId}&bookId=${bookId}&pageNum=${pageNumber+1}`, {
                 headers: {
-                    'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6InNlbGYiLCJjYXRlZ29yeSI6ImFjY2VzcyIsInVzZXJuYW1lIjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIwOTYwNDMzLCJleHAiOjE3MjEwNDY4MzN9.pmipEswgyx0qLfBECT8JMYaJxLc-pTIikCLqZ4NlS9g'
+                    'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6InNlbGYiLCJjYXRlZ29yeSI6ImFjY2VzcyIsInVzZXJuYW1lIjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIxMTA5Mzk1LCJleHAiOjE3MjExOTU3OTV9.rOu220aMNAjJ6xDE95O87wUl7elmaxMKe_bdLiSSvDw'
                 }
             });
 
             const result = await response.json();
-            if (result.status === 200) {
-                const pageData = result.data.pages[pageNumber];
+
+            if (response.status === 200) {
+                const pageData = result.data;
                 setBookText(pageData.content);
                 setPageImage(pageData.image);
-                setCurrentPage(pageNumber);
-                showNextStep();// 페이지 변경 후 nextStepVisible 상태와 깜빡임 애니메이션 설정
+                setHighlightedWords((pageData.unknownWords || []).map(word => ({ word: word.unknownWord, id: word.unknownWordId }))); // 페이지에 포함된 모르는 단어들을 하이라이트 표시
+                setCurrentPage(pageNumber); // 현재 페이지 상태 업데이트
+                showNextStep(); // 페이지 변경 후 nextStepVisible 상태와 깜빡임 애니메이션 설정
             } else {
                 Alert.alert('Error', 'Failed to retrieve page details');
             }
         } catch (error) {
+            console.error('Fetch page details error:', error); // 오류 메시지 출력
             Alert.alert('Error', 'Failed to fetch page details');
         }
     };
 
+    // 책 세부정보 조회
+    const fetchBookDetails = async () => {
+        try {
+            const response = await fetch(`http://192.168.219.102:8080/books/detail?profileId=${profileId}&bookId=${bookId}`, {
+                headers: {
+                    'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6InNlbGYiLCJjYXRlZ29yeSI6ImFjY2VzcyIsInVzZXJuYW1lIjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIxMTA5Mzk1LCJleHAiOjE3MjExOTU3OTV9.rOu220aMNAjJ6xDE95O87wUl7elmaxMKe_bdLiSSvDw'
+                }
+            });
+
+            const result = await response.json();
+
+            if (response.status === 200) {
+                setTitle(result.data.title);
+                setTotalPageCount(result.data.totalPageCount);
+            } else {
+                Alert.alert('Error', 'Failed to retrieve book details');
+            }
+        } catch (error) {
+            Alert.alert('Error', 'Failed to fetch book details');
+        }
+    };
+
+    useEffect(() => {
+        fetchBookDetails(); 
+        fetchPageDetails(currentPage); 
+    }, []);
+
     const goNextStep = () => {
         const nextPage = currentPage + 1;
-        if (nextPage < totalPageCount) {
+        if (nextPage <= totalPageCount) { 
             fetchPageDetails(nextPage);
         } else {
-            navigation.navigate('Quiz')
+            navigation.navigate('Quiz');
         }
     };
 
@@ -189,21 +193,76 @@ const BookRead = ({ navigation }) => {
         setHighlightModalVisible(true);
     };
 
-    const confirmHighlight = () => {
-        setHighlightedWords([...highlightedWords, highlightedWord]);
-        setHighlightModalVisible(false);
+    const confirmHighlight = async () => {
+        try {
+            const response = await fetch(`http://192.168.219.102:8080/unknownwords/create?profileId=${profileId}&bookId=${bookId}1&pageNum=${currentPage+1}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6InNlbGYiLCJjYXRlZ29yeSI6ImFjY2VzcyIsInVzZXJuYW1lIjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIxMTA5Mzk1LCJleHAiOjE3MjExOTU3OTV9.rOu220aMNAjJ6xDE95O87wUl7elmaxMKe_bdLiSSvDw'
+                },
+                body: JSON.stringify({
+                    unknownWord: highlightedWord,
+                    position: highlightedWords.length + 1
+                })
+            });
+
+            if (response.status !== 200) {
+                Alert.alert('Error', 'Failed to save the unknown word');
+            } else {
+                const result = await response.json();
+                console.log('Saved word result:', result); // result 객체 확인
+                if (result && result.id) { // result와 result.id가 정의되었는지 확인
+                    setHighlightedWords(prev => {
+                        const updatedWords = [...prev, { word: highlightedWord, id: result.id }];
+                        console.log('Updated highlightedWords:', updatedWords);
+                        return updatedWords;
+                    });
+                } else {
+                    Alert.alert('Error', 'Invalid response from server');
+                }
+                setHighlightModalVisible(false);
+            }
+        } catch (error) {
+            Alert.alert('Error', 'Failed to save the unknown word');
+        }
     };
 
-    const cancelHighlight = () => {
-        if (highlightedWords.includes(highlightedWord)) {
-            setHighlightedWords(highlightedWords.filter(word => word !== highlightedWord));
+    const cancelHighlight = async () => {
+        const highlightedWordObj = highlightedWords.find(item => item.word === highlightedWord);
+
+        if (highlightedWordObj) {
+            try {
+                const response = await fetch(`http://192.168.219.102:8080/unknownwords/delete/${highlightedWordObj.id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6InNlbGYiLCJjYXRlZ29yeSI6ImFjY2VzcyIsInVzZXJuYW1lIjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIxMTA5Mzk1LCJleHAiOjE3MjExOTU3OTV9.rOu220aMNAjJ6xDE95O87wUl7elmaxMKe_bdLiSSvDw'
+                    }
+                });
+
+                if (response.status !== 200) {
+                    Alert.alert('Error', 'Failed to delete the unknown word');
+                } else {
+                    const result = await response.json();
+                    console.log('Deleted word result:', result); // 응답 결과 확인
+                    setHighlightedWords(prev => prev.filter(item => item.word !== highlightedWord));
+                    setHighlightedWord(null);
+                    setHighlightModalVisible(false);
+                }
+            } catch (error) {
+                Alert.alert('Error', 'Failed to delete the unknown word');
+            }
+        } else {
+            setHighlightedWord(null);
+            setHighlightModalVisible(false);
         }
-        setHighlightedWord(null);
-        setHighlightModalVisible(false);
     };
+
 
     const renderWord = (word, index) => {
-        const isHighlighted = highlightedWords.includes(word.trim());
+        const highlightedWordObj = highlightedWords.find(item => item.word === word.trim());
+        const isHighlighted = !!highlightedWordObj;
+
         if (word.trim() === '') {
             return <Text key={index} style={[styles.bookText, { fontSize }]}>{word}</Text>;
         }
@@ -217,6 +276,7 @@ const BookRead = ({ navigation }) => {
             </TouchableOpacity>
         );
     };
+
     const words = bookText.split(/(\s+)/);
 
     const handleSizeFilter = (fontSizeValue) => {
@@ -234,10 +294,6 @@ const BookRead = ({ navigation }) => {
                 setFontSize(18);
         }
     };
-
-    const profileId = 1;
-    const bookId = 1;
-    const initialSize = fontSize === 14 ? "작게" : fontSize === 18 ? "기본" : "크게";
 
 
     return (
@@ -268,7 +324,7 @@ const BookRead = ({ navigation }) => {
                     </View>
                     <View style={styles.bookTextContainer}>
                         {words.map((word, index) => renderWord(word, index))}
-                        
+
                     </View>
                 </View>
 
@@ -283,7 +339,7 @@ const BookRead = ({ navigation }) => {
                 {totalPageCount > 0 && currentPage >= 0 && (
                     <ProgressBar pages={totalPageCount.toString()} now={currentPage.toString()} />
                 )}
-                 <Modal
+                <Modal
                     visible={highlightModalVisible}
                     transparent={true}
                     animationType="fade"
@@ -392,7 +448,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'yellow',
     },
     highlightModal: {
-        position: 'absolute', 
+        position: 'absolute',
         padding: 10,
         backgroundColor: 'white',
         borderRadius: 10,
@@ -400,10 +456,10 @@ const styles = StyleSheet.create({
     },
     highlightModalButtons: {
         flexDirection: 'row',
-        justifyContent:'space-between',
+        justifyContent: 'space-between',
     },
-    highlightModalText: {   
-       paddingHorizontal: 10,
+    highlightModalText: {
+        paddingHorizontal: 10,
     },
 
 })
