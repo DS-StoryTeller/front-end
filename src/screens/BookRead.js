@@ -120,9 +120,9 @@ const BookRead = ({ navigation }) => {
     // 페이지 세부정보 조회
     const fetchPageDetails = async (pageNumber) => {
         try {
-            const response = await fetch(`http://192.168.219.102:8080/pages/detail?profileId=${profileId}&bookId=${bookId}&pageNum=${pageNumber+1}`, {
+            const response = await fetch(`http://192.168.219.102:8080/pages/detail?profileId=${profileId}&bookId=${bookId}&pageNum=${pageNumber + 1}`, {
                 headers: {
-                    'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6InNlbGYiLCJjYXRlZ29yeSI6ImFjY2VzcyIsInVzZXJuYW1lIjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIxMTA5Mzk1LCJleHAiOjE3MjExOTU3OTV9.rOu220aMNAjJ6xDE95O87wUl7elmaxMKe_bdLiSSvDw'
+                    'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6ImxvY2FsIiwiY2F0ZWdvcnkiOiJhY2Nlc3MiLCJ1c2VyS2V5IjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIxMjE4MDQ1LCJleHAiOjE3MjEzMDQ0NDV9.AMvk7NF-Kn_6HgRltk99vsz5oTHjfpBDKAbzR34x1zI'
                 }
             });
 
@@ -139,7 +139,6 @@ const BookRead = ({ navigation }) => {
                 Alert.alert('Error', 'Failed to retrieve page details');
             }
         } catch (error) {
-            console.error('Fetch page details error:', error); // 오류 메시지 출력
             Alert.alert('Error', 'Failed to fetch page details');
         }
     };
@@ -149,7 +148,7 @@ const BookRead = ({ navigation }) => {
         try {
             const response = await fetch(`http://192.168.219.102:8080/books/detail?profileId=${profileId}&bookId=${bookId}`, {
                 headers: {
-                    'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6InNlbGYiLCJjYXRlZ29yeSI6ImFjY2VzcyIsInVzZXJuYW1lIjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIxMTA5Mzk1LCJleHAiOjE3MjExOTU3OTV9.rOu220aMNAjJ6xDE95O87wUl7elmaxMKe_bdLiSSvDw'
+                    'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6ImxvY2FsIiwiY2F0ZWdvcnkiOiJhY2Nlc3MiLCJ1c2VyS2V5IjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIxMjE4MDQ1LCJleHAiOjE3MjEzMDQ0NDV9.AMvk7NF-Kn_6HgRltk99vsz5oTHjfpBDKAbzR34x1zI'
                 }
             });
 
@@ -167,13 +166,13 @@ const BookRead = ({ navigation }) => {
     };
 
     useEffect(() => {
-        fetchBookDetails(); 
-        fetchPageDetails(currentPage); 
+        fetchBookDetails();
+        fetchPageDetails(currentPage);
     }, []);
 
     const goNextStep = () => {
         const nextPage = currentPage + 1;
-        if (nextPage <= totalPageCount) { 
+        if (nextPage <= totalPageCount) {
             fetchPageDetails(nextPage);
         } else {
             navigation.navigate('Quiz');
@@ -195,11 +194,11 @@ const BookRead = ({ navigation }) => {
 
     const confirmHighlight = async () => {
         try {
-            const response = await fetch(`http://192.168.219.102:8080/unknownwords/create?profileId=${profileId}&bookId=${bookId}1&pageNum=${currentPage+1}`, {
+            const response = await fetch(`http://192.168.219.102:8080/unknownwords/create?profileId=${profileId}&bookId=${bookId}&pageNum=${currentPage + 1}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6InNlbGYiLCJjYXRlZ29yeSI6ImFjY2VzcyIsInVzZXJuYW1lIjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIxMTA5Mzk1LCJleHAiOjE3MjExOTU3OTV9.rOu220aMNAjJ6xDE95O87wUl7elmaxMKe_bdLiSSvDw'
+                    'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6ImxvY2FsIiwiY2F0ZWdvcnkiOiJhY2Nlc3MiLCJ1c2VyS2V5IjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIxMjE4MDQ1LCJleHAiOjE3MjEzMDQ0NDV9.AMvk7NF-Kn_6HgRltk99vsz5oTHjfpBDKAbzR34x1zI'
                 },
                 body: JSON.stringify({
                     unknownWord: highlightedWord,
@@ -208,23 +207,19 @@ const BookRead = ({ navigation }) => {
             });
 
             if (response.status !== 200) {
-                Alert.alert('Error', 'Failed to save the unknown word');
+                Alert.alert('Error', '단어 저장 실패');
             } else {
                 const result = await response.json();
-                console.log('Saved word result:', result); // result 객체 확인
-                if (result && result.id) { // result와 result.id가 정의되었는지 확인
-                    setHighlightedWords(prev => {
-                        const updatedWords = [...prev, { word: highlightedWord, id: result.id }];
-                        console.log('Updated highlightedWords:', updatedWords);
-                        return updatedWords;
-                    });
-                } else {
-                    Alert.alert('Error', 'Invalid response from server');
-                }
+
+                // 하이라이트 단어 추가
+                setHighlightedWords(prev => [
+                    ...prev,
+                    { word: highlightedWord, id: result.id }
+                ]);
                 setHighlightModalVisible(false);
             }
         } catch (error) {
-            Alert.alert('Error', 'Failed to save the unknown word');
+            Alert.alert('Error', '단어 저장 실패');
         }
     };
 
@@ -236,12 +231,12 @@ const BookRead = ({ navigation }) => {
                 const response = await fetch(`http://192.168.219.102:8080/unknownwords/delete/${highlightedWordObj.id}`, {
                     method: 'DELETE',
                     headers: {
-                        'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6InNlbGYiLCJjYXRlZ29yeSI6ImFjY2VzcyIsInVzZXJuYW1lIjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIxMTA5Mzk1LCJleHAiOjE3MjExOTU3OTV9.rOu220aMNAjJ6xDE95O87wUl7elmaxMKe_bdLiSSvDw'
+                        'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6ImxvY2FsIiwiY2F0ZWdvcnkiOiJhY2Nlc3MiLCJ1c2VyS2V5IjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIxMjE4MDQ1LCJleHAiOjE3MjEzMDQ0NDV9.AMvk7NF-Kn_6HgRltk99vsz5oTHjfpBDKAbzR34x1zI'
                     }
                 });
 
                 if (response.status !== 200) {
-                    Alert.alert('Error', 'Failed to delete the unknown word');
+                    Alert.alert('Error', '단어 삭제 실패');
                 } else {
                     const result = await response.json();
                     console.log('Deleted word result:', result); // 응답 결과 확인
@@ -250,7 +245,7 @@ const BookRead = ({ navigation }) => {
                     setHighlightModalVisible(false);
                 }
             } catch (error) {
-                Alert.alert('Error', 'Failed to delete the unknown word');
+                Alert.alert('Error', '단어 삭제 실패');
             }
         } else {
             setHighlightedWord(null);
@@ -345,16 +340,22 @@ const BookRead = ({ navigation }) => {
                     animationType="fade"
                     onRequestClose={cancelHighlight}
                 >
-                    <View style={[styles.highlightModal, highlightModalPosition]}>
-                        <View style={styles.highlightModalButtons}>
-                            <TouchableOpacity onPress={confirmHighlight}>
-                                <Text style={styles.highlightModalText}>하이라이트</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={cancelHighlight}>
-                                <Text style={styles.highlightModalText}>취소</Text>
-                            </TouchableOpacity>
+                    <TouchableOpacity
+                        activeOpacity={1} // 이 부분이 중요합니다. 터치 시 투명 배경이 클릭되는 것을 방지합니다.
+                        onPress={cancelHighlight}
+                        style={styles.modalBackground}
+                    >
+                        <View style={[styles.highlightModal, highlightModalPosition]}>
+                            <View style={styles.highlightModalButtons}>
+                                <TouchableOpacity onPress={confirmHighlight}>
+                                    <Text style={styles.highlightModalText}>하이라이트</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={cancelHighlight}>
+                                    <Text style={styles.highlightModalText}>취소</Text>
+                                </TouchableOpacity>
+                            </View>
                         </View>
-                    </View>
+                    </TouchableOpacity>
                 </Modal>
                 {/*             
                 <Modal
@@ -446,6 +447,11 @@ const styles = StyleSheet.create({
     },
     highlightedText: {
         backgroundColor: 'yellow',
+    },
+    modalBackground: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     highlightModal: {
         position: 'absolute',
