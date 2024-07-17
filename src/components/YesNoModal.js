@@ -1,22 +1,42 @@
-import { View, Text, StyleSheet, Modal, Button, TouchableOpacity } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { View, Text, StyleSheet, Modal, Alert } from 'react-native'
+import React from 'react'
 import YesNoButton from './YesNoButton';
 import { useNavigation } from '@react-navigation/native';
 
 
-const YesNoModal = ({ isVisible, onClose, linkTo, title, subtitle, buttonText1, buttonText2}) => {
+const YesNoModal = ({ isVisible, onClose, linkTo, title, subtitle, buttonText1, buttonText2, profileId, bookId, currentPage }) => {
     const navigation = useNavigation();
 
-    const handleButtonClick = () => {
+
+    const handleButtonClick = async () => {
         if (buttonText1 === "중단하기") {
-            navigation.reset({
-                index: 0,
-                routes: [{ name: linkTo }],
-            });
+            try {
+                const response = await fetch(`http://192.168.219.102:8080/books/current?profileId=${profileId}&bookId=${bookId}&currentPage=${currentPage}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6ImxvY2FsIiwiY2F0ZWdvcnkiOiJhY2Nlc3MiLCJ1c2VyS2V5IjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIxMjE4MDQ1LCJleHAiOjE3MjEzMDQ0NDV9.AMvk7NF-Kn_6HgRltk99vsz5oTHjfpBDKAbzR34x1zI'
+                    },
+                });
+
+                if (response.status === 200) {
+                    // 페이지 저장이 성공적으로 완료되었을 때 BookShelf 페이지로 이동
+                    navigation.reset({
+                        index: 0,
+                        routes: [{ name: linkTo }],
+                    });
+
+                } else {
+                    Alert.alert('Error', 'Failed to save current page');
+                }
+            } catch (error) {
+                Alert.alert('Error', 'Failed to save current page');
+            }
         } else if (buttonText1 === "삭제") {
-            // 프로필 삭제루트 적으면 됨(도나)
+            // 삭제 기능 추가 필요 - 도나
         }
-      };
+    };
+
 
     return (
         <Modal
@@ -32,11 +52,11 @@ const YesNoModal = ({ isVisible, onClose, linkTo, title, subtitle, buttonText1, 
                     <Text style={styles.subtitleText}>{subtitle}</Text>
                 </View>
                 <View style={styles.buttonContainer}>
-                <YesNoButton text={buttonText1} onPress={handleButtonClick} />
-                <YesNoButton text={buttonText2} onPress={onClose} />
-           </View>
+                    <YesNoButton text={buttonText1} onPress={handleButtonClick} />
+                    <YesNoButton text={buttonText2} onPress={onClose} />
+                </View>
             </View>
-           
+
         </Modal>
     )
 }
@@ -58,7 +78,7 @@ const styles = StyleSheet.create({
         top: '28%',
         left: '30%',
     },
-    
+
 
     modalTextStyle: {
         color: 'black',
@@ -79,8 +99,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         margin: 35,
     }
-    
-  
+
+
 });
 
 export default YesNoModal

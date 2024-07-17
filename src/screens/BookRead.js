@@ -133,7 +133,7 @@ const BookRead = ({ navigation }) => {
                 setBookText(pageData.content);
                 setPageImage(pageData.image);
                 setHighlightedWords((pageData.unknownWords || []).map(word => ({ word: word.unknownWord, id: word.unknownWordId }))); // 페이지에 포함된 모르는 단어들을 하이라이트 표시
-                setCurrentPage(pageNumber); // 현재 페이지 상태 업데이트
+                setCurrentPage(pageData.pageNumber - 1);  // 현재 페이지 상태 업데이트
                 showNextStep(); // 페이지 변경 후 nextStepVisible 상태와 깜빡임 애니메이션 설정
             } else {
                 Alert.alert('Error', 'Failed to retrieve page details');
@@ -157,6 +157,8 @@ const BookRead = ({ navigation }) => {
             if (response.status === 200) {
                 setTitle(result.data.title);
                 setTotalPageCount(result.data.totalPageCount);
+                setCurrentPage(result.data.currentPage - 1);
+                fetchPageDetails(result.data.currentPage - 1);
             } else {
                 Alert.alert('Error', 'Failed to retrieve book details');
             }
@@ -304,7 +306,10 @@ const BookRead = ({ navigation }) => {
                             subtitle={`다시 동화를 읽을 때 \n 현재 페이지부터 읽으실 수 있습니다.`}
                             buttonText1={"중단하기"}
                             linkTo={'BookShelf'}
-                            buttonText2={"취소"} />
+                            buttonText2={"취소"}
+                            profileId={profileId}
+                            bookId={bookId}
+                            currentPage={currentPage+1} />
                         <TouchableOpacity style={styles.icon} onPress={openSettingModal} >
                             <Ionic name="settings" size={35} color="white" />
                         </TouchableOpacity>
