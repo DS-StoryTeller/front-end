@@ -10,12 +10,26 @@ const Signin = ({ navigation }) => {
     const [password, setPassword] = useState('')
     const [checkPW, setCheckPW] = useState('')
     const [user, setUser] = useState('')
+    const [isUsernameVerified, setIsUsernameVerified] = useState(false)
+    const [isEmailVerified, setIsEmailVerified] = useState(false)
 
-    const handleSignup = async () => {
+
+    const handleSignup = async () => {       
         if (password !== checkPW) {
             Alert.alert('오류', '비밀번호가 일치하지 않습니다');
             return;
         }
+
+        if (!isUsernameVerified) {
+            Alert.alert('오류', '아이디 중복 확인을 해주세요.');
+            return;
+        }
+
+        if (!isEmailVerified) {
+            Alert.alert('오류', '이메일 인증을 해주세요.');
+            return;
+        }
+
 
         try {
             const formData = new FormData();
@@ -69,7 +83,7 @@ const Signin = ({ navigation }) => {
     const handleEmailVerificationCheck = async () => {
         try {
             const response = await fetch('http://192.168.219.102:8080/emails/verifications', {
-                method: 'POST', // 다시 POST 방식으로 변경합니다.
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -80,7 +94,12 @@ const Signin = ({ navigation }) => {
             console.log('인증 번호 확인 응답:', data);
 
             if (response.ok) {
-                Alert.alert('성공', '인증이 확인되었습니다');
+                if (data.data.authResult) {
+                    setIsEmailVerified(true);
+                    Alert.alert('성공', '인증이 확인되었습니다.');
+                } else {
+                    Alert.alert('오류', '인증번호가 일치하지 않습니다.');
+                }
             } else {
                 Alert.alert('오류', data.message || '인증 확인에 실패했습니다');
             }
@@ -105,6 +124,7 @@ const Signin = ({ navigation }) => {
 
             if (response.ok) {
                 if (data.data.authResult) {
+                    setIsUsernameVerified(true);
                     Alert.alert('성공', '사용 가능한 아이디입니다');
                 } else {
                     Alert.alert('오류', '중복된 아이디입니다');
@@ -185,19 +205,14 @@ const Signin = ({ navigation }) => {
                         onChangeText={text => setPassword(text)}
                         style={styles.input}
                     />
-                    <View style={styles.shortInputContainer}>
+                    
                     <TextInput
                         placeholder='비밀번호를 확인해주세요'
                         value={checkPW}
                         onChangeText={text => setCheckPW(text)}
-                        style={styles.inputShort}
+                        style={styles.input}
                     />
-                    <TouchableOpacity
-                        style={styles.emailButton}
-                    >
-                        <Text style={styles.emailButtonText}>일치 확인</Text>
-                    </TouchableOpacity>
-                    </View>
+                    
                 </View>
 
                 <View style={styles.buttonContainer}>
