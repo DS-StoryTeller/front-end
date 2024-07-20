@@ -57,7 +57,7 @@ const Signin = ({ navigation }) => {
                 </View>
                 <View style={styles.inputContainer}>
                     <Text style={styles.subTitle}>사용자 아이디</Text>
-                    <View style={styles.EmailContainer}>
+                    <View style={styles.shortInputContainer}>
                     <TextInput
                         placeholder='아이디를 입력해주세요'
                         value={user}
@@ -67,13 +67,13 @@ const Signin = ({ navigation }) => {
                     <TouchableOpacity
                         style={styles.emailButton}
                     >
-                        <Text style={styles.emailButtonText}>중복확인</Text>
+                        <Text style={styles.emailButtonText}>중복 확인</Text>
                     </TouchableOpacity>
                     </View>
                 </View>
                 <View style={styles.inputContainer}>
                     <Text style={styles.subTitle}>이메일</Text>
-                    <View style={styles.EmailContainer}>
+                    <View style={styles.shortInputContainer}>
                         <TextInput
                             placeholder='example@naver.com'
                             value={email}
@@ -86,7 +86,7 @@ const Signin = ({ navigation }) => {
                             <Text style={styles.emailButtonText}>인증하기</Text>
                         </TouchableOpacity>
                     </View>
-                    <View style={styles.EmailContainer}>
+                    <View style={styles.shortInputContainer}>
                     <TextInput
                         placeholder='인증번호를 입력해주세요'
                         value={code}
@@ -96,7 +96,7 @@ const Signin = ({ navigation }) => {
                     <TouchableOpacity
                         style={styles.emailButton}
                     >
-                        <Text style={styles.emailButtonText}>인증확인</Text>
+                        <Text style={styles.emailButtonText}>인증 확인</Text>
                     </TouchableOpacity>
                     </View>
                 </View>
@@ -108,12 +108,19 @@ const Signin = ({ navigation }) => {
                         onChangeText={text => setPassword(text)}
                         style={styles.input}
                     />
+                    <View style={styles.shortInputContainer}>
                     <TextInput
                         placeholder='비밀번호를 확인해주세요'
                         value={checkPW}
                         onChangeText={text => setCheckPW(text)}
-                        style={styles.input}
+                        style={styles.inputShort}
                     />
+                    <TouchableOpacity
+                        style={styles.emailButton}
+                    >
+                        <Text style={styles.emailButtonText}>일치 확인</Text>
+                    </TouchableOpacity>
+                    </View>
                 </View>
 
                 <View style={styles.buttonContainer}>
@@ -154,7 +161,7 @@ const styles = StyleSheet.create({
         width: '85%',
         marginTop: 10,
     },
-    EmailContainer: {
+    shortInputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
     },
