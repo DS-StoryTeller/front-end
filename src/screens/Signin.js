@@ -43,6 +43,52 @@ const Signin = ({ navigation }) => {
         }
     };
 
+    const handleEmailVerificationRequest = async () => {
+        try {
+            const response = await fetch('http://192.168.219.102:8080/emails/verification-requests', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                Alert.alert('성공', '인증 이메일이 발송되었습니다');
+            } else {
+                Alert.alert('오류', data.message || '인증 이메일 발송에 실패했습니다');
+            }
+        } catch (error) {
+            console.error(error);
+            Alert.alert('오류', '인증 이메일 요청 중 오류가 발생했습니다');
+        }
+    };
+
+    const handleEmailVerificationCheck = async () => {
+        try {
+            const response = await fetch('http://192.168.219.102:8080/emails/verifications', {
+                method: 'POST', // 다시 POST 방식으로 변경합니다.
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, authCode: code }),
+            });
+
+            const data = await response.json();
+            console.log('인증 번호 확인 응답:', data);
+
+            if (response.ok) {
+                Alert.alert('성공', '인증이 확인되었습니다');
+            } else {
+                Alert.alert('오류', data.message || '인증 확인에 실패했습니다');
+            }
+        } catch (error) {
+            console.error(error);
+            Alert.alert('오류', '인증 확인 중 오류가 발생했습니다');
+        }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -81,7 +127,8 @@ const Signin = ({ navigation }) => {
                             style={styles.inputShort}
                         />
                         <TouchableOpacity
-                            style={styles.emailButton}
+                            style={styles.emailButton} 
+                            onPress={handleEmailVerificationRequest}
                         >
                             <Text style={styles.emailButtonText}>인증하기</Text>
                         </TouchableOpacity>
@@ -95,6 +142,7 @@ const Signin = ({ navigation }) => {
                     />
                     <TouchableOpacity
                         style={styles.emailButton}
+                        onPress={handleEmailVerificationCheck}
                     >
                         <Text style={styles.emailButtonText}>인증 확인</Text>
                     </TouchableOpacity>
