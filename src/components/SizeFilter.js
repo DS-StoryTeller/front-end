@@ -32,7 +32,7 @@ const SizeFilter = ({handleSizeFilter, profileId, bookId, initialSize }) => {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json', 
-                    'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6ImxvY2FsIiwiY2F0ZWdvcnkiOiJhY2Nlc3MiLCJ1c2VyS2V5IjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIxMjE4MDQ1LCJleHAiOjE3MjEzMDQ0NDV9.AMvk7NF-Kn_6HgRltk99vsz5oTHjfpBDKAbzR34x1zI'
+                    'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6ImxvY2FsIiwiY2F0ZWdvcnkiOiJhY2Nlc3MiLCJ1c2VyS2V5IjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIxNDU5MTk0LCJleHAiOjE3MjE1NDU1OTR9.SLWostcynEoPVFRy8Ok0yfxpFbVnEYQuBAJep3O0kdI'
                 },
                 body: JSON.stringify({
                     fontSize: fontSizeValue,

@@ -24,26 +24,49 @@ const Signin = ({ navigation }) => {
                     <Text style={styles.titleText}>오신것을 환영합니다</Text>
                 </View>
                 <View style={styles.inputContainer}>
-                    <Text style={styles.subTitle}>이메일</Text>
+                    <Text style={styles.subTitle}>사용자 아이디</Text>
                     <View style={styles.EmailContainer}>
                     <TextInput
-                        placeholder='example@naver.com'
-                        value={email}
-                        onChangeText={text => setEmail(text)}
-                        style={styles.inputEmail}
+                        placeholder='아이디를 입력해주세요'
+                        value={user}
+                        onChangeText={text => setUser(text)}
+                        style={styles.inputShort}
                     />
                     <TouchableOpacity
                         style={styles.emailButton}
                     >
-                        <Text style={styles.emailButtonText}>인증하기</Text>
+                        <Text style={styles.emailButtonText}>중복확인</Text>
                     </TouchableOpacity>
                     </View>
+                </View>
+                <View style={styles.inputContainer}>
+                    <Text style={styles.subTitle}>이메일</Text>
+                    <View style={styles.EmailContainer}>
+                        <TextInput
+                            placeholder='example@naver.com'
+                            value={email}
+                            onChangeText={text => setEmail(text)}
+                            style={styles.inputShort}
+                        />
+                        <TouchableOpacity
+                            style={styles.emailButton}
+                        >
+                            <Text style={styles.emailButtonText}>인증하기</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.EmailContainer}>
                     <TextInput
                         placeholder='인증번호를 입력해주세요'
                         value={code}
                         onChangeText={text => setCode(text)}
-                        style={styles.input}
+                        style={styles.inputShort}
                     />
+                    <TouchableOpacity
+                        style={styles.emailButton}
+                    >
+                        <Text style={styles.emailButtonText}>인증확인</Text>
+                    </TouchableOpacity>
+                    </View>
                 </View>
                 <View style={styles.inputContainer}>
                     <Text style={styles.subTitle}>비밀번호</Text>
@@ -60,15 +83,7 @@ const Signin = ({ navigation }) => {
                         style={styles.input}
                     />
                 </View>
-                <View style={styles.inputContainer}>
-                    <Text style={styles.subTitle}>사용자 이름</Text>
-                    <TextInput
-                        placeholder='이름을 입력해주세요'
-                        value={user}
-                        onChangeText={text => setUser(text)}
-                        style={styles.input}
-                    />
-                </View>
+
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity
                         style={styles.button}
@@ -97,7 +112,7 @@ const styles = StyleSheet.create({
     },
     bigBox: {
         width: '35%',
-        height: '70%',
+        height: '80%',
         backgroundColor: 'white',
         borderRadius: 30,
         padding: 10,
@@ -109,9 +124,9 @@ const styles = StyleSheet.create({
     },
     EmailContainer: {
         flexDirection: 'row',
-        alignItems: 'center', 
+        alignItems: 'center',
     },
-    inputEmail: {
+    inputShort: {
         width: '75%',
         marginTop: 5,
         marginRight: 5,
@@ -142,11 +157,11 @@ const styles = StyleSheet.create({
         borderRadius: 13,
         fontSize: 15,
     },
-   
+
     textBox: {
         width: '90%',
         marginTop: 10,
-        marginBottom: 10,
+        marginBottom: 5,
         marginLeft: 20,
     },
     titleApp: {

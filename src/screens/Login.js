@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     },
     bigBox: {
         width: '35%',
-        height: '70%',
+        height: '80%',
         backgroundColor: 'white',
         borderRadius: 30,
         padding: 10,
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
         fontSize: 15,
     },
     signInContainer: {
-        marginTop: 10,
+        marginTop: 15,
         marginBottom: 10,
         flexDirection: 'row',
         justifyContent: 'center',
