@@ -90,6 +90,34 @@ const Signin = ({ navigation }) => {
         }
     };
 
+    const handleUsernameVerification = async () => {
+        try {
+            const response = await fetch('http://192.168.219.102:8080/username/verifications', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username: user }),
+            });
+
+            const data = await response.json();
+            console.log('아이디 중복 확인 응답:', data);
+
+            if (response.ok) {
+                if (data.data.authResult) {
+                    Alert.alert('성공', '사용 가능한 아이디입니다');
+                } else {
+                    Alert.alert('오류', '중복된 아이디입니다');
+                }
+            } else {
+                Alert.alert('오류', data.message || '아이디 중복 확인에 실패했습니다');
+            }
+        } catch (error) {
+            console.error(error);
+            Alert.alert('오류', '아이디 중복 확인 중 오류가 발생했습니다');
+        }
+    };
+
     return (
         <SafeAreaView style={styles.container}>
             <Image source={Logo} style={styles.logo} />
@@ -112,6 +140,7 @@ const Signin = ({ navigation }) => {
                     />
                     <TouchableOpacity
                         style={styles.emailButton}
+                        onPress={handleUsernameVerification}
                     >
                         <Text style={styles.emailButtonText}>중복 확인</Text>
                     </TouchableOpacity>
