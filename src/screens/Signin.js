@@ -1,6 +1,5 @@
-//signin.js
 import React, { useState } from 'react'
-import { Text, View, StyleSheet, TextInput, TouchableOpacity, Image, Button } from "react-native"
+import { Text, View, StyleSheet, TextInput, TouchableOpacity, Image, Button,Alert } from "react-native"
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Logo from '../../assets/images/logo.png';
 
@@ -11,6 +10,39 @@ const Signin = ({ navigation }) => {
     const [password, setPassword] = useState('')
     const [checkPW, setCheckPW] = useState('')
     const [user, setUser] = useState('')
+
+    const handleSignup = async () => {
+        if (password !== checkPW) {
+            Alert.alert('오류', '비밀번호가 일치하지 않습니다');
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('username', user);
+            formData.append('password', password);
+            formData.append('email', email);
+            formData.append('role', 'ROLE_USER');
+
+            const response = await fetch('http://192.168.219.102:8080/register', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                Alert.alert('성공', '회원가입이 완료되었습니다');
+                navigation.navigate('Login');
+            } else {
+                Alert.alert('오류', data.message || '회원가입에 실패했습니다');
+            }
+        } catch (error) {
+            console.error(error);
+            Alert.alert('오류', '회원가입 중 오류가 발생했습니다');
+        }
+    };
+
 
     return (
         <SafeAreaView style={styles.container}>
@@ -87,7 +119,7 @@ const Signin = ({ navigation }) => {
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity
                         style={styles.button}
-                        onPress={() => navigation.navigate('Login')}
+                        onPress={handleSignup}
                     >
                         <Text style={styles.buttonText}>회원가입</Text>
                     </TouchableOpacity>
