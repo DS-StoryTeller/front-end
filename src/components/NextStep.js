@@ -2,10 +2,7 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native'
 import React from 'react'
 import Ionic from 'react-native-vector-icons/Ionicons';
 
-const NextStep = () => {
-    const goNextStep = () => {
-
-    }
+const NextStep = ({ goNextStep }) => {
 
   return (
     <View style={styles.buttonContainer}>
