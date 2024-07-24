@@ -120,7 +120,7 @@ const BookRead = ({ navigation }) => {
     // 페이지 세부정보 조회
     const fetchPageDetails = async (pageNumber) => {
         try {
-            const response = await fetch(`http://192.168.219.102:8080/pages/detail?profileId=${profileId}&bookId=${bookId}&pageNum=${pageNumber + 1}`, {
+            const response = await fetch(`http://192.168.219.105:8080/pages/detail?profileId=${profileId}&bookId=${bookId}&pageNum=${pageNumber + 1}`, {
                 headers: {
                     'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6ImxvY2FsIiwiY2F0ZWdvcnkiOiJhY2Nlc3MiLCJ1c2VyS2V5IjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIxNDU5MTk0LCJleHAiOjE3MjE1NDU1OTR9.SLWostcynEoPVFRy8Ok0yfxpFbVnEYQuBAJep3O0kdI'
                 }
@@ -146,7 +146,7 @@ const BookRead = ({ navigation }) => {
     // 책 세부정보 조회
     const fetchBookDetails = async () => {
         try {
-            const response = await fetch(`http://192.168.219.102:8080/books/detail?profileId=${profileId}&bookId=${bookId}`, {
+            const response = await fetch(`http://192.168.219.105:8080/books/detail?profileId=${profileId}&bookId=${bookId}`, {
                 headers: {
                     'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6ImxvY2FsIiwiY2F0ZWdvcnkiOiJhY2Nlc3MiLCJ1c2VyS2V5IjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIxNDU5MTk0LCJleHAiOjE3MjE1NDU1OTR9.SLWostcynEoPVFRy8Ok0yfxpFbVnEYQuBAJep3O0kdI'
                 }
@@ -196,7 +196,7 @@ const BookRead = ({ navigation }) => {
 
     const confirmHighlight = async () => {
         try {
-            const response = await fetch(`http://192.168.219.102:8080/unknownwords/create?profileId=${profileId}&bookId=${bookId}&pageNum=${currentPage + 1}`, {
+            const response = await fetch(`http://192.168.219.105:8080/unknownwords/create?profileId=${profileId}&bookId=${bookId}&pageNum=${currentPage + 1}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -230,7 +230,7 @@ const BookRead = ({ navigation }) => {
 
         if (highlightedWordObj) {
             try {
-                const response = await fetch(`http://192.168.219.102:8080/unknownwords/delete/${highlightedWordObj.id}`, {
+                const response = await fetch(`http://192.168.219.105:8080/unknownwords/delete/${highlightedWordObj.id}`, {
                     method: 'DELETE',
                     headers: {
                         'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6ImxvY2FsIiwiY2F0ZWdvcnkiOiJhY2Nlc3MiLCJ1c2VyS2V5IjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIxNDU5MTk0LCJleHAiOjE3MjE1NDU1OTR9.SLWostcynEoPVFRy8Ok0yfxpFbVnEYQuBAJep3O0kdI'

@@ -38,7 +38,7 @@ const Signin = ({ navigation }) => {
             formData.append('email', email);
             formData.append('role', 'ROLE_USER');
 
-            const response = await fetch('http://192.168.219.102:8080/register', {
+            const response = await fetch('http://192.168.219.105:8080/register', {
                 method: 'POST',
                 body: formData,
             });
@@ -59,7 +59,7 @@ const Signin = ({ navigation }) => {
 
     const handleEmailVerificationRequest = async () => {
         try {
-            const response = await fetch('http://192.168.219.102:8080/emails/verification-requests', {
+            const response = await fetch('http://192.168.219.105:8080/emails/verification-requests', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -82,7 +82,7 @@ const Signin = ({ navigation }) => {
 
     const handleEmailVerificationCheck = async () => {
         try {
-            const response = await fetch('http://192.168.219.102:8080/emails/verifications', {
+            const response = await fetch('http://192.168.219.105:8080/emails/verifications', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -111,7 +111,7 @@ const Signin = ({ navigation }) => {
 
     const handleUsernameVerification = async () => {
         try {
-            const response = await fetch('http://192.168.219.102:8080/username/verifications', {
+            const response = await fetch('http://192.168.219.105:8080/username/verifications', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
