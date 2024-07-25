@@ -9,18 +9,19 @@ import SettingModal from '../components/SettingModal';
 import YesNoModal from '../components/YesNoModal';
 import NextStep from '../components/NextStep';
 import BookBg from '../../assets/images/bookBg.png';
+import fetchWithAuth from '../api/fetchWithAuth.js';
 
 const BookRead = ({ navigation }) => {
     const [title, setTitle] = useState('');
-    const [currentPage, setCurrentPage] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1);
     const [totalPageCount, setTotalPageCount] = useState(0);
     const [bookText, setBookText] = useState('');
     const [coverImage, setCoverImage] = useState('');
     const [pageImage, setPageImage] = useState('');
     const [fontSize, setFontSize] = useState(18);
 
-    const profileId = 1;
-    const bookId = 1;
+    const profileId = 2;
+    const bookId = 2;
     const initialSize = fontSize === 14 ? "작게" : fontSize === 18 ? "기본" : "크게";
 
     // 모달창
@@ -53,8 +54,9 @@ const BookRead = ({ navigation }) => {
     const [isWordModalVisible, setIsWordModalVisible] = useState(false);
 
     const handleWordClick = async (word) => {
+        const cleanedWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").trim();
         try {
-            const response = await fetch(`https://your-backend-api.com/word-meaning?word=${word}`);
+            const response = await fetchWithAuth(`https://backend-api.com/word-meaning?word=${cleanedWord}`);
             const data = await response.json();
             setWordMeaning(data.meaning);
             setIsWordModalVisible(true);
@@ -62,6 +64,7 @@ const BookRead = ({ navigation }) => {
             Alert.alert('Error', 'Failed to fetch the word meaning');
         }
     };
+
 
     const closeWordModal = () => {
         setIsWordModalVisible(false);
@@ -116,29 +119,27 @@ const BookRead = ({ navigation }) => {
         }, [navigation])
     );
 
-
     // 페이지 세부정보 조회
     const fetchPageDetails = async (pageNumber) => {
         try {
-            const response = await fetch(`http://192.168.219.105:8080/pages/detail?profileId=${profileId}&bookId=${bookId}&pageNum=${pageNumber + 1}`, {
-                headers: {
-                    'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6ImxvY2FsIiwiY2F0ZWdvcnkiOiJhY2Nlc3MiLCJ1c2VyS2V5IjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIxNDU5MTk0LCJleHAiOjE3MjE1NDU1OTR9.SLWostcynEoPVFRy8Ok0yfxpFbVnEYQuBAJep3O0kdI'
-                }
-            });
+            const response = await fetchWithAuth(`http://192.168.219.105:8080/pages/detail?profileId=${profileId}&bookId=${bookId}&pageNum=${pageNumber}`);
 
             const result = await response.json();
+
+            console.log('Page details response:', result);
 
             if (response.status === 200) {
                 const pageData = result.data;
                 setBookText(pageData.content);
                 setPageImage(pageData.image);
                 setHighlightedWords((pageData.unknownWords || []).map(word => ({ word: word.unknownWord, id: word.unknownWordId }))); // 페이지에 포함된 모르는 단어들을 하이라이트 표시
-                setCurrentPage(pageData.pageNumber - 1);  // 현재 페이지 상태 업데이트
+                setCurrentPage(pageNumber);  // 현재 페이지 상태 업데이트
                 showNextStep(); // 페이지 변경 후 nextStepVisible 상태와 깜빡임 애니메이션 설정
             } else {
                 Alert.alert('Error', 'Failed to retrieve page details');
             }
         } catch (error) {
+            console.error('Error fetching page details:', error); // 에러 로그 추가
             Alert.alert('Error', 'Failed to fetch page details');
         }
     };
@@ -146,30 +147,27 @@ const BookRead = ({ navigation }) => {
     // 책 세부정보 조회
     const fetchBookDetails = async () => {
         try {
-            const response = await fetch(`http://192.168.219.105:8080/books/detail?profileId=${profileId}&bookId=${bookId}`, {
-                headers: {
-                    'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6ImxvY2FsIiwiY2F0ZWdvcnkiOiJhY2Nlc3MiLCJ1c2VyS2V5IjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIxNDU5MTk0LCJleHAiOjE3MjE1NDU1OTR9.SLWostcynEoPVFRy8Ok0yfxpFbVnEYQuBAJep3O0kdI'
-                }
-            });
-
+            const response = await fetchWithAuth(`http://192.168.219.105:8080/books/detail?profileId=${profileId}&bookId=${bookId}`);
             const result = await response.json();
+            console.log('Book details response:', result); // 응답 결과 로그 추가
 
             if (response.status === 200) {
                 setTitle(result.data.title);
                 setTotalPageCount(result.data.totalPageCount);
-                setCurrentPage(result.data.currentPage - 1);
-                fetchPageDetails(result.data.currentPage - 1);
+                const initialPage = result.data.currentPage + 1;
+                setCurrentPage(initialPage);
+                fetchPageDetails(initialPage);
             } else {
                 Alert.alert('Error', 'Failed to retrieve book details');
             }
         } catch (error) {
+            console.error('Error fetching book details:', error); // 에러 로그 추가
             Alert.alert('Error', 'Failed to fetch book details');
         }
     };
 
     useEffect(() => {
         fetchBookDetails();
-        fetchPageDetails(currentPage);
     }, []);
 
     const goNextStep = () => {
@@ -188,19 +186,19 @@ const BookRead = ({ navigation }) => {
     const [highlightModalPosition, setHighlightModalPosition] = useState({ top: 0, left: 0 });
 
     const handleLongPress = (word, event) => {
+        const cleanedWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").trim();
         const { pageY, pageX } = event.nativeEvent;
-        setHighlightedWord(word);
+        setHighlightedWord(cleanedWord);
         setHighlightModalPosition({ top: pageY - 57, left: pageX - 75 }); // 단어 위치 위로 모달 배치
         setHighlightModalVisible(true);
     };
 
     const confirmHighlight = async () => {
         try {
-            const response = await fetch(`http://192.168.219.105:8080/unknownwords/create?profileId=${profileId}&bookId=${bookId}&pageNum=${currentPage + 1}`, {
+            const response = await fetchWithAuth(`http://192.168.219.105:8080/unknownwords/create?profileId=${profileId}&bookId=${bookId}&pageNum=${currentPage}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6ImxvY2FsIiwiY2F0ZWdvcnkiOiJhY2Nlc3MiLCJ1c2VyS2V5IjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIxNDU5MTk0LCJleHAiOjE3MjE1NDU1OTR9.SLWostcynEoPVFRy8Ok0yfxpFbVnEYQuBAJep3O0kdI'
                 },
                 body: JSON.stringify({
                     unknownWord: highlightedWord,
@@ -212,11 +210,11 @@ const BookRead = ({ navigation }) => {
                 Alert.alert('Error', '단어 저장 실패');
             } else {
                 const result = await response.json();
-
-                // 하이라이트 단어 추가
+                console.log(result); // 저장된 단어 결과 확인
+                const newHighlightedWord = { word: highlightedWord, id: result.data.unknownwordId };
                 setHighlightedWords(prev => [
                     ...prev,
-                    { word: highlightedWord, id: result.id }
+                    newHighlightedWord
                 ]);
                 setHighlightModalVisible(false);
             }
@@ -225,28 +223,29 @@ const BookRead = ({ navigation }) => {
         }
     };
 
+    
     const cancelHighlight = async () => {
         const highlightedWordObj = highlightedWords.find(item => item.word === highlightedWord);
-
+    
         if (highlightedWordObj) {
             try {
-                const response = await fetch(`http://192.168.219.105:8080/unknownwords/delete/${highlightedWordObj.id}`, {
+                console.log('Deleting word with id:', highlightedWordObj.id); // 삭제할 단어 ID 확인
+                const response = await fetchWithAuth(`http://192.168.219.105:8080/unknownwords/delete/${highlightedWordObj.id}`, {
                     method: 'DELETE',
-                    headers: {
-                        'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6ImxvY2FsIiwiY2F0ZWdvcnkiOiJhY2Nlc3MiLCJ1c2VyS2V5IjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIxNDU5MTk0LCJleHAiOjE3MjE1NDU1OTR9.SLWostcynEoPVFRy8Ok0yfxpFbVnEYQuBAJep3O0kdI'
-                    }
                 });
-
+    
                 if (response.status !== 200) {
+                    const result = await response.json();
+                    console.log('Delete response error:', result); // 에러 응답 확인
                     Alert.alert('Error', '단어 삭제 실패');
                 } else {
-                    const result = await response.json();
-                    console.log('Deleted word result:', result); // 응답 결과 확인
+                    console.log(await response.json()); // 응답 결과 확인
                     setHighlightedWords(prev => prev.filter(item => item.word !== highlightedWord));
                     setHighlightedWord(null);
                     setHighlightModalVisible(false);
                 }
             } catch (error) {
+                console.error('Error deleting word:', error); // 에러 로그 추가
                 Alert.alert('Error', '단어 삭제 실패');
             }
         } else {
@@ -254,24 +253,35 @@ const BookRead = ({ navigation }) => {
             setHighlightModalVisible(false);
         }
     };
+    
+    
 
-
-    const renderWord = (word, index) => {
-        const highlightedWordObj = highlightedWords.find(item => item.word === word.trim());
+ const renderWord = (word, index) => {
+        const cleanedWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").trim();
+        const highlightedWordObj = highlightedWords.find(item => item.word === cleanedWord);
         const isHighlighted = !!highlightedWordObj;
 
-        if (word.trim() === '') {
+        if (cleanedWord === '') {
             return <Text key={index} style={[styles.bookText, { fontSize }]}>{word}</Text>;
         }
         return (
             <TouchableOpacity
                 key={index}
-                onPress={() => handleWordClick(word.trim())}
-                onLongPress={(event) => handleLongPress(word.trim(), event)}
+                onPress={() => handleWordClick(cleanedWord)}
+                onLongPress={(event) => handleLongPress(cleanedWord, event)}
             >
                 <Text style={[styles.bookText, { fontSize }, isHighlighted && styles.highlightedText]}>{word}</Text>
             </TouchableOpacity>
         );
+    };
+
+    const closeHighlightModal = () => {
+        setHighlightModalVisible(false);
+        setHighlightedWord(null);
+    };
+    
+    const handleModalBackgroundPress = () => {
+        closeHighlightModal();
     };
 
     const words = bookText.split(/(\s+)/);
@@ -309,7 +319,7 @@ const BookRead = ({ navigation }) => {
                             buttonText2={"취소"}
                             profileId={profileId}
                             bookId={bookId}
-                            currentPage={currentPage+1} />
+                            currentPage={currentPage + 1} />
                         <TouchableOpacity style={styles.icon} onPress={openSettingModal} >
                             <Ionic name="settings" size={35} color="white" />
                         </TouchableOpacity>
@@ -337,7 +347,7 @@ const BookRead = ({ navigation }) => {
                     </>
                 )}
                 {totalPageCount > 0 && currentPage >= 0 && (
-                    <ProgressBar pages={totalPageCount.toString()} now={currentPage.toString()} />
+                    <ProgressBar pages={totalPageCount.toString()} now={(currentPage-1).toString()} />
                 )}
                 <Modal
                     visible={highlightModalVisible}
@@ -346,8 +356,8 @@ const BookRead = ({ navigation }) => {
                     onRequestClose={cancelHighlight}
                 >
                     <TouchableOpacity
-                        activeOpacity={1} // 이 부분이 중요합니다. 터치 시 투명 배경이 클릭되는 것을 방지합니다.
-                        onPress={cancelHighlight}
+                        activeOpacity={1} 
+                        onPress={handleModalBackgroundPress}
                         style={styles.modalBackground}
                     >
                         <View style={[styles.highlightModal, highlightModalPosition]}>

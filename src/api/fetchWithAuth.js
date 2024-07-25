@@ -7,7 +7,7 @@ const isTokenExpired = (token) => {
 
 const getNewTokens = async (refreshToken) => {
     const user = await getUser();
-    const response = await fetch(`http://192.168.219.102:8080/reissue`, {
+    const response = await fetch(`http://192.168.219.105:8080/reissue`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -37,7 +37,7 @@ const fetchWithAuth = async (url, options = {}) => {
 
     const headers = {
         ...options.headers,
-        Authorization: `Bearer ${accessToken}`,
+        'access': accessToken,
     };
 
     return fetch(url, {
