@@ -1,24 +1,17 @@
-import React, {useState} from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Image,
-  StyleSheet,
-  Alert,
-} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import axios from 'axios';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import AddProfileModal from '../components/AddProfileModal';
-import PinInputModal from '../components/PinInputModal';
+import { EditPinInputModal, SelectPinInputModal } from '../components/Modals'; // 공통 모달을 import
 
 const Profile = () => {
   const [isChangingProfile, setIsChangingProfile] = useState(false);
-  const [isAddProfileModalVisible, setIsAddProfileModalVisible] =
-    useState(false);
+  const [isAddProfileModalVisible, setIsAddProfileModalVisible] = useState(false);
   const [isPinInputModalVisible, setIsPinInputModalVisible] = useState(false);
-  const [selectedProfileIndex, setSelectedProfileIndex] = useState(null); // 선택된 프로필 인덱스
-  const [profiles, setProfiles] = useState(['프로필1', '프로필2']); // 예시 프로필 데이터
+  const [selectedProfileIndex, setSelectedProfileIndex] = useState(null);
+  const [modalType, setModalType] = useState(''); // 'edit' 또는 'select'
+
+  const profiles = ['프로필1', '프로필2', '프로필3'];
 
   const renderProfiles = () => {
     return profiles.map((profile, index) => (
@@ -26,17 +19,19 @@ const Profile = () => {
         <TouchableOpacity
           style={[
             styles.profileButton,
-            isChangingProfile &&
-              selectedProfileIndex !== index &&
-              styles.profileButtonInactive,
-            isChangingProfile &&
-              selectedProfileIndex === index &&
-              styles.profileButtonActive,
+            isChangingProfile && selectedProfileIndex !== index && styles.profileButtonInactive,
+            isChangingProfile && selectedProfileIndex === index && styles.profileButtonActive,
           ]}
           onPress={() => {
-            setIsPinInputModalVisible(true);
+            if (isChangingProfile) {
+              setModalType('edit');
+            } else {
+              setModalType('select');
+            }
             setSelectedProfileIndex(index);
-          }}>
+            setIsPinInputModalVisible(true);
+          }}
+        >
           <Image
             source={require('../../assets/images/temp_profile_pic.png')}
             style={styles.profileImage}
@@ -57,72 +52,48 @@ const Profile = () => {
 
   const changeProfileText = () => {
     setIsChangingProfile(!isChangingProfile);
-    setSelectedProfileIndex(null); // 프로필 관리 모드에서는 선택된 프로필 인덱스 초기화
-  };
-
-  const addProfile = async profileData => {
-    try {
-      const response = await axios.post(
-        'http://192.168.35.124/profiles',
-        profileData,
-      );
-      setProfiles([...profiles, response.data.name]); // 서버로부터 받은 프로필 이름 추가
-    } catch (error) {
-      Alert.alert(
-        '프로필 생성 오류',
-        '프로필을 생성하는 동안 오류가 발생했습니다.',
-      );
-    }
+    setSelectedProfileIndex(null);
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.header}>
-        {isChangingProfile
-          ? '관리할 프로필을 골라주세요'
-          : '프로필을 선택해주세요'}
+        {isChangingProfile ? '관리할 프로필을 골라주세요' : '프로필을 선택해주세요'}
       </Text>
       <View style={styles.profilesContainer}>
         {renderProfiles()}
         {!isChangingProfile && (
           <TouchableOpacity
             style={styles.addButton}
-            onPress={() => setIsAddProfileModalVisible(true)}>
+            onPress={() => setIsAddProfileModalVisible(true)}
+          >
             <Text style={styles.plus}>+</Text>
           </TouchableOpacity>
         )}
       </View>
       <TouchableOpacity
-        style={[
-          styles.changeProfileButton,
-          {borderColor: '#393939', borderWidth: 2},
-        ]}
-        onPress={changeProfileText}>
+        style={[styles.changeProfileButton, { borderColor: '#393939', borderWidth: 2 }]}
+        onPress={changeProfileText}
+      >
         <Image
           source={require('../../assets/images/pen.png')}
           style={styles.penIcon}
         />
-        <Text
-          style={[
-            styles.changeProfileButtonText,
-            {color: '#393939', marginLeft: 10},
-          ]}>
+        <Text style={[styles.changeProfileButtonText, { color: '#393939', marginLeft: 10 }]}>
           프로필 관리
         </Text>
       </TouchableOpacity>
       <AddProfileModal
         visible={isAddProfileModalVisible}
         onClose={() => setIsAddProfileModalVisible(false)}
-        onSave={addProfile}
       />
-      <PinInputModal
-        visible={isPinInputModalVisible}
+      <SelectPinInputModal
+        visible={isPinInputModalVisible && modalType === 'select'}
         onClose={() => setIsPinInputModalVisible(false)}
-        modalHeaderText={
-          isChangingProfile
-            ? '이 프로필을 관리하려면 PIN 번호를 입력하세요.'
-            : '이 프로필을 선택하려면 PIN 번호를 입력하세요.'
-        }
+      />
+      <EditPinInputModal
+        visible={isPinInputModalVisible && modalType === 'edit'}
+        onClose={() => setIsPinInputModalVisible(false)}
       />
     </SafeAreaView>
   );
@@ -131,6 +102,7 @@ const Profile = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FBF7EC',
     alignItems: 'center',
     justifyContent: 'flex-start',
   },
@@ -162,7 +134,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 5,
     elevation: 5,
@@ -179,9 +151,9 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   profileText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
-    color: '#333',
+    color: '#545454',
     textAlign: 'center',
     marginTop: 5,
   },
@@ -194,7 +166,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     margin: 10,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 5,
     elevation: 5,
