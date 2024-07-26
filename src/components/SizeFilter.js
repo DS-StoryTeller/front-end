@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native'
 import React, { useState, useEffect } from 'react'
+import fetchWithAuth from '../api/fetchWithAuth.js'; 
 
 const SizeFilter = ({handleSizeFilter, profileId, bookId, initialSize }) => {
     let buttons = ["작게", "기본", "크게"];
@@ -28,11 +29,10 @@ const SizeFilter = ({handleSizeFilter, profileId, bookId, initialSize }) => {
         handleSizeFilter(fontSizeValue); 
 
         try {
-            const response = await fetch(`http://192.168.219.102:8080/settings/update?profileId=${profileId}&bookId=${bookId}`, {
+            const response = await fetchWithAuth(`http://192.168.219.105:8080/settings/update?profileId=${profileId}&bookId=${bookId}`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json', 
-                    'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6ImxvY2FsIiwiY2F0ZWdvcnkiOiJhY2Nlc3MiLCJ1c2VyS2V5IjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIxMjE4MDQ1LCJleHAiOjE3MjEzMDQ0NDV9.AMvk7NF-Kn_6HgRltk99vsz5oTHjfpBDKAbzR34x1zI'
+                headers: { 
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     fontSize: fontSizeValue,
@@ -41,12 +41,15 @@ const SizeFilter = ({handleSizeFilter, profileId, bookId, initialSize }) => {
 
             if (response.status !== 200) { 
                 Alert.alert('Error', 'Failed to update settings');
+                const result = await response.json();
+                console.log(result); // 응답 결과 확인
             } else {
                 const result = await response.json();
                 console.log(result); // 응답 결과 확인
             }
         } catch (error) {
             Alert.alert('Error', 'Failed to update settings');
+            console.error(error);
         }
     }
 

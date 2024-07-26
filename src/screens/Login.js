@@ -1,11 +1,66 @@
 import React, { useState } from 'react'
-import { Text, View, StyleSheet, TextInput, TouchableOpacity, Image, Button } from "react-native"
+import { Text, View, StyleSheet, TextInput, TouchableOpacity, Image, Button, Alert } from "react-native"
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Logo from '../../assets/images/logo.png';
+import { storeTokens, storeUser, getAccessToken, getRefreshToken } from '../utils/storage';
 
 const Login = ({ navigation }) => {
-    const [email, setEmail] = useState('')
+    const [user, setUser] = useState('')
     const [password, setPassword] = useState('')
+
+    const handleLogin = async () => {
+        try {
+            const formData = new FormData();
+            formData.append('username', user);
+            formData.append('password', password);
+
+            const response = await fetch(`http://192.168.219.105:8080/login`, { 
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await response.json();
+
+            console.log('Server response:', response.status, data); 
+
+            if (response.ok) {
+                const accessToken = response.headers.get('access');
+                const refreshToken = response.headers.get('refresh');
+
+                if (accessToken && refreshToken) { // 토큰 값 유효성 검사
+                    await storeTokens(accessToken, refreshToken);
+                    await storeUser(user);
+                    Alert.alert('로그인 성공', '로그인에 성공했습니다.');
+
+                       // 저장된 토큰 확인
+                       const storedAccessToken = await getAccessToken();
+                       const storedRefreshToken = await getRefreshToken();
+                       console.log('Stored access token:', storedAccessToken);
+                       console.log('Stored refresh token:', storedRefreshToken);
+
+                       
+                    navigation.navigate('BookShelf');
+                } else {
+                    console.error('Invalid tokens:', data); 
+                    Alert.alert('로그인 실패', '유효한 토큰이 제공되지 않았습니다.');
+                }
+            } else {
+                Alert.alert('로그인 실패', data.message || '로그인에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error(error);
+            Alert.alert('로그인 에러', '로그인 중 오류가 발생했습니다.');
+        }
+    };
+
+    const checkTokens = async () => {
+        const storedAccessToken = await getAccessToken();
+        const storedRefreshToken = await getRefreshToken();
+        console.log('Stored access token:', storedAccessToken);
+        console.log('Stored refresh token:', storedRefreshToken);
+        Alert.alert('Stored Tokens', `Access Token: ${storedAccessToken}\nRefresh Token: ${storedRefreshToken}`);
+    };
+
 
     return (
         <SafeAreaView style={styles.container}>
@@ -20,11 +75,11 @@ const Login = ({ navigation }) => {
                     <Text style={styles.titleText}>오신것을 환영합니다</Text>
                 </View>
                 <View style={styles.inputContainer}>
-                    <Text style={styles.subTitle}>이메일</Text>
+                    <Text style={styles.subTitle}>아이디</Text>
                     <TextInput
-                        placeholder='example@naver.com'
-                        value={email}
-                        onChangeText={text => setEmail(text)}
+                        placeholder='아이디를 입력해주세요'
+                        value={user}
+                        onChangeText={text => setUser(text)}
                         style={styles.input}
                     />
                 </View>
@@ -40,6 +95,7 @@ const Login = ({ navigation }) => {
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity
                         style={styles.button}
+                        onPress={handleLogin}
                     >
                         <Text style={styles.buttonText}>로그인</Text>
                     </TouchableOpacity>
@@ -91,7 +147,7 @@ const styles = StyleSheet.create({
     },
     bigBox: {
         width: '35%',
-        height: '70%',
+        height: '80%',
         backgroundColor: 'white',
         borderRadius: 30,
         padding: 10,
@@ -177,7 +233,7 @@ const styles = StyleSheet.create({
         fontSize: 15,
     },
     signInContainer: {
-        marginTop: 10,
+        marginTop: 15,
         marginBottom: 10,
         flexDirection: 'row',
         justifyContent: 'center',
