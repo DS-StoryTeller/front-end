@@ -1,18 +1,55 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native'
 import React, { useState, useEffect } from 'react'
 
-const SizeFilter = ({handleSizeFilter}) => {
+const SizeFilter = ({handleSizeFilter, profileId, bookId, initialSize }) => {
     let buttons = ["작게", "기본", "크게"];
-    const [btnActive, setBtnActive] = useState("작게");
+    const [btnActive, setBtnActive] = useState(initialSize);
 
     useEffect(() => {
-        setBtnActive("기본");
-    }, []);
+        setBtnActive(initialSize);
+    }, [initialSize]);
 
-    const toggleActive = (size) => {
-        setBtnActive(size);
-        handleSizeFilter(size);
+    const getFontSizeValue = (size) => {
+        switch (size) {
+            case "작게":
+                return "SMALL";
+            case "기본":
+                return "MEDIUM";
+            case "크게":
+                return "LARGE";
+            default:
+                return "MEDIUM";
+        }
     }
+
+    const toggleActive = async (size) => {
+       const fontSizeValue = getFontSizeValue(size);
+        setBtnActive(size);
+        handleSizeFilter(fontSizeValue); 
+
+        try {
+            const response = await fetch(`http://192.168.219.102:8080/settings/update?profileId=${profileId}&bookId=${bookId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json', 
+                    'access': 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRoZW50aWNhdGlvbk1ldGhvZCI6ImxvY2FsIiwiY2F0ZWdvcnkiOiJhY2Nlc3MiLCJ1c2VyS2V5IjoicHlvdW5hbmkiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzIxMjE4MDQ1LCJleHAiOjE3MjEzMDQ0NDV9.AMvk7NF-Kn_6HgRltk99vsz5oTHjfpBDKAbzR34x1zI'
+                },
+                body: JSON.stringify({
+                    fontSize: fontSizeValue,
+                })
+            });
+
+            if (response.status !== 200) { 
+                Alert.alert('Error', 'Failed to update settings');
+            } else {
+                const result = await response.json();
+                console.log(result); // 응답 결과 확인
+            }
+        } catch (error) {
+            Alert.alert('Error', 'Failed to update settings');
+        }
+    }
+
 
     return (
         <View style={styles.container}>
