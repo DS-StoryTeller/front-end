@@ -7,16 +7,31 @@ import {
   Image,
   StyleSheet,
   Modal,
+  Platform,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
-const AddProfileModal = ({visible, onClose, onSave}) => {
+const AddProfileModal = ({visible, onClose}) => {
   const [name, setName] = useState('');
   const [birthdate, setBirthdate] = useState('');
   const [pin, setPin] = useState('');
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [date, setDate] = useState(new Date());
 
-  const handleSave = () => {
-    onSave({name, birthdate, pin});
-    onClose();
+  const onChange = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    setShowDatePicker(Platform.OS === 'ios');
+    setDate(currentDate);
+
+    let tempDate = new Date(currentDate);
+    let fDate = `${tempDate.getFullYear()}-${
+      tempDate.getMonth() + 1
+    }-${tempDate.getDate()}`;
+    setBirthdate(fDate);
+  };
+
+  const showDatepicker = () => {
+    setShowDatePicker(true);
   };
 
   return (
@@ -42,25 +57,37 @@ const AddProfileModal = ({visible, onClose, onSave}) => {
             placeholder="이름"
             placeholderTextColor="#FF8B42"
             style={styles.input}
-            value={name}
-            onChangeText={setName}
+            value={name ? `이름 ${name}` : '이름'}
+            onChangeText={text => setName(text.replace('이름 ', ''))}
           />
-          <TextInput
-            placeholder="생년월일"
-            placeholderTextColor="#FF8B42"
-            style={styles.input}
-            value={birthdate}
-            onChangeText={setBirthdate}
-          />
+          <TouchableOpacity
+            onPress={showDatepicker}
+            style={styles.inputContainer}>
+            <TextInput
+              placeholder="생년월일"
+              placeholderTextColor="#FF8B42"
+              style={styles.input}
+              value={birthdate ? `생년월일 ${birthdate}` : '생년월일'}
+              editable={false}
+            />
+          </TouchableOpacity>
+          {showDatePicker && (
+            <DateTimePicker
+              value={date}
+              mode="date"
+              display="default"
+              onChange={onChange}
+            />
+          )}
           <TextInput
             placeholder="PIN"
             placeholderTextColor="#FF8B42"
             secureTextEntry={true}
             style={styles.input}
-            value={pin}
-            onChangeText={setPin}
+            value={pin ? `PIN ${pin}` : 'PIN'}
+            onChangeText={text => setPin(text.replace('PIN ', ''))}
           />
-          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+          <TouchableOpacity style={styles.saveButton} onPress={onClose}>
             <Image
               source={require('../../assets/images/save.png')}
               style={styles.saveIcon}
@@ -123,6 +150,14 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     fontSize: 24,
   },
+  inputContainer: {
+    width: '25%',
+    height: '10%',
+    borderColor: '#ddd',
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
+  },
   input: {
     width: '25%',
     height: '10%',
@@ -134,16 +169,18 @@ const styles = StyleSheet.create({
     padding: 10,
     marginVertical: 10,
     color: '#FF8B42', // 입력 칸의 텍스트 색상
-  },
+},
   saveButton: {
     backgroundColor: '#F8C784',
-    padding: 10,
-    borderRadius: 5,
-    borderWidth: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 2,
     borderColor: '#393939',
     marginTop: 20,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   saveIcon: {
     width: 20,
