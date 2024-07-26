@@ -6,7 +6,6 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
-  Button,
   Alert,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -28,7 +27,7 @@ const Login = ({navigation}) => {
       formData.append('username', user);
       formData.append('password', password);
 
-      const response = await fetch(`http://172.30.1.6:8080/login`, {
+      const response = await fetch('http://172.30.1.6:8080/login', {
         method: 'POST',
         body: formData,
       });
