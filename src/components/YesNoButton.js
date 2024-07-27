@@ -1,31 +1,44 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
-import React from 'react'
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 
-const YesNoButton = ({text, onPress}) => {
+const YesNoButton = ({ text, onPress }) => {
     return (
         <View>
             <TouchableOpacity onPress={onPress} style={styles.button}>
-                <Text style={styles.buttonText}>{text}</Text>
+                <LinearGradient
+                    colors={['#F8C683', '#FF8C43']}
+                    style={styles.gradient}
+                >
+                    <Text style={styles.buttonText}>{text}</Text>
+                </LinearGradient>
             </TouchableOpacity>
         </View>
-    )
+    );
 }
 
 const styles = StyleSheet.create({
     button: {
-        width: 100,
-        height: 40,
-        backgroundColor: '#FCA25B',
+        width: 120,
+        height: 50,
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 32,
         marginHorizontal: 25,
-        
+        overflow: 'hidden', // Ensure gradient is within button bounds
     },
-
+    gradient: {
+        flex: 1,
+        width: '100%',
+        height: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     buttonText: {
-        fontSize: 19,
+        fontSize: 25,
+        fontWeight: '900', // Make text bold
+        color: '#000000', // Text color
     }
-})
+});
 
-export default YesNoButton
+export default YesNoButton;

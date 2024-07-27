@@ -1,12 +1,10 @@
-import { View, Text, StyleSheet, Modal, Alert } from 'react-native'
-import React from 'react'
+import { View, Text, StyleSheet, Modal, Alert } from 'react-native';
+import React from 'react';
 import YesNoButton from './YesNoButton';
 import { useNavigation } from '@react-navigation/native';
 
-
-const YesNoModal = ({ isVisible, onClose, linkTo, title, subtitle, buttonText1, buttonText2, profileId, bookId, currentPage }) => {
+const YesNoModal = ({ isVisible, onClose, linkTo, title, subtitle, buttonText1, buttonText2, profileId, bookId, currentPage, onConfirm }) => {
     const navigation = useNavigation();
-
 
     const handleButtonClick = async () => {
         if (buttonText1 === "중단하기") {
@@ -25,7 +23,6 @@ const YesNoModal = ({ isVisible, onClose, linkTo, title, subtitle, buttonText1, 
                         index: 0,
                         routes: [{ name: linkTo }],
                     });
-
                 } else {
                     Alert.alert('Error', 'Failed to save current page');
                 }
@@ -34,9 +31,13 @@ const YesNoModal = ({ isVisible, onClose, linkTo, title, subtitle, buttonText1, 
             }
         } else if (buttonText1 === "삭제") {
             // 삭제 기능 추가 필요 - 도나
+        } else if (buttonText1 === "확인") {
+            // Call the onConfirm function to close AddProfileModal
+            if (onConfirm) {
+                onConfirm();
+            }
         }
     };
-
 
     return (
         <Modal
@@ -44,63 +45,76 @@ const YesNoModal = ({ isVisible, onClose, linkTo, title, subtitle, buttonText1, 
             visible={isVisible}
             transparent={true}
         >
-            <View style={styles.modalView}>
-                <View style={styles.modalTitle}>
-                    <Text style={styles.modalTextStyle}>{title}</Text>
-                </View>
-                <View style={styles.subtitle}>
-                    <Text style={styles.subtitleText}>{subtitle}</Text>
-                </View>
-                <View style={styles.buttonContainer}>
-                    <YesNoButton text={buttonText1} onPress={handleButtonClick} />
-                    <YesNoButton text={buttonText2} onPress={onClose} />
+            <View style={styles.modalContainer}>
+                <View style={styles.modalView}>
+                    <View style={styles.modalTitle}>
+                        <Text style={styles.modalTextStyle}>{title}</Text>
+                    </View>
+                    <View style={styles.subtitle}>
+                        <Text style={styles.subtitleText}>{subtitle}</Text>
+                    </View>
+                    <View style={styles.buttonContainer}>
+                        <YesNoButton text={buttonText1} onPress={handleButtonClick} />
+                        <YesNoButton text={buttonText2} onPress={onClose} />
+                    </View>
                 </View>
             </View>
-
         </Modal>
-    )
-}
+    );
+};
 
 const styles = StyleSheet.create({
-    modalTitle: {
+    modalContainer: {
+        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        marginVertical: 13,
-        width: '100%',
     },
     modalView: {
         width: '40%',
-        height: '40%',
+        height: '43%',
         backgroundColor: "white",
         borderRadius: 20,
         padding: 15,
         position: 'absolute',
         top: '28%',
         left: '30%',
+        elevation: 10, // Android shadow
+        shadowColor: '#000', // iOS shadow
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
     },
-
-
+    modalTitle: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginVertical: 13,
+        width: '100%',
+    },
     modalTextStyle: {
-        color: 'black',
-        fontSize: 25,
+        top: 20,
+        fontSize: 32,
+        fontWeight: '900',
+        color: '#393939',
+        marginBottom: 30,
     },
-
     subtitle: {
         margin: 6,
     },
     subtitleText: {
+        bottom: 25,
+        fontWeight: '100',
         textAlign: 'center',
-        fontSize: 17,
+        fontSize: 23,
         color: 'black',
+        fontFamily: 'sans-serif-light',
     },
     buttonContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        margin: 35,
+        margin: 20,
+        fontWeight: '900',
     }
-
-
 });
 
-export default YesNoModal
+export default YesNoModal;
