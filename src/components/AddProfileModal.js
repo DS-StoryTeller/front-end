@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,15 +8,21 @@ import {
   StyleSheet,
   Modal,
   Platform,
+  FlatList,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import YesNoModal from './YesNoModal';
 
-const AddProfileModal = ({visible, onClose}) => {
+const AddProfileModal = ({ visible, onClose }) => {
   const [name, setName] = useState('');
   const [birthdate, setBirthdate] = useState('');
   const [pin, setPin] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [date, setDate] = useState(new Date());
+  const [showProfilePicModal, setShowProfilePicModal] = useState(false);
+  const [selectedProfilePic, setSelectedProfilePic] = useState(null);
+  const [profilePictures, setProfilePictures] = useState([]);
+  const [showYesNoModal, setShowYesNoModal] = useState(false);
 
   const onChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
@@ -24,9 +30,7 @@ const AddProfileModal = ({visible, onClose}) => {
     setDate(currentDate);
 
     let tempDate = new Date(currentDate);
-    let fDate = `${tempDate.getFullYear()}-${
-      tempDate.getMonth() + 1
-    }-${tempDate.getDate()}`;
+    let fDate = `${tempDate.getFullYear()}-${tempDate.getMonth() + 1}-${tempDate.getDate()}`;
     setBirthdate(fDate);
   };
 
@@ -34,69 +38,144 @@ const AddProfileModal = ({visible, onClose}) => {
     setShowDatePicker(true);
   };
 
+  const handleProfilePicSelect = pic => {
+    setSelectedProfilePic(pic);
+    setShowProfilePicModal(false);
+  };
+
+  const fetchProfilePictures = async () => {
+    // Replace this with your backend fetch logic
+    const fetchedPictures = new Array(12).fill(null).map((_, index) => ({
+      id: index.toString(),
+      uri: require('../../assets/images/temp_profile_pic.png'), // Replace with different images if available
+    }));
+    setProfilePictures(fetchedPictures);
+  };
+
+  useEffect(() => {
+    fetchProfilePictures();
+  }, []);
+
+  const handleConfirm = () => {
+    setShowYesNoModal(false);
+    onClose(); // Close the AddProfileModal
+  };
+
   return (
-    <Modal
-      transparent={true}
-      animationType="slide"
-      visible={visible}
-      onRequestClose={onClose}>
-      <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeButtonText}>X</Text>
-          </TouchableOpacity>
-          <Text style={styles.modalHeader}>프로필 만들기</Text>
-          <Image
-            source={require('../../assets/images/temp_profile_pic.png')}
-            style={styles.profileImage}
-          />
-          <TouchableOpacity>
-            <Text style={styles.changeText}>변경</Text>
-          </TouchableOpacity>
-          <TextInput
-            placeholder="이름"
-            placeholderTextColor="#FF8B42"
-            style={styles.input}
-            value={name ? `이름 ${name}` : '이름'}
-            onChangeText={text => setName(text.replace('이름 ', ''))}
-          />
-          <TouchableOpacity
-            onPress={showDatepicker}
-            style={styles.inputContainer}>
-            <TextInput
-              placeholder="생년월일"
-              placeholderTextColor="#FF8B42"
-              style={styles.input}
-              value={birthdate ? `생년월일 ${birthdate}` : '생년월일'}
-              editable={false}
-            />
-          </TouchableOpacity>
-          {showDatePicker && (
-            <DateTimePicker
-              value={date}
-              mode="date"
-              display="default"
-              onChange={onChange}
-            />
-          )}
-          <TextInput
-            placeholder="PIN"
-            placeholderTextColor="#FF8B42"
-            secureTextEntry={true}
-            style={styles.input}
-            value={pin ? `PIN ${pin}` : 'PIN'}
-            onChangeText={text => setPin(text.replace('PIN ', ''))}
-          />
-          <TouchableOpacity style={styles.saveButton} onPress={onClose}>
+    <>
+      {/* AddProfileModal */}
+      <Modal
+        transparent={true}
+        animationType="slide"
+        visible={visible}
+        onRequestClose={onClose}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+              <Text style={styles.closeButtonText}>X</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalHeader}>프로필 만들기</Text>
             <Image
-              source={require('../../assets/images/save.png')}
-              style={styles.saveIcon}
+              source={
+                selectedProfilePic ||
+                require('../../assets/images/temp_profile_pic.png')
+              }
+              style={styles.profileImage}
             />
-            <Text style={styles.saveButtonText}>프로필 저장</Text>
-          </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowProfilePicModal(true)}>
+              <Text style={styles.changeText}>변경</Text>
+            </TouchableOpacity>
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={styles.input}
+                value={name}
+                placeholder="이름"
+                placeholderTextColor="#FF8B42"
+                onChangeText={text => setName(text)}
+              />
+            </View>
+            <TouchableOpacity
+              onPress={showDatepicker}
+              style={styles.inputWrapper}>
+              <TextInput
+                style={styles.input}
+                value={birthdate}
+                placeholder="생년월일"
+                placeholderTextColor="#FF8B42"
+                editable={false}
+              />
+            </TouchableOpacity>
+            {showDatePicker && (
+              <DateTimePicker
+                value={date}
+                mode="date"
+                display="default"
+                onChange={onChange}
+              />
+            )}
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={styles.input}
+                value={pin}
+                placeholder="PIN"
+                placeholderTextColor="#FF8B42"
+                secureTextEntry={true}
+                onChangeText={text => setPin(text)}
+              />
+            </View>
+            <TouchableOpacity
+              style={styles.saveButton}
+              onPress={() => setShowYesNoModal(true)}>
+              <Image
+                source={require('../../assets/images/save.png')}
+                style={styles.saveIcon}
+              />
+              <Text style={styles.saveButtonText}>프로필 저장</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-    </Modal>
+      </Modal>
+
+      {/* ProfilePicModal */}
+      <Modal
+        transparent={true}
+        animationType="slide"
+        visible={showProfilePicModal}
+        onRequestClose={() => setShowProfilePicModal(false)}>
+        <View style={styles.profilePicModalContainer}>
+          <View style={styles.profilePicModalContent}>
+            <Text style={styles.profilePicModalHeader}>
+              프로필을 골라주세요
+            </Text>
+            <FlatList
+              data={profilePictures}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.profilePicItem}
+                  onPress={() => handleProfilePicSelect(item.uri)}>
+                  <Image source={item.uri} style={styles.profilePic} />
+                </TouchableOpacity>
+              )}
+              numColumns={4}
+              keyExtractor={item => item.id}
+              contentContainerStyle={styles.profilePicListContainer}
+            />
+          </View>
+        </View>
+      </Modal>
+
+      {/* YesNoModal */}
+      <YesNoModal
+        isVisible={showYesNoModal}
+        onClose={() => setShowYesNoModal(false)}
+        linkTo="BookShelf" // Adjust this as needed
+        title="Confirm"
+        subtitle="Do you want to save the profile?"
+        buttonText1="확인"
+        buttonText2="취소"
+        onConfirm={handleConfirm}
+      />
+    </>
   );
 };
 
@@ -150,26 +229,23 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     fontSize: 24,
   },
-  inputContainer: {
+  inputWrapper: {
     width: '25%',
-    height: '10%',
-    borderColor: '#ddd',
-    borderRadius: 10,
-    overflow: 'hidden',
-    backgroundColor: '#FFFFFF',
+    marginVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   input: {
-    width: '25%',
-    height: '10%',
+    flex: 1,
     backgroundColor: '#FFFFFF',
     fontWeight: '900',
     fontSize: 17,
     borderColor: '#ddd',
     borderRadius: 10,
     padding: 10,
-    marginVertical: 10,
-    color: '#FF8B42', // 입력 칸의 텍스트 색상
-},
+    color: '#FF8B42',
+    height: '125%',
+  },
   saveButton: {
     backgroundColor: '#F8C784',
     paddingHorizontal: 20,
@@ -177,7 +253,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 2,
     borderColor: '#393939',
-    marginTop: 20,
+    marginTop: 30,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -190,6 +266,38 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: '#393939',
     fontWeight: 'bold',
+  },
+  profilePicModalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  profilePicModalContent: {
+    width: '90%',
+    backgroundColor: '#FBF7EC',
+    borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
+  },
+  profilePicModalHeader: {
+    top: 60,
+    fontSize: 35,
+    fontWeight: '900',
+    color: '#393939',
+    marginBottom: 20,
+  },
+  profilePicItem: {
+    left: 85,
+    top: 80,
+    width: '20%',
+    aspectRatio: 1,
+    padding: 5,
+  },
+  profilePic: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 10,
   },
 });
 
