@@ -164,17 +164,24 @@ const BookRead = ({ navigation }) => {
 
     // 백그라운드 이동시 TTS 멈춤
     useEffect(() => {
-        const subscription = AppState.addEventListener('change', (nextAppState) => {
+        const handleAppStateChange = (nextAppState) => {
             if (nextAppState.match(/inactive|background/)) {
                 Tts.stop();
             }
-        });
+        };
+    
+        const subscription = AppState.addEventListener('change', handleAppStateChange);
     
         return () => {
-            subscription.remove();
+            if (subscription && subscription.remove) {
+                subscription.remove();
+            } else {
+                AppState.removeEventListener('change', handleAppStateChange);
+            }
         };
     }, []);
-
+    
+   
     
     const showNextStep = () => {
         setNextStepVisible(true);
@@ -351,7 +358,7 @@ const BookRead = ({ navigation }) => {
                             buttonText2={"취소"}
                             profileId={profileId}
                             bookId={bookId}
-                            currentPage={currentPage + 1} />
+                            currentPage={currentPage-1} />
                         <TouchableOpacity style={styles.icon} onPress={openSettingModal} >
                             <Ionic name="settings" size={35} color="white" />
                         </TouchableOpacity>

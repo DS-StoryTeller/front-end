@@ -29,7 +29,7 @@ const SizeFilter = ({handleSizeFilter, profileId, bookId, initialSize }) => {
         handleSizeFilter(fontSizeValue); 
 
         try {
-            const response = await fetchWithAuth(`http://172.30.1.5:8080/settings/update?profileId=${profileId}&bookId=${bookId}`, {
+            const response = await fetchWithAuth(`/settings/update?profileId=${profileId}&bookId=${bookId}`, {
                 method: 'PUT',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -40,7 +40,7 @@ const SizeFilter = ({handleSizeFilter, profileId, bookId, initialSize }) => {
             });
 
             if (response.status !== 200) { 
-                Alert.alert('Error', 'Failed to update settings');
+                Alert.alert('Error', '글씨 크기 업데이트 실패');
                 const result = await response.json();
                 console.log(result); // 응답 결과 확인
             } else {
@@ -48,7 +48,7 @@ const SizeFilter = ({handleSizeFilter, profileId, bookId, initialSize }) => {
                 console.log(result); // 응답 결과 확인
             }
         } catch (error) {
-            Alert.alert('Error', 'Failed to update settings');
+            Alert.alert('Error', '글씨 크기 업데이트 실패');
             console.error(error);
         }
     }
