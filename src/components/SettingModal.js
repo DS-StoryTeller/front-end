@@ -45,7 +45,7 @@ const SettingModal = ({ isVisible, onClose, handleSizeFilter, profileId, bookId,
                 <View style={styles.buttonContainer}>
                     <Text style={styles.subtitle}>재생 속도</Text>
                     <View style={styles.buttonGroup}>
-                        <SpeedFilter handleSpeedFilter={handleSpeedFilter} />
+                        <SpeedFilter handleSpeedFilter={handleSpeedFilter} profileId={profileId} bookId={bookId}/>
                     </View>
                 </View>
                 <View style={styles.buttonContainer}>
