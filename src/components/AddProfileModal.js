@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import YesNoModal from './YesNoModal';
 
-const AddProfileModal = ({ visible, onClose }) => {
+const AddProfileModal = ({visible, onClose}) => {
   const [name, setName] = useState('');
   const [birthdate, setBirthdate] = useState('');
   const [pin, setPin] = useState('');
@@ -22,7 +22,6 @@ const AddProfileModal = ({ visible, onClose }) => {
   const [showProfilePicModal, setShowProfilePicModal] = useState(false);
   const [selectedProfilePic, setSelectedProfilePic] = useState(null);
   const [profilePictures, setProfilePictures] = useState([]);
-  const [showYesNoModal, setShowYesNoModal] = useState(false);
 
   const onChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
@@ -30,7 +29,9 @@ const AddProfileModal = ({ visible, onClose }) => {
     setDate(currentDate);
 
     let tempDate = new Date(currentDate);
-    let fDate = `${tempDate.getFullYear()}-${tempDate.getMonth() + 1}-${tempDate.getDate()}`;
+    let fDate = `${tempDate.getFullYear()}-${
+      tempDate.getMonth() + 1
+    }-${tempDate.getDate()}`;
     setBirthdate(fDate);
   };
 
@@ -55,11 +56,6 @@ const AddProfileModal = ({ visible, onClose }) => {
   useEffect(() => {
     fetchProfilePictures();
   }, []);
-
-  const handleConfirm = () => {
-    setShowYesNoModal(false);
-    onClose(); // Close the AddProfileModal
-  };
 
   return (
     <>
@@ -123,9 +119,7 @@ const AddProfileModal = ({ visible, onClose }) => {
                 onChangeText={text => setPin(text)}
               />
             </View>
-            <TouchableOpacity
-              style={styles.saveButton}
-              onPress={() => setShowYesNoModal(true)}>
+            <TouchableOpacity style={styles.saveButton}>
               <Image
                 source={require('../../assets/images/save.png')}
                 style={styles.saveIcon}
@@ -149,7 +143,7 @@ const AddProfileModal = ({ visible, onClose }) => {
             </Text>
             <FlatList
               data={profilePictures}
-              renderItem={({ item }) => (
+              renderItem={({item}) => (
                 <TouchableOpacity
                   style={styles.profilePicItem}
                   onPress={() => handleProfilePicSelect(item.uri)}>
@@ -163,18 +157,6 @@ const AddProfileModal = ({ visible, onClose }) => {
           </View>
         </View>
       </Modal>
-
-      {/* YesNoModal */}
-      <YesNoModal
-        isVisible={showYesNoModal}
-        onClose={() => setShowYesNoModal(false)}
-        linkTo="BookShelf" // Adjust this as needed
-        title="Confirm"
-        subtitle="Do you want to save the profile?"
-        buttonText1="확인"
-        buttonText2="취소"
-        onConfirm={handleConfirm}
-      />
     </>
   );
 };
