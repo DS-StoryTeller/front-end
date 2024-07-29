@@ -29,7 +29,7 @@ const SizeFilter = ({handleSizeFilter, profileId, bookId, initialSize }) => {
         handleSizeFilter(fontSizeValue); 
 
         try {
-            const response = await fetchWithAuth(`http://192.168.219.105:8080/settings/update?profileId=${profileId}&bookId=${bookId}`, {
+            const response = await fetchWithAuth(`http://172.30.1.5:8080/settings/update?profileId=${profileId}&bookId=${bookId}`, {
                 method: 'PUT',
                 headers: { 
                     'Content-Type': 'application/json',

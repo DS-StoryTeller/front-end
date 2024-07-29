@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { StyleSheet, Text, ImageBackground, View, TouchableOpacity, Alert, Animated, Modal } from "react-native"
+import { StyleSheet, Text, ImageBackground, View, TouchableOpacity, Alert, Animated, Modal, Button } from "react-native"
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useFocusEffect } from '@react-navigation/native';
 import Page1 from '../../assets/images/page1.png';
@@ -10,6 +10,8 @@ import YesNoModal from '../components/YesNoModal';
 import NextStep from '../components/NextStep';
 import BookBg from '../../assets/images/bookBg.png';
 import fetchWithAuth from '../api/fetchWithAuth.js';
+import Tts from 'react-native-tts';
+import Config from '../config.js';
 
 const BookRead = ({ navigation }) => {
     const [title, setTitle] = useState('');
@@ -71,9 +73,92 @@ const BookRead = ({ navigation }) => {
         setWordMeaning('');
     };
 
+    // 페이지 세부정보 조회
+    const fetchPageDetails = async (pageNumber) => {
+        try {
+            const response = await fetchWithAuth(`/pages/detail?profileId=${profileId}&bookId=${bookId}&pageNum=${pageNumber}`);
 
+            const result = await response.json();
 
-    // 단어 클릭 메세지 깜빡거림
+            console.log('Page details response:', result);
+
+            if (response.status === 200) {
+                const pageData = result.data;
+                setBookText(pageData.content);
+                setPageImage(pageData.image);
+                setHighlightedWords((pageData.unknownWords || []).map(word => ({ word: word.unknownWord, id: word.unknownWordId }))); // 페이지에 포함된 모르는 단어들을 하이라이트 표시
+                setCurrentPage(pageNumber);  
+            } else {
+                Alert.alert('Error', 'Failed to retrieve page details');
+            }
+        } catch (error) {
+            console.error('Error fetching page details:', error); 
+            Alert.alert('Error', 'Failed to fetch page details');
+        }
+    };
+
+    // 책 세부정보 조회
+    const fetchBookDetails = async () => {
+        try {
+            const response = await fetchWithAuth(`/books/detail?profileId=${profileId}&bookId=${bookId}`);
+            const result = await response.json();
+            console.log('Book details response:', result); 
+
+            if (response.status === 200) {
+                setTitle(result.data.title);
+                setTotalPageCount(result.data.totalPageCount);
+                const initialPage = result.data.currentPage + 1;
+                setCurrentPage(initialPage);
+                fetchPageDetails(initialPage);
+            } else {
+                Alert.alert('Error', 'Failed to retrieve book details');
+            }
+        } catch (error) {
+            console.error('Error fetching book details:', error); 
+            Alert.alert('Error', 'Failed to fetch book details');
+        }
+    };
+
+    useEffect(() => {
+        fetchBookDetails();
+    }, []);
+
+    useEffect(() => {
+        // TTS 초기 설정
+        Tts.setDefaultLanguage('en-US');
+        Tts.setDefaultRate(0.5); // 속도 조정
+        Tts.setDefaultPitch(1.0); // 피치 조정
+
+        Tts.voices().then(voices => {
+            const voice = voices.find(v => v.language === 'en-US' && v.name.includes('female'));
+            if (voice) {
+                Tts.setDefaultVoice(voice.id);
+            }
+        });
+
+        // 음성이 끝났을 때 이벤트 리스너 추가
+        const handleFinish = () => {
+            showNextStep();
+        };
+
+        Tts.addEventListener('tts-finish', handleFinish);
+
+        return () => {
+            Tts.removeEventListener('tts-finish', handleFinish);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (bookText) {
+            Tts.speak(bookText);
+        }
+    }, [bookText]);
+
+    const showNextStep = () => {
+        setNextStepVisible(true);
+        startBlinking();
+    };
+
     const blinkAnim = useRef(new Animated.Value(1)).current;
 
     const startBlinking = () => {
@@ -92,83 +177,6 @@ const BookRead = ({ navigation }) => {
             ]),
         ).start();
     };
-
-    const showNextStep = () => {
-        setNextStepVisible(false); // 상태 초기화
-        if (timer) {
-            clearTimeout(timer); // 기존 타이머 클리어
-        }
-        const newTimer = setTimeout(() => {
-            setNextStepVisible(true);
-            startBlinking();
-        }, 3000); // 3초 후에 nextStepVisible 상태를 true로 변경
-
-        setTimer(newTimer); // 타이머 상태 업데이트
-    };
-
-    useFocusEffect(
-        React.useCallback(() => {
-            showNextStep();
-
-            return () => {
-                if (timer) {
-                    clearTimeout(timer); // 언마운트 시 타이머 클리어
-                }
-                blinkAnim.stopAnimation();
-            };
-        }, [navigation])
-    );
-
-    // 페이지 세부정보 조회
-    const fetchPageDetails = async (pageNumber) => {
-        try {
-            const response = await fetchWithAuth(`http://192.168.219.105:8080/pages/detail?profileId=${profileId}&bookId=${bookId}&pageNum=${pageNumber}`);
-
-            const result = await response.json();
-
-            console.log('Page details response:', result);
-
-            if (response.status === 200) {
-                const pageData = result.data;
-                setBookText(pageData.content);
-                setPageImage(pageData.image);
-                setHighlightedWords((pageData.unknownWords || []).map(word => ({ word: word.unknownWord, id: word.unknownWordId }))); // 페이지에 포함된 모르는 단어들을 하이라이트 표시
-                setCurrentPage(pageNumber);  // 현재 페이지 상태 업데이트
-                showNextStep(); // 페이지 변경 후 nextStepVisible 상태와 깜빡임 애니메이션 설정
-            } else {
-                Alert.alert('Error', 'Failed to retrieve page details');
-            }
-        } catch (error) {
-            console.error('Error fetching page details:', error); // 에러 로그 추가
-            Alert.alert('Error', 'Failed to fetch page details');
-        }
-    };
-
-    // 책 세부정보 조회
-    const fetchBookDetails = async () => {
-        try {
-            const response = await fetchWithAuth(`http://192.168.219.105:8080/books/detail?profileId=${profileId}&bookId=${bookId}`);
-            const result = await response.json();
-            console.log('Book details response:', result); // 응답 결과 로그 추가
-
-            if (response.status === 200) {
-                setTitle(result.data.title);
-                setTotalPageCount(result.data.totalPageCount);
-                const initialPage = result.data.currentPage + 1;
-                setCurrentPage(initialPage);
-                fetchPageDetails(initialPage);
-            } else {
-                Alert.alert('Error', 'Failed to retrieve book details');
-            }
-        } catch (error) {
-            console.error('Error fetching book details:', error); // 에러 로그 추가
-            Alert.alert('Error', 'Failed to fetch book details');
-        }
-    };
-
-    useEffect(() => {
-        fetchBookDetails();
-    }, []);
 
     const goNextStep = () => {
         const nextPage = currentPage + 1;
@@ -195,7 +203,7 @@ const BookRead = ({ navigation }) => {
 
     const confirmHighlight = async () => {
         try {
-            const response = await fetchWithAuth(`http://192.168.219.105:8080/unknownwords/create?profileId=${profileId}&bookId=${bookId}&pageNum=${currentPage}`, {
+            const response = await fetchWithAuth(`/unknownwords/create?profileId=${profileId}&bookId=${bookId}&pageNum=${currentPage}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -230,7 +238,7 @@ const BookRead = ({ navigation }) => {
         if (highlightedWordObj) {
             try {
                 console.log('Deleting word with id:', highlightedWordObj.id); // 삭제할 단어 ID 확인
-                const response = await fetchWithAuth(`http://192.168.219.105:8080/unknownwords/delete/${highlightedWordObj.id}`, {
+                const response = await fetchWithAuth(`/unknownwords/delete/${highlightedWordObj.id}`, {
                     method: 'DELETE',
                 });
     
@@ -302,6 +310,7 @@ const BookRead = ({ navigation }) => {
         }
     };
 
+   
 
     return (
         <SafeAreaView style={styles.container}>
@@ -372,6 +381,7 @@ const BookRead = ({ navigation }) => {
                         </View>
                     </TouchableOpacity>
                 </Modal>
+                
                 {/*             
                 <Modal
                     visible={isWordModalVisible}

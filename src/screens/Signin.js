@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Text, View, StyleSheet, TextInput, TouchableOpacity, Image, Button,Alert } from "react-native"
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Logo from '../../assets/images/logo.png';
-
+import Config from '../config.js';
 
 const Signin = ({ navigation }) => {
     const [email, setEmail] = useState('')
@@ -38,7 +38,7 @@ const Signin = ({ navigation }) => {
             formData.append('email', email);
             formData.append('role', 'ROLE_USER');
 
-            const response = await fetch('http://192.168.219.105:8080/register', {
+            const response = await fetch(`${Config.API_BASE_URL}/register`, {
                 method: 'POST',
                 body: formData,
             });
@@ -59,7 +59,7 @@ const Signin = ({ navigation }) => {
 
     const handleEmailVerificationRequest = async () => {
         try {
-            const response = await fetch('http://192.168.219.105:8080/emails/verification-requests', {
+            const response = await fetch(`${Config.API_BASE_URL}/emails/verification-requests`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -82,7 +82,7 @@ const Signin = ({ navigation }) => {
 
     const handleEmailVerificationCheck = async () => {
         try {
-            const response = await fetch('http://192.168.219.105:8080/emails/verifications', {
+            const response = await fetch(`${Config.API_BASE_URL}/emails/verifications`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -111,7 +111,7 @@ const Signin = ({ navigation }) => {
 
     const handleUsernameVerification = async () => {
         try {
-            const response = await fetch('http://192.168.219.105:8080/username/verifications', {
+            const response = await fetch(`${Config.API_BASE_URL}/username/verifications`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
