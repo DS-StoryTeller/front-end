@@ -202,6 +202,7 @@ const BookRead = ({ navigation }) => {
 
     const goNextStep = () => {
         const nextPage = currentPage + 1;
+        setNextStepVisible(false);
         if (nextPage <= totalPageCount) {
             fetchPageDetails(nextPage);
         } else {
