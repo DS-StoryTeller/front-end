@@ -162,6 +162,7 @@ const BookRead = ({ navigation }) => {
         }, [])
     );
 
+     
     // 백그라운드 이동시 TTS 멈춤
     useEffect(() => {
         const handleAppStateChange = (nextAppState) => {
@@ -169,17 +170,14 @@ const BookRead = ({ navigation }) => {
                 Tts.stop();
             }
         };
-    
+
         const subscription = AppState.addEventListener('change', handleAppStateChange);
-    
+
         return () => {
-            if (subscription && subscription.remove) {
-                subscription.remove();
-            } else {
-                AppState.removeEventListener('change', handleAppStateChange);
-            }
+            subscription.remove();
         };
     }, []);
+
     
    
     

@@ -19,7 +19,8 @@ const YesNoModal = ({ isVisible, onClose, linkTo, title, subtitle, buttonText1, 
                 });
 
                 const responseData = await response.json();
-                console.log(responseData);
+                console.log('Response data:', responseData);
+                console.log('Response status:', response.status);
 
                 if (response.status === 200) {
                     // 페이지 저장이 성공적으로 완료되었을 때 BookShelf 페이지로 이동
@@ -29,10 +30,10 @@ const YesNoModal = ({ isVisible, onClose, linkTo, title, subtitle, buttonText1, 
                     });
 
                 } else {
-                    Alert.alert('Error', '현재 페이지 저장 실패');
+                    Alert.alert('Error', `현재 페이지 저장 실패1 ${responseData.message || 'Unknown error'}`);
                 }
             } catch (error) {
-                Alert.alert('Error', '현재 페이지 저장 실패');
+                Alert.alert('Error', `현재 페이지 저장 실패2: ${error.message}`);
             }
         } else if (buttonText1 === "삭제") {
             // 삭제 기능 추가 필요 - 도나
