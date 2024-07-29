@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { StyleSheet, Text, ImageBackground, View, TouchableOpacity, Alert, Animated, Modal, Button } from "react-native"
+import { StyleSheet, Text, ImageBackground, View, TouchableOpacity, Alert, Animated, Modal, AppState } from "react-native"
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useFocusEffect } from '@react-navigation/native';
 import Page1 from '../../assets/images/page1.png';
@@ -124,9 +124,8 @@ const BookRead = ({ navigation }) => {
     }, []);
 
     useEffect(() => {
-        // TTS 초기 설정
         Tts.setDefaultLanguage('en-US');
-        Tts.setDefaultRate(0.5); // 속도 조정
+        Tts.setDefaultRate(0.45); // 속도 조정
         Tts.setDefaultPitch(1.0); // 피치 조정
 
         Tts.voices().then(voices => {
@@ -154,6 +153,29 @@ const BookRead = ({ navigation }) => {
         }
     }, [bookText]);
 
+    // 다른 페이지 이동시 TTS 멈춤
+    useFocusEffect(
+        React.useCallback(() => {
+            return () => {
+                Tts.stop();
+            };
+        }, [])
+    );
+
+    // 백그라운드 이동시 TTS 멈춤
+    useEffect(() => {
+        const subscription = AppState.addEventListener('change', (nextAppState) => {
+            if (nextAppState.match(/inactive|background/)) {
+                Tts.stop();
+            }
+        });
+    
+        return () => {
+            subscription.remove();
+        };
+    }, []);
+
+    
     const showNextStep = () => {
         setNextStepVisible(true);
         startBlinking();
