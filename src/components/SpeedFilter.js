@@ -4,9 +4,9 @@ import fetchWithAuth from '../api/fetchWithAuth.js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Tts from 'react-native-tts';
 
-const SpeedFilter = ({ handleSpeedFilter, profileId, bookId, currentText }) => {
+const SpeedFilter = ({ handleSpeedFilter, profileId, bookId, currentText, initialSpeed }) => {
     const buttons = ["0.5배속", "0.75배속", "1.0배속", "1.25배속", "1.5배속"];
-    const [btnActive, setBtnActive] = useState("1.0배속");
+    const [btnActive, setBtnActive] = useState(initialSpeed);
 
     const updateTtsRate = (speed) => {
         let ttsRate;
@@ -31,6 +31,7 @@ const SpeedFilter = ({ handleSpeedFilter, profileId, bookId, currentText }) => {
         }
         Tts.setDefaultRate(ttsRate);
     };
+
     useEffect(() => {
         const loadSpeedSetting = async () => {
             try {
@@ -48,18 +49,14 @@ const SpeedFilter = ({ handleSpeedFilter, profileId, bookId, currentText }) => {
         };
 
         loadSpeedSetting();
-    }, []);
+    }, [initialSpeed]);
 
     useEffect(() => {
         updateTtsRate(btnActive);
         console.log(`Active button: ${btnActive}`);
     }, [btnActive]);
 
-
-
-   
     const toggleActive = async (speed) => {
-
         setBtnActive(speed);
         handleSpeedFilter(speed);
 

@@ -11,7 +11,6 @@ import NextStep from '../components/NextStep';
 import BookBg from '../../assets/images/bookBg.png';
 import fetchWithAuth from '../api/fetchWithAuth.js';
 import Tts from 'react-native-tts';
-import Config from '../config.js';
 
 const BookRead = ({ navigation }) => {
     const [title, setTitle] = useState('');
@@ -21,10 +20,11 @@ const BookRead = ({ navigation }) => {
     const [coverImage, setCoverImage] = useState('');
     const [pageImage, setPageImage] = useState('');
     const [fontSize, setFontSize] = useState(18);
+    const [initialSpeed, setInitialSpeed] = useState("1.0배속");
+    const [initialSize, setInitialSize] = useState("MEDIUM");
 
     const profileId = 2;
     const bookId = 2;
-    const initialSize = fontSize === 14 ? "작게" : fontSize === 18 ? "기본" : "크게";
 
     // 모달창
     const [isSettingModalVisible, setIsSettingModalVisible] = useState(false);
@@ -48,7 +48,6 @@ const BookRead = ({ navigation }) => {
 
     // nextStep 버튼
     const [nextStepVisible, setNextStepVisible] = useState(false);
-    const [timer, setTimer] = useState(null); // 타이머 상태 추가
 
 
     // 모르는 단어 조희
@@ -80,7 +79,7 @@ const BookRead = ({ navigation }) => {
 
             const result = await response.json();
 
-            console.log('Page details response:', result);
+            console.log('페이지 세부정보:', result);
 
             if (response.status === 200) {
                 const pageData = result.data;
@@ -89,11 +88,11 @@ const BookRead = ({ navigation }) => {
                 setHighlightedWords((pageData.unknownWords || []).map(word => ({ word: word.unknownWord, id: word.unknownWordId }))); // 페이지에 포함된 모르는 단어들을 하이라이트 표시
                 setCurrentPage(pageNumber);  
             } else {
-                Alert.alert('Error', 'Failed to retrieve page details');
+                Alert.alert('Error', '페이지 세부정보 불러오기 실패');
             }
         } catch (error) {
-            console.error('Error fetching page details:', error); 
-            Alert.alert('Error', 'Failed to fetch page details');
+            console.error('페이지 세부정보 불러오기 실패', error); 
+            Alert.alert('Error', '페이지 세부정보 불러오기 실패');
         }
     };
 
@@ -102,7 +101,7 @@ const BookRead = ({ navigation }) => {
         try {
             const response = await fetchWithAuth(`/books/detail?profileId=${profileId}&bookId=${bookId}`);
             const result = await response.json();
-            console.log('Book details response:', result); 
+            console.log('책 세부정보 응답', result); 
 
             if (response.status === 200) {
                 setTitle(result.data.title);
@@ -111,41 +110,95 @@ const BookRead = ({ navigation }) => {
                 setCurrentPage(initialPage);
                 fetchPageDetails(initialPage);
             } else {
-                Alert.alert('Error', 'Failed to retrieve book details');
+                Alert.alert('Error', '책 세부정보 불러오기 실패');
             }
         } catch (error) {
-            console.error('Error fetching book details:', error); 
-            Alert.alert('Error', 'Failed to fetch book details');
+            console.error('책 세부정보 불러오기 실패', error); 
+            Alert.alert('Error', '책 세부정보 불러오기 실패');
+        }
+    };
+
+    // 설정 세부정보 조회
+    const fetchSettings = async () => {
+        try {
+            const response = await fetchWithAuth(`/settings/detail?profileId=${profileId}&bookId=${bookId}`);
+            const result = await response.json();
+            console.log('설정 세부정보 응답', result);
+
+            if (response.status === 200) {
+                const { fontSize, readingSpeed } = result.data;
+                setInitialSpeed(readingSpeed === "SLOW" ? "0.5배속" :
+                                readingSpeed === "SLIGHTLY_SLOW" ? "0.75배속" :
+                                readingSpeed === "NORMAL" ? "1.0배속" :
+                                readingSpeed === "SLIGHTLY_FAST" ? "1.25배속" :
+                                "1.5배속");
+                setInitialSize(fontSize);
+                setFontSize(fontSize === "SMALL" ? 14 :
+                            fontSize === "MEDIUM" ? 18 :
+                            22);
+            } else {
+                console.log('설정 세부정보 불러오기 실패:', result);
+                Alert.alert('Error', '설정 세부정보 불러오기 실패');
+            }
+        } catch (error) {
+            console.error('설정 세부정보 불러오기 실패', error); 
+            Alert.alert('Error', '설정 세부정보 불러오기 실패');
         }
     };
 
     useEffect(() => {
         fetchBookDetails();
+        fetchSettings();
     }, []);
 
     useEffect(() => {
+        const setTtsRate = (speed) => {
+            let ttsRate;
+            switch (speed) {
+                case "0.5배속":
+                    ttsRate = 0.15;
+                    break;
+                case "0.75배속":
+                    ttsRate = 0.3;
+                    break;
+                case "1.0배속":
+                    ttsRate = 0.55;
+                    break;
+                case "1.25배속":
+                    ttsRate = 0.8;
+                    break;
+                case "1.5배속":
+                    ttsRate = 1.05;
+                    break;
+                default:
+                    ttsRate = 0.55;
+            }
+            Tts.setDefaultRate(ttsRate);
+        };
+    
         Tts.setDefaultLanguage('en-US');
-        Tts.setDefaultRate(0.55); // 속도 조정
+        setTtsRate(initialSpeed); // initialSpeed를 기반으로 속도 설정
         Tts.setDefaultPitch(1.0); // 피치 조정
-
+    
         Tts.voices().then(voices => {
             const voice = voices.find(v => v.language === 'en-US' && v.name.includes('female'));
             if (voice) {
                 Tts.setDefaultVoice(voice.id);
             }
         });
-
+    
         // 음성이 끝났을 때 이벤트 리스너 추가
         const handleFinish = () => {
             showNextStep();
         };
-
-        Tts.addEventListener('tts-finish', handleFinish);
-
+    
+        const finishListener = Tts.addListener('tts-finish', handleFinish);
+    
         return () => {
-            Tts.removeEventListener('tts-finish', handleFinish);
+            finishListener.remove();
         };
-    }, []);
+    }, [initialSpeed]);
+    
 
     useEffect(() => {
         if (bookText) {
@@ -178,9 +231,6 @@ const BookRead = ({ navigation }) => {
         };
     }, []);
 
-    
-   
-    
     const showNextStep = () => {
         setNextStepVisible(true);
         startBlinking();
@@ -265,14 +315,13 @@ const BookRead = ({ navigation }) => {
     
         if (highlightedWordObj) {
             try {
-                console.log('Deleting word with id:', highlightedWordObj.id); // 삭제할 단어 ID 확인
                 const response = await fetchWithAuth(`/unknownwords/delete/${highlightedWordObj.id}`, {
                     method: 'DELETE',
                 });
     
                 if (response.status !== 200) {
                     const result = await response.json();
-                    console.log('Delete response error:', result); // 에러 응답 확인
+                    console.log('단어 삭제 실패:', result); // 에러 응답 확인
                     Alert.alert('Error', '단어 삭제 실패');
                 } else {
                     console.log(await response.json()); // 응답 결과 확인
@@ -281,7 +330,7 @@ const BookRead = ({ navigation }) => {
                     setHighlightModalVisible(false);
                 }
             } catch (error) {
-                console.error('Error deleting word:', error); // 에러 로그 추가
+                console.error('단어 삭제 실패', error);
                 Alert.alert('Error', '단어 삭제 실패');
             }
         } else {
@@ -360,7 +409,7 @@ const BookRead = ({ navigation }) => {
                         <TouchableOpacity style={styles.icon} onPress={openSettingModal} >
                             <Ionic name="settings" size={35} color="white" />
                         </TouchableOpacity>
-                        <SettingModal isVisible={isSettingModalVisible} onClose={closeSettingModal} handleSizeFilter={handleSizeFilter} profileId={profileId} bookId={bookId} initialSize={initialSize} 
+                        <SettingModal isVisible={isSettingModalVisible} onClose={closeSettingModal} handleSizeFilter={handleSizeFilter} profileId={profileId} bookId={bookId} initialSize={initialSize} initialSpeed={initialSpeed}
                         currentText={bookText}/>
                     </View>
 

@@ -4,14 +4,28 @@ import fetchWithAuth from '../api/fetchWithAuth.js';
 
 const SizeFilter = ({handleSizeFilter, profileId, bookId, initialSize }) => {
     let buttons = ["작게", "기본", "크게"];
-    const [btnActive, setBtnActive] = useState(initialSize);
+    const [btnActive, setBtnActive] = useState("");
 
     useEffect(() => {
-        setBtnActive(initialSize);
+        const activeButton = getButtonLabel(initialSize);
+        setBtnActive(activeButton);
     }, [initialSize]);
 
-    const getFontSizeValue = (size) => {
+    const getButtonLabel = (size) => {
         switch (size) {
+            case "SMALL":
+                return "작게";
+            case "MEDIUM":
+                return "기본";
+            case "LARGE":
+                return "크게";
+            default:
+                return "기본";
+        }
+    };
+
+    const getFontSizeValue = (label) => {
+        switch (label) {
             case "작게":
                 return "SMALL";
             case "기본":
@@ -21,11 +35,10 @@ const SizeFilter = ({handleSizeFilter, profileId, bookId, initialSize }) => {
             default:
                 return "MEDIUM";
         }
-    }
-
-    const toggleActive = async (size) => {
-       const fontSizeValue = getFontSizeValue(size);
-        setBtnActive(size);
+    };
+    const toggleActive = async (label) => {
+       const fontSizeValue = getFontSizeValue(label);
+        setBtnActive(label);
         handleSizeFilter(fontSizeValue); 
 
         try {
