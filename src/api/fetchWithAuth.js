@@ -1,4 +1,5 @@
 import { getAccessToken, getRefreshToken, getUser, storeTokens, removeTokens } from '../utils/storage.js'
+import Config from '../config.js';
 
 const isTokenExpired = (token) => {
     const payload = JSON.parse(atob(token.split('.')[1]));
@@ -7,7 +8,7 @@ const isTokenExpired = (token) => {
 
 const getNewTokens = async (refreshToken) => {
     const user = await getUser();
-    const response = await fetch(`http://192.168.219.105:8080/reissue`, {
+    const response = await fetch(`${Config.API_BASE_URL}/reissue`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -40,7 +41,7 @@ const fetchWithAuth = async (url, options = {}) => {
         'access': accessToken,
     };
 
-    return fetch(url, {
+    return fetch(`${Config.API_BASE_URL}${url}`, {
         ...options,
         headers,
     });

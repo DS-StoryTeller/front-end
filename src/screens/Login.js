@@ -3,6 +3,7 @@ import { Text, View, StyleSheet, TextInput, TouchableOpacity, Image, Button, Ale
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Logo from '../../assets/images/logo.png';
 import { storeTokens, storeUser, getAccessToken, getRefreshToken } from '../utils/storage';
+import Config from '../config.js';
 
 const Login = ({ navigation }) => {
     const [user, setUser] = useState('')
@@ -14,7 +15,7 @@ const Login = ({ navigation }) => {
             formData.append('username', user);
             formData.append('password', password);
 
-            const response = await fetch(`http://192.168.219.105:8080/login`, { 
+            const response = await fetch(`${Config.API_BASE_URL}/login`, { 
                 method: 'POST',
                 body: formData,
             });
