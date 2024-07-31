@@ -4,7 +4,7 @@ import Ionic from 'react-native-vector-icons/Ionicons';
 import SpeedFilter from './SpeedFilter';
 import SizeFilter from './SizeFilter';
 
-const SettingModal = ({ isVisible, onClose, handleSizeFilter, profileId, bookId, initialSize }) => {
+const SettingModal = ({ isVisible, onClose, handleSizeFilter, profileId, bookId, initialSize, currentText }) => {
     const [speed, setSpeed] = useState("1.0배속");
     const [size, setSize] = useState(initialSize);
 
@@ -45,7 +45,7 @@ const SettingModal = ({ isVisible, onClose, handleSizeFilter, profileId, bookId,
                 <View style={styles.buttonContainer}>
                     <Text style={styles.subtitle}>재생 속도</Text>
                     <View style={styles.buttonGroup}>
-                        <SpeedFilter handleSpeedFilter={handleSpeedFilter} profileId={profileId} bookId={bookId}/>
+                        <SpeedFilter handleSpeedFilter={handleSpeedFilter} profileId={profileId} bookId={bookId} currentText={currentText}/>
                     </View>
                 </View>
                 <View style={styles.buttonContainer}>

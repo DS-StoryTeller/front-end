@@ -125,7 +125,7 @@ const BookRead = ({ navigation }) => {
 
     useEffect(() => {
         Tts.setDefaultLanguage('en-US');
-        Tts.setDefaultRate(0.45); // 속도 조정
+        Tts.setDefaultRate(0.55); // 속도 조정
         Tts.setDefaultPitch(1.0); // 피치 조정
 
         Tts.voices().then(voices => {
@@ -360,7 +360,8 @@ const BookRead = ({ navigation }) => {
                         <TouchableOpacity style={styles.icon} onPress={openSettingModal} >
                             <Ionic name="settings" size={35} color="white" />
                         </TouchableOpacity>
-                        <SettingModal isVisible={isSettingModalVisible} onClose={closeSettingModal} handleSizeFilter={handleSizeFilter} profileId={profileId} bookId={bookId} initialSize={initialSize} />
+                        <SettingModal isVisible={isSettingModalVisible} onClose={closeSettingModal} handleSizeFilter={handleSizeFilter} profileId={profileId} bookId={bookId} initialSize={initialSize} 
+                        currentText={bookText}/>
                     </View>
 
                 </ImageBackground>

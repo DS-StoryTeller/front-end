@@ -1,20 +1,72 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
-import React, { useState, useEffect } from 'react'
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
 import fetchWithAuth from '../api/fetchWithAuth.js'; 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Tts from 'react-native-tts';
 
-const SpeedFilter = ({handleSpeedFilter, profileId, bookId }) => {
-    let buttons = ["0.5배속", "0.75배속", "1.0배속", "1.25배속", "1.5배속"];
+const SpeedFilter = ({ handleSpeedFilter, profileId, bookId, currentText }) => {
+    const buttons = ["0.5배속", "0.75배속", "1.0배속", "1.25배속", "1.5배속"];
     const [btnActive, setBtnActive] = useState("1.0배속");
 
+    const updateTtsRate = (speed) => {
+        let ttsRate;
+        switch (speed) {
+            case "0.5배속":
+                ttsRate = 0.15;
+                break;
+            case "0.75배속":
+                ttsRate = 0.3;
+                break;
+            case "1.0배속":
+                ttsRate = 0.55;
+                break;
+            case "1.25배속":
+                ttsRate = 0.8;
+                break;
+            case "1.5배속":
+                ttsRate = 1.05;
+                break;
+            default:
+                ttsRate = 0.55;
+        }
+        Tts.setDefaultRate(ttsRate);
+    };
     useEffect(() => {
-        setBtnActive("1.0배속");
+        const loadSpeedSetting = async () => {
+            try {
+                const savedSpeed = await AsyncStorage.getItem('selectedSpeed');
+                if (savedSpeed) {
+                    setBtnActive(savedSpeed);
+                    updateTtsRate(savedSpeed);
+                } else {
+                    setBtnActive("1.0배속");
+                    Tts.setDefaultRate(0.55);
+                }
+            } catch (error) {
+                console.log('속도 불러오기 실패:', error);
+            }
+        };
+
+        loadSpeedSetting();
     }, []);
 
+    useEffect(() => {
+        updateTtsRate(btnActive);
+        console.log(`Active button: ${btnActive}`);
+    }, [btnActive]);
+
+
+
+   
     const toggleActive = async (speed) => {
+
         setBtnActive(speed);
         handleSpeedFilter(speed);
 
+       console.log(`Button pressed: ${speed}`); // 버튼 로그 출력
+
         let readingSpeedValue;
+
         switch (speed) {
             case "0.5배속":
                 readingSpeedValue = "SLOW";
@@ -35,7 +87,9 @@ const SpeedFilter = ({handleSpeedFilter, profileId, bookId }) => {
                 readingSpeedValue = "NORMAL";
         }
 
-       try {
+        try {
+            await AsyncStorage.setItem('selectedSpeed', speed);
+
             const response = await fetchWithAuth(`/settings/update?profileId=${profileId}&bookId=${bookId}`, {
                 method: 'PUT',
                 headers: { 
@@ -46,16 +100,23 @@ const SpeedFilter = ({handleSpeedFilter, profileId, bookId }) => {
                 })
             });
 
-            const responseData = await response.json();
-                console.log('Response data:', responseData);
-
-            if (response.status !== 200) {
-                Alert.alert('Error', '속도 설정 저장 실패');
+            if (!response.ok) {
+                throw new Error('속도 설정 저장 실패');
             }
+
+            const responseData = await response.json();
+            console.log('Response data:', responseData);
         } catch (error) {
+            console.error('속도 설정 저장 중 오류 발생:', error);
             Alert.alert('Error', '속도 설정 저장 중 오류 발생');
         }
-    }
+
+        // 속도 설정 후 다시 시작
+        Tts.stop();
+        setTimeout(() => {
+            Tts.speak(currentText);
+        }, 300);  
+    };
 
     return (
         <View style={styles.container}>
@@ -94,4 +155,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default SpeedFilter
+export default SpeedFilter;
