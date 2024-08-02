@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Text, View, StyleSheet, TextInput, TouchableOpacity, Image, Button, Alert } from "react-native"
+import { Text, View, StyleSheet, TextInput, TouchableOpacity, Image, Button, Alert, ScrollView, KeyboardAvoidingView, Platform } from "react-native"
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Logo from '../../assets/images/logo.png';
 import { storeTokens, storeUser, getAccessToken, getRefreshToken } from '../utils/storage';
@@ -15,14 +15,14 @@ const Login = ({ navigation }) => {
             formData.append('username', user);
             formData.append('password', password);
 
-            const response = await fetch(`${Config.API_BASE_URL}/login`, { 
+            const response = await fetch(`${Config.API_BASE_URL}/login`, {
                 method: 'POST',
                 body: formData,
             });
 
             const data = await response.json();
 
-            console.log('Server response:', response.status, data); 
+            console.log('Server response:', response.status, data);
 
             if (response.ok) {
                 const accessToken = response.headers.get('access');
@@ -33,16 +33,16 @@ const Login = ({ navigation }) => {
                     await storeUser(user);
                     Alert.alert('로그인 성공', '로그인에 성공했습니다.');
 
-                       // 저장된 토큰 확인
-                       const storedAccessToken = await getAccessToken();
-                       const storedRefreshToken = await getRefreshToken();
-                       console.log('Stored access token:', storedAccessToken);
-                       console.log('Stored refresh token:', storedRefreshToken);
+                    // 저장된 토큰 확인
+                    const storedAccessToken = await getAccessToken();
+                    const storedRefreshToken = await getRefreshToken();
+                    console.log('Stored access token:', storedAccessToken);
+                    console.log('Stored refresh token:', storedRefreshToken);
 
-                       
+
                     navigation.navigate('BookShelf');
                 } else {
-                    console.error('Invalid tokens:', data); 
+                    console.error('Invalid tokens:', data);
                     Alert.alert('로그인 실패', '유효한 토큰이 제공되지 않았습니다.');
                 }
             } else {
@@ -65,70 +65,79 @@ const Login = ({ navigation }) => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <Image source={Logo} style={styles.logo} />
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            >
+                <ScrollView contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
+                    <View style={styles.contentWrapper}>
+                        <Image source={Logo} style={styles.logo} />
 
-            <View style={styles.bigBox}>
-                <View style={styles.textBox}>
-                    <Text style={styles.titleText}>
-                        <Text style={styles.titleApp}>StoryTeller</Text>
-                        에
-                    </Text>
-                    <Text style={styles.titleText}>오신것을 환영합니다</Text>
-                </View>
-                <View style={styles.inputContainer}>
-                    <Text style={styles.subTitle}>아이디</Text>
-                    <TextInput
-                        placeholder='아이디를 입력해주세요'
-                        value={user}
-                        onChangeText={text => setUser(text)}
-                        style={styles.input}
-                    />
-                </View>
-                <View style={styles.inputContainer}>
-                    <Text style={styles.subTitle}>비밀번호</Text>
-                    <TextInput
-                        placeholder='비밀번호를 입력해주세요'
-                        value={password}
-                        onChangeText={text => setPassword(text)}
-                        style={styles.input}
-                    />
-                </View>
-                <View style={styles.buttonContainer}>
-                    <TouchableOpacity
-                        style={styles.button}
-                        onPress={handleLogin}
-                    >
-                        <Text style={styles.buttonText}>로그인</Text>
-                    </TouchableOpacity>
-                </View>
-                <View style={styles.orContainer}>
-                    <View style={styles.orHorizontal} />
-                    <View>
-                        <Text style={styles.orText}>OR</Text>
+                        <View style={styles.bigBox}>
+                            <View style={styles.textBox}>
+                                <Text style={styles.titleText}>
+                                    <Text style={styles.titleApp}>StoryTeller</Text>
+                                    에
+                                </Text>
+                                <Text style={styles.titleText}>오신것을 환영합니다</Text>
+                            </View>
+                            <View style={styles.inputContainer}>
+                                <Text style={styles.subTitle}>아이디</Text>
+                                <TextInput
+                                    placeholder='아이디를 입력해주세요'
+                                    value={user}
+                                    onChangeText={text => setUser(text)}
+                                    style={styles.input}
+                                />
+                            </View>
+                            <View style={styles.inputContainer}>
+                                <Text style={styles.subTitle}>비밀번호</Text>
+                                <TextInput
+                                    placeholder='비밀번호를 입력해주세요'
+                                    value={password}
+                                    onChangeText={text => setPassword(text)}
+                                    style={styles.input}
+                                />
+                            </View>
+                            <View style={styles.buttonContainer}>
+                                <TouchableOpacity
+                                    style={styles.button}
+                                    onPress={handleLogin}
+                                >
+                                    <Text style={styles.buttonText}>로그인</Text>
+                                </TouchableOpacity>
+                            </View>
+                            <View style={styles.orContainer}>
+                                <View style={styles.orHorizontal} />
+                                <View>
+                                    <Text style={styles.orText}>OR</Text>
+                                </View>
+                                <View style={styles.orHorizontal} />
+                            </View>
+                            <View style={styles.socialButtonContainer}>
+                                <TouchableOpacity
+                                    style={styles.socialButton}
+                                >
+                                    <Text style={styles.socialButtonText}>카카오로 로그인하기</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={styles.socialButton}
+                                >
+                                    <Text style={styles.socialButtonText}>구글로 로그인하기</Text>
+                                </TouchableOpacity>
+                            </View>
+                            <View style={styles.signInContainer}>
+                                <Text style={styles.signIn}>계정이 없다면?  </Text>
+                                <TouchableOpacity onPress={() => navigation.navigate('Signin')}>
+                                    <Text style={styles.signInBold}>회원가입</Text>
+                                </TouchableOpacity>
+                            </View>
+
+
+                        </View>
                     </View>
-                    <View style={styles.orHorizontal} />
-                </View>
-                <View style={styles.socialButtonContainer}>
-                    <TouchableOpacity
-                        style={styles.socialButton}
-                    >
-                        <Text style={styles.socialButtonText}>카카오로 로그인하기</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={styles.socialButton}
-                    >
-                        <Text style={styles.socialButtonText}>구글로 로그인하기</Text>
-                    </TouchableOpacity>
-                </View>
-                <View style={styles.signInContainer}>
-                    <Text style={styles.signIn}>계정이 없다면?  </Text>
-                    <TouchableOpacity onPress={() => navigation.navigate('Signin')}>
-                        <Text style={styles.signInBold}>회원가입</Text>
-                    </TouchableOpacity>
-                </View>
-
-
-            </View>
+                </ScrollView>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     )
 }
@@ -142,13 +151,13 @@ const styles = StyleSheet.create({
     },
 
     logo: {
-        width: '8%',
-        height: '15%',
+        width: 100,
+        height: 90,
         margin: 5,
     },
     bigBox: {
-        width: '35%',
-        height: '80%',
+        width: 400,
+        height: 490,
         backgroundColor: 'white',
         borderRadius: 30,
         padding: 10,
@@ -204,12 +213,12 @@ const styles = StyleSheet.create({
         width: '85%',
         marginTop: 10,
         flexDirection: 'row',
-        alignItems: 'center', 
+        alignItems: 'center',
     },
     orHorizontal: {
-        flex: 1, 
-        height: 1, 
-        backgroundColor: 'black', 
+        flex: 1,
+        height: 1,
+        backgroundColor: 'black',
     },
     orText: {
         width: 50,
@@ -252,7 +261,17 @@ const styles = StyleSheet.create({
     subTitle: {
         color: '#393939',
         fontSize: 15,
-    }
+    },
+    scrollViewContent: {
+        flexGrow: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+    },
+    contentWrapper: {
+        width: '100%',
+        alignItems: 'center',
+    },
 });
 
 export default Login
