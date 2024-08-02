@@ -210,6 +210,7 @@ const Signin = ({ navigation }) => {
                         value={password}
                         onChangeText={text => setPassword(text)}
                         style={styles.input}
+                        secureTextEntry={true}
                     />
                     
                     <TextInput
@@ -217,6 +218,7 @@ const Signin = ({ navigation }) => {
                         value={checkPW}
                         onChangeText={text => setCheckPW(text)}
                         style={styles.input}
+                        secureTextEntry={true}
                     />
                     
                 </View>

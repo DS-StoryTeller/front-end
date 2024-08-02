@@ -100,6 +100,7 @@ const Login = ({ navigation }) => {
                                     value={password}
                                     onChangeText={text => setPassword(text)}
                                     style={styles.input}
+                                    secureTextEntry={true}
                                 />
                             </View>
                             <View style={styles.buttonContainer}>
