@@ -4,6 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import Logo from '../../assets/images/logo.png';
 import { storeTokens, storeUser, getAccessToken, getRefreshToken } from '../utils/storage';
 import Config from '../config.js';
+import Kakao from '../../assets/images/kakao.png';
+import Google from '../../assets/images/google.png';
+
 
 const Login = ({ navigation }) => {
     const [user, setUser] = useState('')
@@ -118,11 +121,13 @@ const Login = ({ navigation }) => {
                                 <TouchableOpacity
                                     style={styles.socialButton}
                                 >
+                                    <Image source={Kakao} style={styles.icon} />
                                     <Text style={styles.socialButtonText}>카카오로 로그인하기</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     style={styles.socialButton}
                                 >
+                                    <Image source={Google} style={styles.icon} />
                                     <Text style={styles.socialButtonText}>구글로 로그인하기</Text>
                                 </TouchableOpacity>
                             </View>
@@ -237,6 +242,12 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         borderWidth: 1,
         borderColor: '#4E5A8C',
+        flexDirection: 'row', 
+    },
+    icon: {
+        width: 20, 
+        height: 20,
+        marginRight: 5, 
     },
     socialButtonText: {
         color: '#393939',
