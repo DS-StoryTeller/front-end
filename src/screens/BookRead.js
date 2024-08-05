@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { StyleSheet, Text, ImageBackground, View, TouchableOpacity, Alert, Animated, Modal, AppState } from "react-native"
+import { StyleSheet, Text, ImageBackground, View, TouchableOpacity, Alert, Animated, Modal, AppState, ActivityIndicator  } from "react-native"
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useFocusEffect } from '@react-navigation/native';
-import Page1 from '../../assets/images/page1.png';
 import Ionic from 'react-native-vector-icons/Ionicons';
 import ProgressBar from '../components/ProgressBar';
 import SettingModal from '../components/SettingModal';
@@ -18,13 +17,15 @@ const BookRead = ({ navigation }) => {
     const [totalPageCount, setTotalPageCount] = useState(0);
     const [bookText, setBookText] = useState('');
     const [coverImage, setCoverImage] = useState('');
-    const [pageImage, setPageImage] = useState('');
+    const [pageImage, setPageImage] = useState(null);
+    const [isLoading, setIsLoading] = useState(true); 
+
     const [fontSize, setFontSize] = useState(18);
     const [initialSpeed, setInitialSpeed] = useState("1.0배속");
     const [initialSize, setInitialSize] = useState("MEDIUM");
 
     const profileId = 2;
-    const bookId = 2;
+    const bookId = 3;
 
     // 모달창
     const [isSettingModalVisible, setIsSettingModalVisible] = useState(false);
@@ -75,6 +76,7 @@ const BookRead = ({ navigation }) => {
     // 페이지 세부정보 조회
     const fetchPageDetails = async (pageNumber) => {
         try {
+      
             const response = await fetchWithAuth(`/pages/detail?profileId=${profileId}&bookId=${bookId}&pageNum=${pageNumber}`);
 
             const result = await response.json();
@@ -108,7 +110,8 @@ const BookRead = ({ navigation }) => {
                 setTotalPageCount(result.data.totalPageCount);
                 const initialPage = result.data.currentPage + 1;
                 setCurrentPage(initialPage);
-                fetchPageDetails(initialPage);
+                await fetchPageDetails(initialPage);
+                setIsLoading(false); // 로딩 완료
             } else {
                 Alert.alert('Error', '책 세부정보 불러오기 실패');
             }
@@ -147,8 +150,12 @@ const BookRead = ({ navigation }) => {
     };
 
     useEffect(() => {
-        fetchBookDetails();
-        fetchSettings();
+        const loadData = async () => {
+            await fetchBookDetails();
+            await fetchSettings();
+            setIsLoading(false); // 모든 데이터 로드 완료 후 로딩 상태 업데이트
+        };
+        loadData();
     }, []);
 
     useEffect(() => {
@@ -392,50 +399,56 @@ const BookRead = ({ navigation }) => {
     return (
         <SafeAreaView style={styles.container}>
             <ImageBackground source={BookBg} >
-                <ImageBackground source={Page1} style={styles.page}>
-                    <View style={styles.iconBox}>
-                        <TouchableOpacity style={styles.icon} onPress={openYesNoModal} >
-                            <Ionic name="home" size={35} color="white" />
-                        </TouchableOpacity>
-                        <YesNoModal isVisible={isYesNoModalVisible} onClose={closeYesNoModal}
-                            title={"정말 중단하시겠습니까?"}
-                            subtitle={`다시 동화를 읽을 때 \n 현재 페이지부터 읽으실 수 있습니다.`}
-                            buttonText1={"중단하기"}
-                            linkTo={'BookShelf'}
-                            buttonText2={"취소"}
-                            profileId={profileId}
-                            bookId={bookId}
-                            currentPage={currentPage-1} />
-                        <TouchableOpacity style={styles.icon} onPress={openSettingModal} >
-                            <Ionic name="settings" size={35} color="white" />
-                        </TouchableOpacity>
-                        <SettingModal isVisible={isSettingModalVisible} onClose={closeSettingModal} handleSizeFilter={handleSizeFilter} profileId={profileId} bookId={bookId} initialSize={initialSize} initialSpeed={initialSpeed}
-                        currentText={bookText}/>
-                    </View>
-
-                </ImageBackground>
-
-                <View style={styles.textBox}>
-                    <View style={styles.titleBox}>
-                        <Text style={styles.bookTitle}>{title}</Text>
-                    </View>
-                    <View style={styles.bookTextContainer}>
-                        {words.map((word, index) => renderWord(word, index))}
-
-                    </View>
+            {isLoading ? (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#0000ff" />
                 </View>
+            ) : (
+                <>
+                    <ImageBackground source={{ uri: pageImage }} style={styles.page}>
+                        <View style={styles.iconBox}>
+                            <TouchableOpacity style={styles.icon} onPress={openYesNoModal} >
+                                <Ionic name="home" size={35} color="white" />
+                            </TouchableOpacity>
+                            <YesNoModal isVisible={isYesNoModalVisible} onClose={closeYesNoModal}
+                                title={"정말 중단하시겠습니까?"}
+                                subtitle={`다시 동화를 읽을 때 \n 현재 페이지부터 읽으실 수 있습니다.`}
+                                buttonText1={"중단하기"}
+                                linkTo={'BookShelf'}
+                                buttonText2={"취소"}
+                                profileId={profileId}
+                                bookId={bookId}
+                                currentPage={currentPage-1} />
+                            <TouchableOpacity style={styles.icon} onPress={openSettingModal} >
+                                <Ionic name="settings" size={35} color="white" />
+                            </TouchableOpacity>
+                            <SettingModal isVisible={isSettingModalVisible} onClose={closeSettingModal} handleSizeFilter={handleSizeFilter} profileId={profileId} bookId={bookId} initialSize={initialSize} initialSpeed={initialSpeed}
+                            currentText={bookText}/>
+                        </View>
+                    </ImageBackground>
 
-                {nextStepVisible && (
-                    <>
-                        <Animated.View style={[styles.wordBox, { opacity: blinkAnim }]}>
-                            <Text style={styles.wordText}>Click on a word {"\n"} you don't know</Text>
-                        </Animated.View>
-                        <NextStep goNextStep={goNextStep} />
-                    </>
-                )}
-                {totalPageCount > 0 && currentPage >= 0 && (
-                    <ProgressBar pages={totalPageCount.toString()} now={(currentPage-1).toString()} />
-                )}
+                    <View style={styles.textBox}>
+                        <View style={styles.titleBox}>
+                            <Text style={styles.bookTitle}>{title}</Text>
+                        </View>
+                        <View style={styles.bookTextContainer}>
+                            {words.map((word, index) => renderWord(word, index))}
+                        </View>
+                    </View>
+
+                    {nextStepVisible && (
+                        <>
+                            <Animated.View style={[styles.wordBox, { opacity: blinkAnim }]}>
+                                <Text style={styles.wordText}>Click on a word {"\n"} you don't know</Text>
+                            </Animated.View>
+                            <NextStep goNextStep={goNextStep} />
+                        </>
+                    )}
+                    {totalPageCount > 0 && currentPage >= 0 && (
+                        <ProgressBar pages={totalPageCount.toString()} now={(currentPage-1).toString()} />
+                    )}
+                </>
+            )}
                 <Modal
                     visible={highlightModalVisible}
                     transparent={true}
@@ -569,6 +582,14 @@ const styles = StyleSheet.create({
     },
     highlightModalText: {
         paddingHorizontal: 10,
+    },
+    emptyContainer: {
+        flex: 1,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 
 })
