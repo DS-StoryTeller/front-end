@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Text, View, StyleSheet, TextInput, TouchableOpacity, Image, Button,Alert } from "react-native"
+import { Text, View, StyleSheet, TextInput, TouchableOpacity, Image,Alert, ScrollView, KeyboardAvoidingView, Platform } from "react-native"
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Logo from '../../assets/images/logo.png';
 import Config from '../config.js';
@@ -140,6 +140,12 @@ const Signin = ({ navigation }) => {
 
     return (
         <SafeAreaView style={styles.container}>
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            >
+                <ScrollView contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
+                    <View style={styles.contentWrapper}>
             <Image source={Logo} style={styles.logo} />
             <View style={styles.bigBox}>
                 <View style={styles.textBox}>
@@ -204,6 +210,7 @@ const Signin = ({ navigation }) => {
                         value={password}
                         onChangeText={text => setPassword(text)}
                         style={styles.input}
+                        secureTextEntry={true}
                     />
                     
                     <TextInput
@@ -211,6 +218,7 @@ const Signin = ({ navigation }) => {
                         value={checkPW}
                         onChangeText={text => setCheckPW(text)}
                         style={styles.input}
+                        secureTextEntry={true}
                     />
                     
                 </View>
@@ -224,6 +232,9 @@ const Signin = ({ navigation }) => {
                     </TouchableOpacity>
                 </View>
             </View>
+            </View>
+                </ScrollView>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     )
 }
@@ -237,13 +248,13 @@ const styles = StyleSheet.create({
     },
 
     logo: {
-        width: '8%',
-        height: '15%',
+        width: 100,
+        height: 90,
         margin: 5,
     },
     bigBox: {
-        width: '35%',
-        height: '80%',
+        width: 400,
+        height: 490,
         backgroundColor: 'white',
         borderRadius: 30,
         padding: 10,
@@ -326,7 +337,17 @@ const styles = StyleSheet.create({
     subTitle: {
         color: '#393939',
         fontSize: 15,
-    }
+    },
+    scrollViewContent: {
+        flexGrow: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+    },
+    contentWrapper: {
+        width: '100%',
+        alignItems: 'center',
+    },
 });
 
 
