@@ -13,7 +13,7 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import YesNoModal from './YesNoModal';
 
-const AddProfileModal = ({visible, onClose}) => {
+const EditProfileModal = ({visible, onClose}) => {
   const [name, setName] = useState('');
   const [birthdate, setBirthdate] = useState('');
   const [pin, setPin] = useState('');
@@ -82,7 +82,7 @@ const AddProfileModal = ({visible, onClose}) => {
               onPress={handleCloseButtonPress}>
               <Text style={styles.closeButtonText}>X</Text>
             </TouchableOpacity>
-            <Text style={styles.modalHeader}>프로필 만들기</Text>
+            <Text style={styles.modalHeader}>프로필 변경하기</Text>
             <Image
               source={
                 selectedProfilePic ||
@@ -131,17 +131,30 @@ const AddProfileModal = ({visible, onClose}) => {
                 onChangeText={text => setPin(text)}
               />
             </View>
-            <TouchableOpacity
-              style={styles.saveButton}
-              onPress={() => {
-                /* 나중에 백엔드 로직 추가 예정 */
-              }}>
-              <Image
-                source={require('../../assets/images/save.png')}
-                style={styles.saveIcon}
-              />
-              <Text style={styles.saveButtonText}>프로필 저장</Text>
-            </TouchableOpacity>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.saveButton}
+                onPress={() => {
+                  /* 나중에 백엔드 로직 추가 예정 */
+                }}>
+                <Image
+                  source={require('../../assets/images/save.png')}
+                  style={styles.saveIcon}
+                />
+                <Text style={styles.saveButtonText}>프로필 저장</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.saveButton}
+                onPress={() => {
+                  /* 나중에 백엔드 로직 추가 예정 */
+                }}>
+                <Image
+                  source={require('../../assets/images/delete.png')}
+                  style={styles.saveIcon}
+                />
+                <Text style={styles.saveButtonText}>프로필 삭제</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -179,7 +192,7 @@ const AddProfileModal = ({visible, onClose}) => {
         isVisible={showYesNoModal}
         onClose={() => setShowYesNoModal(false)}
         title="정말 나가시겠습니까?"
-        subtitle={`나가시면 작성하신 프로필의 정보는 \n 저장되지 않습니다.`}
+        subtitle={`나가시면 수정하신 프로필의 정보는 \n 저장되지 않습니다.`}
         buttonText1="확인"
         buttonText2="취소"
         onConfirm={handleConfirm}
@@ -255,6 +268,13 @@ const styles = StyleSheet.create({
     color: '#FF8B42',
     height: '125%',
   },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '28%',
+    marginTop: 30,
+  },
+
   saveButton: {
     backgroundColor: '#F8C784',
     paddingHorizontal: 20,
@@ -262,7 +282,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 2,
     borderColor: '#393939',
-    marginTop: 30,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -310,4 +329,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddProfileModal;
+export default EditProfileModal;
