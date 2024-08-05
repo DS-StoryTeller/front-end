@@ -4,14 +4,28 @@ import fetchWithAuth from '../api/fetchWithAuth.js';
 
 const SizeFilter = ({handleSizeFilter, profileId, bookId, initialSize }) => {
     let buttons = ["작게", "기본", "크게"];
-    const [btnActive, setBtnActive] = useState(initialSize);
+    const [btnActive, setBtnActive] = useState("");
 
     useEffect(() => {
-        setBtnActive(initialSize);
+        const activeButton = getButtonLabel(initialSize);
+        setBtnActive(activeButton);
     }, [initialSize]);
 
-    const getFontSizeValue = (size) => {
+    const getButtonLabel = (size) => {
         switch (size) {
+            case "SMALL":
+                return "작게";
+            case "MEDIUM":
+                return "기본";
+            case "LARGE":
+                return "크게";
+            default:
+                return "기본";
+        }
+    };
+
+    const getFontSizeValue = (label) => {
+        switch (label) {
             case "작게":
                 return "SMALL";
             case "기본":
@@ -21,15 +35,14 @@ const SizeFilter = ({handleSizeFilter, profileId, bookId, initialSize }) => {
             default:
                 return "MEDIUM";
         }
-    }
-
-    const toggleActive = async (size) => {
-       const fontSizeValue = getFontSizeValue(size);
-        setBtnActive(size);
+    };
+    const toggleActive = async (label) => {
+       const fontSizeValue = getFontSizeValue(label);
+        setBtnActive(label);
         handleSizeFilter(fontSizeValue); 
 
         try {
-            const response = await fetchWithAuth(`http://192.168.219.105:8080/settings/update?profileId=${profileId}&bookId=${bookId}`, {
+            const response = await fetchWithAuth(`/settings/update?profileId=${profileId}&bookId=${bookId}`, {
                 method: 'PUT',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -40,7 +53,7 @@ const SizeFilter = ({handleSizeFilter, profileId, bookId, initialSize }) => {
             });
 
             if (response.status !== 200) { 
-                Alert.alert('Error', 'Failed to update settings');
+                Alert.alert('Error', '글씨 크기 업데이트 실패');
                 const result = await response.json();
                 console.log(result); // 응답 결과 확인
             } else {
@@ -48,7 +61,7 @@ const SizeFilter = ({handleSizeFilter, profileId, bookId, initialSize }) => {
                 console.log(result); // 응답 결과 확인
             }
         } catch (error) {
-            Alert.alert('Error', 'Failed to update settings');
+            Alert.alert('Error', '글씨 크기 업데이트 실패');
             console.error(error);
         }
     }
