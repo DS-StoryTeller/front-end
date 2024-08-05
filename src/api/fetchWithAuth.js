@@ -1,4 +1,4 @@
-import { getAccessToken, getRefreshToken, getUser, storeTokens, removeTokens } from '../utils/storage.js'
+import { getAccessToken, getRefreshToken, getUser, storeTokens, removeTokens, atob } from '../utils/storage.js'
 import Config from '../config.js';
 
 const isTokenExpired = (token) => {

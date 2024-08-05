@@ -1,12 +1,12 @@
-import React, {useState} from 'react';
-import {Image, View, StyleSheet, TouchableOpacity, Text} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import React, { useState } from 'react';
+import { Image, View, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import VoiceInputModal from '../components/VoiceInputModal';
 
-const books = Array.from({length: 12}, (_, index) => ({
-  // Increased the number of books to 12
+const books = Array.from({ length: 12 }, (_, index) => ({
   id: String(index),
+  imageUrl: require('../../assets/images/book.png'), // 임시 이미지
 }));
 
 const BookShelf = () => {
@@ -17,7 +17,12 @@ const BookShelf = () => {
     setModalVisible(!modalVisible);
   };
 
-  const renderShelf = shelfIndex => {
+  const handleBookPress = (bookId) => {
+    // 책 클릭 시 처리할 함수
+    console.log(`Book with ID ${bookId} pressed`);
+  };
+
+  const renderShelf = (shelfIndex) => {
     const booksForShelf = books.slice(shelfIndex * 4, (shelfIndex + 1) * 4);
 
     return (
@@ -27,14 +32,19 @@ const BookShelf = () => {
           style={styles.shelf}
         />
         {booksForShelf.map((book, index) => (
-          <Image
+          <TouchableOpacity
             key={book.id}
-            source={require('../../assets/images/book.png')}
+            onPress={() => handleBookPress(book.id)}
             style={[
-              styles.bookImage,
-              {left: 355 + index * 160}, // Adjusted left value to move the books further right
+              styles.bookButton,
+              { left: 355 + index * 160 }, // 책 위치 조정
             ]}
-          />
+          >
+            <Image
+              source={book.imageUrl}
+              style={styles.bookImage}
+            />
+          </TouchableOpacity>
         ))}
       </View>
     );
@@ -68,7 +78,7 @@ const BookShelf = () => {
         />
       </View>
       <View style={styles.shelfWrapper}>
-        {Array.from({length: numberOfShelves}).map((_, index) =>
+        {Array.from({ length: numberOfShelves }).map((_, index) =>
           renderShelf(index),
         )}
       </View>
@@ -82,8 +92,9 @@ const BookShelf = () => {
         <LinearGradient
           colors={['#2170CD', '#8FA0E8']}
           style={styles.roundButtonGradient}
-          start={{x: 0, y: 0}}
-          end={{x: 1, y: 0}}>
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+        >
           <Image
             source={require('../../assets/images/drawing.png')}
             style={styles.roundButtonImage}
@@ -99,18 +110,20 @@ const BookShelf = () => {
   );
 };
 
-const RadioButton = ({title, selected, onPress, style, textStyle}) => (
+const RadioButton = ({ title, selected, onPress, style, textStyle }) => (
   <TouchableOpacity onPress={onPress} style={[styles.radioButton, style]}>
     {selected ? (
       <LinearGradient
         colors={['#F8C683', '#FF8C43']}
-        style={[styles.radioButtonGradient, styles.selected, style]}>
+        style={[styles.radioButtonGradient, styles.selected, style]}
+      >
         <Text
           style={[
             styles.radioButtonText,
             styles.radioButtonTextSelected,
             textStyle,
-          ]}>
+          ]}
+        >
           {title}
         </Text>
       </LinearGradient>
@@ -170,7 +183,7 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     borderColor: '#FF8C43',
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 3,
   },
@@ -200,19 +213,20 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 100,
     resizeMode: 'contain',
-    top: 20, // Moved shelf image down
+    top: 20,
+  },
+  bookButton: {
+    position: 'absolute',
+    top: -68,
   },
   bookImage: {
     width: 140,
     height: 130,
     resizeMode: 'contain',
-    position: 'absolute',
-    top: -68, // Moved the book image down
-    left: 355, // Adjusted left value to move the book images further right
   },
   squareButton: {
     position: 'absolute',
-    top: 20, // Moved square button down
+    top: 20,
     right: 20,
     width: 110,
     height: 110,
@@ -229,7 +243,7 @@ const styles = StyleSheet.create({
   },
   roundButton: {
     position: 'absolute',
-    bottom: 5, // Moved round button down
+    bottom: 5,
     alignSelf: 'center',
     width: 80,
     height: 80,
