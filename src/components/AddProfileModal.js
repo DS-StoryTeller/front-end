@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import YesNoModal from './YesNoModal';
 
-const AddProfileModal = ({visible, onClose}) => {
+const AddProfileModal = ({ visible, onClose }) => {
   const [name, setName] = useState('');
   const [birthdate, setBirthdate] = useState('');
   const [pin, setPin] = useState('');
@@ -22,6 +22,7 @@ const AddProfileModal = ({visible, onClose}) => {
   const [showProfilePicModal, setShowProfilePicModal] = useState(false);
   const [selectedProfilePic, setSelectedProfilePic] = useState(null);
   const [profilePictures, setProfilePictures] = useState([]);
+  const [showYesNoModal, setShowYesNoModal] = useState(false);
 
   const onChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
@@ -29,9 +30,7 @@ const AddProfileModal = ({visible, onClose}) => {
     setDate(currentDate);
 
     let tempDate = new Date(currentDate);
-    let fDate = `${tempDate.getFullYear()}-${
-      tempDate.getMonth() + 1
-    }-${tempDate.getDate()}`;
+    let fDate = `${tempDate.getFullYear()}-${tempDate.getMonth() + 1}-${tempDate.getDate()}`;
     setBirthdate(fDate);
   };
 
@@ -39,7 +38,7 @@ const AddProfileModal = ({visible, onClose}) => {
     setShowDatePicker(true);
   };
 
-  const handleProfilePicSelect = pic => {
+  const handleProfilePicSelect = (pic) => {
     setSelectedProfilePic(pic);
     setShowProfilePicModal(false);
   };
@@ -57,6 +56,15 @@ const AddProfileModal = ({visible, onClose}) => {
     fetchProfilePictures();
   }, []);
 
+  const handleConfirm = () => {
+    setShowYesNoModal(false);
+    onClose(); // Close the AddProfileModal
+  };
+
+  const handleCloseButtonPress = () => {
+    setShowYesNoModal(true);
+  };
+
   return (
     <>
       {/* AddProfileModal */}
@@ -67,7 +75,7 @@ const AddProfileModal = ({visible, onClose}) => {
         onRequestClose={onClose}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <TouchableOpacity style={styles.closeButton} onPress={handleCloseButtonPress}>
               <Text style={styles.closeButtonText}>X</Text>
             </TouchableOpacity>
             <Text style={styles.modalHeader}>프로필 만들기</Text>
@@ -87,7 +95,7 @@ const AddProfileModal = ({visible, onClose}) => {
                 value={name}
                 placeholder="이름"
                 placeholderTextColor="#FF8B42"
-                onChangeText={text => setName(text)}
+                onChangeText={(text) => setName(text)}
               />
             </View>
             <TouchableOpacity
@@ -116,10 +124,12 @@ const AddProfileModal = ({visible, onClose}) => {
                 placeholder="PIN"
                 placeholderTextColor="#FF8B42"
                 secureTextEntry={true}
-                onChangeText={text => setPin(text)}
+                onChangeText={(text) => setPin(text)}
               />
             </View>
-            <TouchableOpacity style={styles.saveButton}>
+            <TouchableOpacity
+              style={styles.saveButton}
+              onPress={() => setShowYesNoModal(true)}>
               <Image
                 source={require('../../assets/images/save.png')}
                 style={styles.saveIcon}
@@ -143,7 +153,7 @@ const AddProfileModal = ({visible, onClose}) => {
             </Text>
             <FlatList
               data={profilePictures}
-              renderItem={({item}) => (
+              renderItem={({ item }) => (
                 <TouchableOpacity
                   style={styles.profilePicItem}
                   onPress={() => handleProfilePicSelect(item.uri)}>
@@ -151,12 +161,23 @@ const AddProfileModal = ({visible, onClose}) => {
                 </TouchableOpacity>
               )}
               numColumns={4}
-              keyExtractor={item => item.id}
+              keyExtractor={(item) => item.id}
               contentContainerStyle={styles.profilePicListContainer}
             />
           </View>
         </View>
       </Modal>
+
+      {/* YesNoModal */}
+      <YesNoModal
+        isVisible={showYesNoModal}
+        onClose={() => setShowYesNoModal(false)}
+        title="정말 나가시겠습니까?"
+        subtitle={`나가시면 작성하신 프로필의 정보는 \n 저장되지 않습니다.`}
+        buttonText1="확인"
+        buttonText2="취소"
+        onConfirm={handleConfirm}
+      />
     </>
   );
 };
