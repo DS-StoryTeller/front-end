@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import VoiceInputModal from '../components/VoiceInputModal';
 import fetchWithAuth from '../api/fetchWithAuth';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const BookShelf = () => {
   const [selected, setSelected] = useState('ALL');
@@ -24,7 +25,10 @@ const BookShelf = () => {
           method: 'GET',
         });
         const result = await response.json();
-        if (result.status === 200 && (result.code === 'SUCCESS_RETRIEVE_BOOKS' || result.code === 'SUCCESS_RETRIEVE_FAVORITE_BOOKS' || result.code === 'SUCCESS_RETRIEVE_READING_BOOKS')) {
+        if (result.status === 200 && 
+            (result.code === 'SUCCESS_RETRIEVE_BOOKS' || 
+            result.code === 'SUCCESS_RETRIEVE_FAVORITE_BOOKS' || 
+            result.code === 'SUCCESS_RETRIEVE_READING_BOOKS')) {
           setBooks(result.data);
         }
       } catch (error) {
@@ -43,6 +47,24 @@ const BookShelf = () => {
     console.log(`Book with ID ${bookId} pressed`);
   };
 
+  const toggleFavorite = async (bookId) => {
+    try {
+      const response = await fetchWithAuth(`/books/favorite?profileId=${profileId}&bookId=${bookId}`, {
+        method: 'PUT',
+      });
+      const result = await response.json();
+      if (result.status === 200 && result.code === 'SUCCESS_UPDATE_FAVORITE') {
+        setBooks(prevBooks =>
+          prevBooks.map(book =>
+            book.bookId === bookId ? { ...book, isFavorite: !book.isFavorite } : book
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Failed to update favorite status:', error);
+    }
+  };
+
   const renderShelf = (shelfIndex) => {
     const booksForShelf = books.slice(shelfIndex * 4, (shelfIndex + 1) * 4);
 
@@ -53,25 +75,36 @@ const BookShelf = () => {
           style={styles.shelf}
         />
         {booksForShelf.map((book, index) => (
-          <TouchableOpacity
+          <View
             key={book.bookId}
-            onPress={() => handleBookPress(book.bookId)}
             style={[
               styles.bookButton,
               { left: 355 + index * 160 },
             ]}
           >
-            <Image
-              source={{ uri: book.coverImage }}
-              style={styles.bookImage}
-            />
-          </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleBookPress(book.bookId)}>
+              <Image
+                source={{ uri: book.coverImage }}
+                style={styles.bookImage}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.favoriteButton}
+              onPress={() => toggleFavorite(book.bookId)}
+            >
+              <Icon
+                name={book.isFavorite ? 'star' : 'star-o'}
+                size={24}
+                color={book.isFavorite ? 'gold' : 'gray'}
+              />
+            </TouchableOpacity>
+          </View>
         ))}
       </View>
     );
   };
 
-  const numberOfShelves = 3;
+  const numberOfShelves = Math.max(Math.ceil(books.length / 4), 3); // 최소 3개의 책장
 
   return (
     <SafeAreaView style={styles.container}>
@@ -244,6 +277,12 @@ const styles = StyleSheet.create({
     width: 140,
     height: 130,
     resizeMode: 'contain',
+  },
+  favoriteButton: {
+    position: 'absolute',
+    bottom: 5,
+    left: 5,
+    backgroundColor: 'transparent',
   },
   squareButton: {
     position: 'absolute',
