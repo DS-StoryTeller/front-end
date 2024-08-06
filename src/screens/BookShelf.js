@@ -14,11 +14,17 @@ const BookShelf = () => {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const response = await fetchWithAuth(`/books/booklist?profileId=${profileId}`, {
+        let endpoint = `/books/booklist?profileId=${profileId}`;
+        if (selected === 'FAVORITE') {
+          endpoint = `/books/favorites?profileId=${profileId}`;
+        } else if (selected === 'READING') {
+          endpoint = `/books/reading?profileId=${profileId}`;
+        }
+        const response = await fetchWithAuth(endpoint, {
           method: 'GET',
         });
         const result = await response.json();
-        if (result.status === 200 && result.code === 'SUCCESS_RETRIEVE_BOOKS') {
+        if (result.status === 200 && (result.code === 'SUCCESS_RETRIEVE_BOOKS' || result.code === 'SUCCESS_RETRIEVE_FAVORITE_BOOKS' || result.code === 'SUCCESS_RETRIEVE_READING_BOOKS')) {
           setBooks(result.data);
         }
       } catch (error) {
@@ -27,7 +33,7 @@ const BookShelf = () => {
     };
 
     fetchBooks();
-  }, []);
+  }, [selected]);
 
   const toggleModal = () => {
     setModalVisible(!modalVisible);
