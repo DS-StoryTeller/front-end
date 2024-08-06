@@ -1,3 +1,4 @@
+// src/screens/BookShelf.js
 import React, { useState, useEffect } from 'react';
 import { Image, View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -5,12 +6,14 @@ import LinearGradient from 'react-native-linear-gradient';
 import VoiceInputModal from '../components/VoiceInputModal';
 import fetchWithAuth from '../api/fetchWithAuth';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { useNavigation } from '@react-navigation/native'; // 네비게이션 추가
 
 const BookShelf = () => {
   const [selected, setSelected] = useState('ALL');
   const [modalVisible, setModalVisible] = useState(false);
   const [books, setBooks] = useState([]);
   const profileId = 3;
+  const navigation = useNavigation(); // 네비게이션 훅 사용
 
   useEffect(() => {
     const fetchBooks = async () => {
@@ -44,7 +47,7 @@ const BookShelf = () => {
   };
 
   const handleBookPress = (bookId) => {
-    console.log(`Book with ID ${bookId} pressed`);
+    navigation.navigate('BookRead', { profileId, bookId }); // BookRead 페이지로 네비게이션
   };
 
   const toggleFavorite = async (bookId) => {
