@@ -10,6 +10,7 @@ import NextStep from '../components/NextStep';
 import BookBg from '../../assets/images/bookBg.png';
 import fetchWithAuth from '../api/fetchWithAuth.js';
 import Tts from 'react-native-tts';
+import { WebView } from 'react-native-webview'; 
 
 const BookRead = ({ navigation }) => {
     const [title, setTitle] = useState('');
@@ -52,25 +53,20 @@ const BookRead = ({ navigation }) => {
 
 
     // 모르는 단어 조희
-    const [wordMeaning, setWordMeaning] = useState('');
+    const [wordUrl, setWordUrl] = useState('');
     const [isWordModalVisible, setIsWordModalVisible] = useState(false);
 
     const handleWordClick = async (word) => {
         const cleanedWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").trim();
-        try {
-            const response = await fetchWithAuth(`https://backend-api.com/word-meaning?word=${cleanedWord}`);
-            const data = await response.json();
-            setWordMeaning(data.meaning);
-            setIsWordModalVisible(true);
-        } catch (error) {
-            Alert.alert('Error', 'Failed to fetch the word meaning');
-        }
+        const url = `https://en.dict.naver.com/#/search?query=${cleanedWord}`;
+        setWordUrl(url);
+        setIsWordModalVisible(true);
     };
 
 
     const closeWordModal = () => {
         setIsWordModalVisible(false);
-        setWordMeaning('');
+        setWordUrl('');
     };
 
     // 페이지 세부정보 조회
@@ -153,7 +149,7 @@ const BookRead = ({ navigation }) => {
         const loadData = async () => {
             await fetchBookDetails();
             await fetchSettings();
-            setIsLoading(false); // 모든 데이터 로드 완료 후 로딩 상태 업데이트
+            setIsLoading(false); 
         };
         loadData();
     }, []);
@@ -473,22 +469,21 @@ const BookRead = ({ navigation }) => {
                     </TouchableOpacity>
                 </Modal>
                 
-                {/*             
                 <Modal
-                    visible={isWordModalVisible}
-                    transparent={true}
-                    animationType="slide"
-                    onRequestClose={closeWordModal}
-                >
-                    <View style={styles.modalContainer}>
-                        <View style={styles.modalContent}>
-                            <Text style={styles.modalText}>{wordMeaning}</Text>
-                            <TouchableOpacity onPress={closeWordModal}>
-                                <Text style={styles.closeButton}>Close</Text>
-                            </TouchableOpacity>
-                        </View>
+                visible={isWordModalVisible}
+                transparent={true}
+                animationType="slide"
+                onRequestClose={closeWordModal}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.webviewContainer}>
+                        <TouchableOpacity style={styles.closeButton} onPress={closeWordModal}>
+                            <Ionic name="close" size={23} color='black' />
+                        </TouchableOpacity>
+                        <WebView source={{ uri: wordUrl }} />
                     </View>
-                </Modal> */}
+                </View>
+            </Modal>
             </ImageBackground>
         </SafeAreaView>
     )
@@ -591,6 +586,24 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-
+    modalContainer: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    webviewContainer: {
+        width: '80%',
+        height: '90%',
+        backgroundColor: 'white',
+        borderRadius: 10,
+        overflow: 'hidden',
+    },
+    closeButton: {
+        padding: 5,
+        paddingHorizontal: 15,
+        backgroundColor: '#fff',
+        alignItems: 'flex-end',
+    },
 })
 export default BookRead
