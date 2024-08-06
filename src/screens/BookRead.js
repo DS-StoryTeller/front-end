@@ -21,6 +21,7 @@ const BookRead = ({ navigation }) => {
     const [pageImage, setPageImage] = useState(null);
     const [isLoading, setIsLoading] = useState(true); 
 
+    const [isTtsFinished, setIsTtsFinished] = useState(false);
     const [fontSize, setFontSize] = useState(18);
     const [initialSpeed, setInitialSpeed] = useState("1.0배속");
     const [initialSize, setInitialSize] = useState("MEDIUM");
@@ -57,12 +58,12 @@ const BookRead = ({ navigation }) => {
     const [isWordModalVisible, setIsWordModalVisible] = useState(false);
 
     const handleWordClick = async (word) => {
+        if (!isTtsFinished) return; 
         const cleanedWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").trim();
         const url = `https://en.dict.naver.com/#/search?query=${cleanedWord}`;
         setWordUrl(url);
         setIsWordModalVisible(true);
     };
-
 
     const closeWordModal = () => {
         setIsWordModalVisible(false);
@@ -192,6 +193,7 @@ const BookRead = ({ navigation }) => {
     
         // 음성이 끝났을 때 이벤트 리스너 추가
         const handleFinish = () => {
+            setIsTtsFinished(true); 
             showNextStep();
         };
     
@@ -204,11 +206,12 @@ const BookRead = ({ navigation }) => {
     
 
     useEffect(() => {
+        setIsTtsFinished(false); 
         if (bookText) {
             Tts.speak(bookText);
         }
     }, [bookText]);
-
+    
     // 다른 페이지 이동시 TTS 멈춤
     useFocusEffect(
         React.useCallback(() => {
@@ -275,6 +278,7 @@ const BookRead = ({ navigation }) => {
     const [highlightModalPosition, setHighlightModalPosition] = useState({ top: 0, left: 0 });
 
     const handleLongPress = (word, event) => {
+        if (!isTtsFinished) return;
         const cleanedWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").trim();
         const { pageY, pageX } = event.nativeEvent;
         setHighlightedWord(cleanedWord);
@@ -324,10 +328,10 @@ const BookRead = ({ navigation }) => {
     
                 if (response.status !== 200) {
                     const result = await response.json();
-                    console.log('단어 삭제 실패:', result); // 에러 응답 확인
+                    console.log('단어 삭제 실패:', result); 
                     Alert.alert('Error', '단어 삭제 실패');
                 } else {
-                    console.log(await response.json()); // 응답 결과 확인
+                    console.log(await response.json());
                     setHighlightedWords(prev => prev.filter(item => item.word !== highlightedWord));
                     setHighlightedWord(null);
                     setHighlightModalVisible(false);
@@ -500,7 +504,7 @@ const styles = StyleSheet.create({
     },
 
     titleBox: {
-        marginBottom: 30,
+        marginBottom: 20,
     },
     textBox: {
         width: '35%',
