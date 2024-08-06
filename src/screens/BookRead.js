@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { StyleSheet, Text, ImageBackground, View, TouchableOpacity, Alert, Animated, Modal, AppState, ActivityIndicator  } from "react-native"
-import { SafeAreaView } from 'react-native-safe-area-context'
+import React, { useState, useEffect, useRef } from 'react';
+import { StyleSheet, Text, ImageBackground, View, TouchableOpacity, Alert, Animated, Modal, AppState, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import Ionic from 'react-native-vector-icons/Ionicons';
 import ProgressBar from '../components/ProgressBar';
@@ -10,16 +10,17 @@ import NextStep from '../components/NextStep';
 import BookBg from '../../assets/images/bookBg.png';
 import fetchWithAuth from '../api/fetchWithAuth.js';
 import Tts from 'react-native-tts';
+import { WebView } from 'react-native-webview';
 
 const BookRead = ({ navigation }) => {
     const [title, setTitle] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPageCount, setTotalPageCount] = useState(0);
     const [bookText, setBookText] = useState('');
-    const [coverImage, setCoverImage] = useState('');
     const [pageImage, setPageImage] = useState(null);
-    const [isLoading, setIsLoading] = useState(true); 
+    const [isLoading, setIsLoading] = useState(true);
 
+    const [isTtsFinished, setIsTtsFinished] = useState(false);
     const [fontSize, setFontSize] = useState(18);
     const [initialSpeed, setInitialSpeed] = useState("1.0배속");
     const [initialSize, setInitialSize] = useState("MEDIUM");
@@ -50,35 +51,27 @@ const BookRead = ({ navigation }) => {
     // nextStep 버튼
     const [nextStepVisible, setNextStepVisible] = useState(false);
 
-
-    // 모르는 단어 조희
-    const [wordMeaning, setWordMeaning] = useState('');
+    // 모르는 단어 조회
+    const [wordUrl, setWordUrl] = useState('');
     const [isWordModalVisible, setIsWordModalVisible] = useState(false);
 
     const handleWordClick = async (word) => {
+        if (!isTtsFinished) return;
         const cleanedWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").trim();
-        try {
-            const response = await fetchWithAuth(`https://backend-api.com/word-meaning?word=${cleanedWord}`);
-            const data = await response.json();
-            setWordMeaning(data.meaning);
-            setIsWordModalVisible(true);
-        } catch (error) {
-            Alert.alert('Error', 'Failed to fetch the word meaning');
-        }
+        const url = `https://en.dict.naver.com/#/search?query=${cleanedWord}`;
+        setWordUrl(url);
+        setIsWordModalVisible(true);
     };
-
 
     const closeWordModal = () => {
         setIsWordModalVisible(false);
-        setWordMeaning('');
+        setWordUrl('');
     };
 
     // 페이지 세부정보 조회
     const fetchPageDetails = async (pageNumber) => {
         try {
-      
             const response = await fetchWithAuth(`/pages/detail?profileId=${profileId}&bookId=${bookId}&pageNum=${pageNumber}`);
-
             const result = await response.json();
 
             console.log('페이지 세부정보:', result);
@@ -88,12 +81,12 @@ const BookRead = ({ navigation }) => {
                 setBookText(pageData.content);
                 setPageImage(pageData.image);
                 setHighlightedWords((pageData.unknownWords || []).map(word => ({ word: word.unknownWord, id: word.unknownWordId }))); // 페이지에 포함된 모르는 단어들을 하이라이트 표시
-                setCurrentPage(pageNumber);  
+                setCurrentPage(pageNumber);
             } else {
                 Alert.alert('Error', '페이지 세부정보 불러오기 실패');
             }
         } catch (error) {
-            console.error('페이지 세부정보 불러오기 실패', error); 
+            console.error('페이지 세부정보 불러오기 실패', error);
             Alert.alert('Error', '페이지 세부정보 불러오기 실패');
         }
     };
@@ -103,7 +96,7 @@ const BookRead = ({ navigation }) => {
         try {
             const response = await fetchWithAuth(`/books/detail?profileId=${profileId}&bookId=${bookId}`);
             const result = await response.json();
-            console.log('책 세부정보 응답', result); 
+            console.log('책 세부정보 응답', result);
 
             if (response.status === 200) {
                 setTitle(result.data.title);
@@ -116,7 +109,7 @@ const BookRead = ({ navigation }) => {
                 Alert.alert('Error', '책 세부정보 불러오기 실패');
             }
         } catch (error) {
-            console.error('책 세부정보 불러오기 실패', error); 
+            console.error('책 세부정보 불러오기 실패', error);
             Alert.alert('Error', '책 세부정보 불러오기 실패');
         }
     };
@@ -131,20 +124,20 @@ const BookRead = ({ navigation }) => {
             if (response.status === 200) {
                 const { fontSize, readingSpeed } = result.data;
                 setInitialSpeed(readingSpeed === "SLOW" ? "0.5배속" :
-                                readingSpeed === "SLIGHTLY_SLOW" ? "0.75배속" :
-                                readingSpeed === "NORMAL" ? "1.0배속" :
-                                readingSpeed === "SLIGHTLY_FAST" ? "1.25배속" :
+                    readingSpeed === "SLIGHTLY_SLOW" ? "0.75배속" :
+                        readingSpeed === "NORMAL" ? "1.0배속" :
+                            readingSpeed === "SLIGHTLY_FAST" ? "1.25배속" :
                                 "1.5배속");
                 setInitialSize(fontSize);
                 setFontSize(fontSize === "SMALL" ? 14 :
-                            fontSize === "MEDIUM" ? 18 :
-                            22);
+                    fontSize === "MEDIUM" ? 18 :
+                        22);
             } else {
                 console.log('설정 세부정보 불러오기 실패:', result);
                 Alert.alert('Error', '설정 세부정보 불러오기 실패');
             }
         } catch (error) {
-            console.error('설정 세부정보 불러오기 실패', error); 
+            console.error('설정 세부정보 불러오기 실패', error);
             Alert.alert('Error', '설정 세부정보 불러오기 실패');
         }
     };
@@ -153,10 +146,17 @@ const BookRead = ({ navigation }) => {
         const loadData = async () => {
             await fetchBookDetails();
             await fetchSettings();
-            setIsLoading(false); // 모든 데이터 로드 완료 후 로딩 상태 업데이트
+            setIsLoading(false);
         };
         loadData();
     }, []);
+
+    const handleSpeedFilter = (speed) => {
+        setNextStepVisible(false);
+        setIsTtsFinished(false);
+        Tts.stop();
+        setInitialSpeed(speed);
+    };
 
     useEffect(() => {
         const setTtsRate = (speed) => {
@@ -182,52 +182,69 @@ const BookRead = ({ navigation }) => {
             }
             Tts.setDefaultRate(ttsRate);
         };
-    
+
         Tts.setDefaultLanguage('en-US');
         setTtsRate(initialSpeed); // initialSpeed를 기반으로 속도 설정
-        Tts.setDefaultPitch(1.0); // 피치 조정
-    
+        Tts.setDefaultPitch(1.0);
+
         Tts.voices().then(voices => {
             const voice = voices.find(v => v.language === 'en-US' && v.name.includes('female'));
             if (voice) {
                 Tts.setDefaultVoice(voice.id);
             }
         });
-    
+
         // 음성이 끝났을 때 이벤트 리스너 추가
         const handleFinish = () => {
-            showNextStep();
+            setIsTtsFinished(true);
+            setNextStepVisible(true);
+            startBlinking();
         };
-    
+
         const finishListener = Tts.addListener('tts-finish', handleFinish);
-    
+
+        setNextStepVisible(false);
+        setIsTtsFinished(false);
+
         return () => {
             finishListener.remove();
         };
     }, [initialSpeed]);
-    
+
 
     useEffect(() => {
+        setIsTtsFinished(false);
+        setNextStepVisible(false);
         if (bookText) {
             Tts.speak(bookText);
         }
     }, [bookText]);
+
+    useEffect(() => {
+        setNextStepVisible(false); 
+        if (bookText) {
+            Tts.stop();
+            Tts.speak(bookText);
+        }
+    }, [initialSpeed]);
 
     // 다른 페이지 이동시 TTS 멈춤
     useFocusEffect(
         React.useCallback(() => {
             return () => {
                 Tts.stop();
+                setNextStepVisible(false);
             };
         }, [])
     );
 
-     
+
     // 백그라운드 이동시 TTS 멈춤
     useEffect(() => {
         const handleAppStateChange = (nextAppState) => {
             if (nextAppState.match(/inactive|background/)) {
                 Tts.stop();
+                setNextStepVisible(false);
             }
         };
 
@@ -237,11 +254,6 @@ const BookRead = ({ navigation }) => {
             subscription.remove();
         };
     }, []);
-
-    const showNextStep = () => {
-        setNextStepVisible(true);
-        startBlinking();
-    };
 
     const blinkAnim = useRef(new Animated.Value(1)).current;
 
@@ -279,6 +291,7 @@ const BookRead = ({ navigation }) => {
     const [highlightModalPosition, setHighlightModalPosition] = useState({ top: 0, left: 0 });
 
     const handleLongPress = (word, event) => {
+        if (!isTtsFinished) return;
         const cleanedWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").trim();
         const { pageY, pageX } = event.nativeEvent;
         setHighlightedWord(cleanedWord);
@@ -316,22 +329,22 @@ const BookRead = ({ navigation }) => {
         }
     };
 
-    
+
     const cancelHighlight = async () => {
         const highlightedWordObj = highlightedWords.find(item => item.word === highlightedWord);
-    
+
         if (highlightedWordObj) {
             try {
                 const response = await fetchWithAuth(`/unknownwords/delete/${highlightedWordObj.id}`, {
                     method: 'DELETE',
                 });
-    
+
                 if (response.status !== 200) {
                     const result = await response.json();
-                    console.log('단어 삭제 실패:', result); // 에러 응답 확인
+                    console.log('단어 삭제 실패:', result);
                     Alert.alert('Error', '단어 삭제 실패');
                 } else {
-                    console.log(await response.json()); // 응답 결과 확인
+                    console.log(await response.json());
                     setHighlightedWords(prev => prev.filter(item => item.word !== highlightedWord));
                     setHighlightedWord(null);
                     setHighlightModalVisible(false);
@@ -345,10 +358,9 @@ const BookRead = ({ navigation }) => {
             setHighlightModalVisible(false);
         }
     };
-    
-    
 
- const renderWord = (word, index) => {
+
+    const renderWord = (word, index) => {
         const cleanedWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").trim();
         const highlightedWordObj = highlightedWords.find(item => item.word === cleanedWord);
         const isHighlighted = !!highlightedWordObj;
@@ -371,7 +383,7 @@ const BookRead = ({ navigation }) => {
         setHighlightModalVisible(false);
         setHighlightedWord(null);
     };
-    
+
     const handleModalBackgroundPress = () => {
         closeHighlightModal();
     };
@@ -394,61 +406,62 @@ const BookRead = ({ navigation }) => {
         }
     };
 
-   
+
 
     return (
         <SafeAreaView style={styles.container}>
             <ImageBackground source={BookBg} >
-            {isLoading ? (
-                <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#0000ff" />
-                </View>
-            ) : (
-                <>
-                    <ImageBackground source={{ uri: pageImage }} style={styles.page}>
-                        <View style={styles.iconBox}>
-                            <TouchableOpacity style={styles.icon} onPress={openYesNoModal} >
-                                <Ionic name="home" size={35} color="white" />
-                            </TouchableOpacity>
-                            <YesNoModal isVisible={isYesNoModalVisible} onClose={closeYesNoModal}
-                                title={"정말 중단하시겠습니까?"}
-                                subtitle={`다시 동화를 읽을 때 \n 현재 페이지부터 읽으실 수 있습니다.`}
-                                buttonText1={"중단하기"}
-                                linkTo={'BookShelf'}
-                                buttonText2={"취소"}
-                                profileId={profileId}
-                                bookId={bookId}
-                                currentPage={currentPage-1} />
-                            <TouchableOpacity style={styles.icon} onPress={openSettingModal} >
-                                <Ionic name="settings" size={35} color="white" />
-                            </TouchableOpacity>
-                            <SettingModal isVisible={isSettingModalVisible} onClose={closeSettingModal} handleSizeFilter={handleSizeFilter} profileId={profileId} bookId={bookId} initialSize={initialSize} initialSpeed={initialSpeed}
-                            currentText={bookText}/>
-                        </View>
-                    </ImageBackground>
-
-                    <View style={styles.textBox}>
-                        <View style={styles.titleBox}>
-                            <Text style={styles.bookTitle}>{title}</Text>
-                        </View>
-                        <View style={styles.bookTextContainer}>
-                            {words.map((word, index) => renderWord(word, index))}
-                        </View>
+                {isLoading ? (
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="large" color="#0000ff" />
                     </View>
+                ) : (
+                    <>
+                        <ImageBackground source={{ uri: pageImage }} style={styles.page}>
+                            <View style={styles.iconBox}>
+                                <TouchableOpacity style={styles.icon} onPress={openYesNoModal} >
+                                    <Ionic name="home" size={35} color="white" />
+                                </TouchableOpacity>
+                                <YesNoModal isVisible={isYesNoModalVisible} onClose={closeYesNoModal}
+                                    title={"정말 중단하시겠습니까?"}
+                                    subtitle={`다시 동화를 읽을 때 \n 현재 페이지부터 읽으실 수 있습니다.`}
+                                    buttonText1={"중단하기"}
+                                    linkTo={'BookShelf'}
+                                    buttonText2={"취소"}
+                                    profileId={profileId}
+                                    bookId={bookId}
+                                    currentPage={currentPage - 1} />
+                                <TouchableOpacity style={styles.icon} onPress={openSettingModal} >
+                                    <Ionic name="settings" size={35} color="white" />
+                                </TouchableOpacity>
+                                <SettingModal isVisible={isSettingModalVisible} onClose={closeSettingModal} handleSizeFilter={handleSizeFilter}
+                                handleSpeedFilter={handleSpeedFilter} profileId={profileId} bookId={bookId} initialSize={initialSize} initialSpeed={initialSpeed}
+                                    currentText={bookText} />
+                            </View>
+                        </ImageBackground>
 
-                    {nextStepVisible && (
-                        <>
-                            <Animated.View style={[styles.wordBox, { opacity: blinkAnim }]}>
-                                <Text style={styles.wordText}>Click on a word {"\n"} you don't know</Text>
-                            </Animated.View>
-                            <NextStep goNextStep={goNextStep} />
-                        </>
-                    )}
-                    {totalPageCount > 0 && currentPage >= 0 && (
-                        <ProgressBar pages={totalPageCount.toString()} now={(currentPage-1).toString()} />
-                    )}
-                </>
-            )}
+                        <View style={styles.textBox}>
+                            <View style={styles.titleBox}>
+                                <Text style={styles.bookTitle}>{title}</Text>
+                            </View>
+                            <View style={styles.bookTextContainer}>
+                                {words.map((word, index) => renderWord(word, index))}
+                            </View>
+                        </View>
+
+                        {nextStepVisible && (
+                            <>
+                                <Animated.View style={[styles.wordBox, { opacity: blinkAnim }]}>
+                                    <Text style={styles.wordText}>Click on a word {"\n"} you don't know</Text>
+                                </Animated.View>
+                                <NextStep goNextStep={goNextStep} />
+                            </>
+                        )}
+                        {totalPageCount > 0 && currentPage >= 0 && (
+                            <ProgressBar pages={totalPageCount.toString()} now={(currentPage - 1).toString()} />
+                        )}
+                    </>
+                )}
                 <Modal
                     visible={highlightModalVisible}
                     transparent={true}
@@ -456,7 +469,7 @@ const BookRead = ({ navigation }) => {
                     onRequestClose={cancelHighlight}
                 >
                     <TouchableOpacity
-                        activeOpacity={1} 
+                        activeOpacity={1}
                         onPress={handleModalBackgroundPress}
                         style={styles.modalBackground}
                     >
@@ -472,8 +485,7 @@ const BookRead = ({ navigation }) => {
                         </View>
                     </TouchableOpacity>
                 </Modal>
-                
-                {/*             
+
                 <Modal
                     visible={isWordModalVisible}
                     transparent={true}
@@ -481,14 +493,14 @@ const BookRead = ({ navigation }) => {
                     onRequestClose={closeWordModal}
                 >
                     <View style={styles.modalContainer}>
-                        <View style={styles.modalContent}>
-                            <Text style={styles.modalText}>{wordMeaning}</Text>
-                            <TouchableOpacity onPress={closeWordModal}>
-                                <Text style={styles.closeButton}>Close</Text>
+                        <View style={styles.webviewContainer}>
+                            <TouchableOpacity style={styles.closeButton} onPress={closeWordModal}>
+                                <Ionic name="close" size={23} color='black' />
                             </TouchableOpacity>
+                            <WebView source={{ uri: wordUrl }} />
                         </View>
                     </View>
-                </Modal> */}
+                </Modal>
             </ImageBackground>
         </SafeAreaView>
     )
@@ -505,7 +517,7 @@ const styles = StyleSheet.create({
     },
 
     titleBox: {
-        marginBottom: 30,
+        marginBottom: 20,
     },
     textBox: {
         width: '35%',
@@ -591,6 +603,24 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-
-})
-export default BookRead
+    modalContainer: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    webviewContainer: {
+        width: '80%',
+        height: '90%',
+        backgroundColor: 'white',
+        borderRadius: 10,
+        overflow: 'hidden',
+    },
+    closeButton: {
+        padding: 5,
+        paddingHorizontal: 15,
+        backgroundColor: '#fff',
+        alignItems: 'flex-end',
+    },
+});
+export default BookRead;
