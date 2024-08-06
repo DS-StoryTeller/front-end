@@ -1,8 +1,8 @@
-import { getAccessToken, getRefreshToken, getUser, storeTokens, removeTokens, atob } from '../utils/storage.js'
+import { getAccessToken, getRefreshToken, getUser, storeTokens, removeTokens, decodeBase64 } from '../utils/storage.js';
 import Config from '../config.js';
 
 const isTokenExpired = (token) => {
-    const payload = JSON.parse(atob(token.split('.')[1]));
+    const payload = JSON.parse(decodeBase64(token.split('.')[1]));
     return payload.exp < Date.now() / 1000;
 };
 

@@ -24,7 +24,7 @@ const BookRead = ({ navigation }) => {
     const [initialSpeed, setInitialSpeed] = useState("1.0배속");
     const [initialSize, setInitialSize] = useState("MEDIUM");
 
-    const profileId = 2;
+    const profileId = 3;
     const bookId = 3;
 
     // 모달창

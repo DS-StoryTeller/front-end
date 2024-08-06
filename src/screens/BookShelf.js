@@ -1,24 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Image, View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import VoiceInputModal from '../components/VoiceInputModal';
-
-const books = Array.from({ length: 12 }, (_, index) => ({
-  id: String(index),
-  imageUrl: require('../../assets/images/book.png'), // 임시 이미지
-}));
+import fetchWithAuth from '../api/fetchWithAuth';
 
 const BookShelf = () => {
   const [selected, setSelected] = useState('ALL');
   const [modalVisible, setModalVisible] = useState(false);
+  const [books, setBooks] = useState([]);
+  const profileId = 3;
+
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const response = await fetchWithAuth(`/books/booklist?profileId=${profileId}`, {
+          method: 'GET',
+        });
+        const result = await response.json();
+        if (result.status === 200 && result.code === 'SUCCESS_RETRIEVE_BOOKS') {
+          setBooks(result.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch books:', error);
+      }
+    };
+
+    fetchBooks();
+  }, []);
 
   const toggleModal = () => {
     setModalVisible(!modalVisible);
   };
 
   const handleBookPress = (bookId) => {
-    // 책 클릭 시 처리할 함수
     console.log(`Book with ID ${bookId} pressed`);
   };
 
@@ -33,15 +48,15 @@ const BookShelf = () => {
         />
         {booksForShelf.map((book, index) => (
           <TouchableOpacity
-            key={book.id}
-            onPress={() => handleBookPress(book.id)}
+            key={book.bookId}
+            onPress={() => handleBookPress(book.bookId)}
             style={[
               styles.bookButton,
-              { left: 355 + index * 160 }, // 책 위치 조정
+              { left: 355 + index * 160 },
             ]}
           >
             <Image
-              source={book.imageUrl}
+              source={{ uri: book.coverImage }}
               style={styles.bookImage}
             />
           </TouchableOpacity>
@@ -50,7 +65,7 @@ const BookShelf = () => {
     );
   };
 
-  const numberOfShelves = Math.ceil(books.length / 4);
+  const numberOfShelves = 3;
 
   return (
     <SafeAreaView style={styles.container}>

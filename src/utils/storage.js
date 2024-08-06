@@ -1,4 +1,5 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { decode as atob } from 'base-64';
 
 const ACCESS_TOKEN_KEY = 'accessToken';
 const REFRESH_TOKEN_KEY = 'refreshToken';
@@ -56,4 +57,8 @@ export const removeTokens = async () => {
     } catch (e) {
         console.error('Error removing tokens:', e);
     }
+};
+
+export const decodeBase64 = (input) => {
+    return atob(input);
 };
