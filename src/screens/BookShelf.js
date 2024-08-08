@@ -6,14 +6,14 @@ import LinearGradient from 'react-native-linear-gradient';
 import VoiceInputModal from '../components/VoiceInputModal';
 import fetchWithAuth from '../api/fetchWithAuth';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { useNavigation } from '@react-navigation/native'; // 네비게이션 추가
+import { useNavigation } from '@react-navigation/native';
 
 const BookShelf = () => {
   const [selected, setSelected] = useState('ALL');
   const [modalVisible, setModalVisible] = useState(false);
   const [books, setBooks] = useState([]);
   const profileId = 3;
-  const navigation = useNavigation(); // 네비게이션 훅 사용
+  const navigation = useNavigation();
 
   useEffect(() => {
     const fetchBooks = async () => {
@@ -107,7 +107,7 @@ const BookShelf = () => {
     );
   };
 
-  const numberOfShelves = Math.max(Math.ceil(books.length / 4), 3); // 최소 3개의 책장
+  const numberOfShelves = Math.max(Math.ceil(books.length / 4), 3);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -162,6 +162,7 @@ const BookShelf = () => {
         visible={modalVisible}
         onClose={toggleModal}
         message="동화를 만들고 싶은 주제를 말해주세요"
+        profileId={profileId}
       />
     </SafeAreaView>
   );
