@@ -14,13 +14,21 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Voice from '@react-native-voice/voice';
+import VoiceInputErrorModal from './VoiceInputErrorModal'; // 에러 모달 임포트
 
 const {height, width} = Dimensions.get('window');
 
-const VoiceInputModal = ({visible, onClose, message, profileId, fetchWithAuth}) => {
+const VoiceInputModal = ({
+  visible,
+  onClose,
+  message,
+  profileId,
+  fetchWithAuth,
+}) => {
   const slideAnim = useRef(new Animated.Value(height)).current;
   const [isRecording, setIsRecording] = useState(false);
   const [transcribedText, setTranscribedText] = useState('');
+  const [showErrorModal, setShowErrorModal] = useState(false); // 에러 모달 상태 추가
 
   useEffect(() => {
     if (visible) {
@@ -88,7 +96,7 @@ const VoiceInputModal = ({visible, onClose, message, profileId, fetchWithAuth}) 
         console.error('Error creating story:', error);
       }
     },
-    [profileId, fetchWithAuth], // fetchWithAuth를 의존성 배열에 추가
+    [profileId, fetchWithAuth],
   );
 
   const onSpeechResults = useCallback(
@@ -100,6 +108,12 @@ const VoiceInputModal = ({visible, onClose, message, profileId, fetchWithAuth}) 
     },
     [createStory],
   );
+
+  const onSpeechError = useCallback(() => {
+    setShowErrorModal(true); // 음성 인식 오류 시 에러 모달 표시
+    setIsRecording(false);
+    onClose(); // VoiceInputModal 닫기
+  }, [onClose]);
 
   const startRecording = async () => {
     setIsRecording(true);
@@ -116,59 +130,77 @@ const VoiceInputModal = ({visible, onClose, message, profileId, fetchWithAuth}) 
 
   useEffect(() => {
     Voice.onSpeechResults = onSpeechResults;
+    Voice.onSpeechError = onSpeechError; // 음성 인식 오류 처리 핸들러 추가
     return () => {
       Voice.destroy().then(Voice.removeAllListeners);
     };
-  }, [onSpeechResults]);
+  }, [onSpeechResults, onSpeechError]);
 
   return (
-    <Modal transparent visible={visible} animationType="none">
-      <TouchableWithoutFeedback onPress={handleOverlayPress}>
-        <View style={styles.overlay}>
-          <Animated.View
-            style={[
-              styles.modalContainer,
-              {transform: [{translateY: slideAnim}]},
-            ]}>
-            <View style={styles.modalContent}>
-              <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                <Text style={styles.closeButtonText}>X</Text>
-              </TouchableOpacity>
-              <View style={styles.textContainer}>
-                <Text style={styles.boldText}>
-                {transcribedText ? `${transcribedText}...` : `${message}`}
-                </Text>
-                {!transcribedText && (
-                  <Text style={styles.lightText}>
-                    주변 소음이 들리지 않도록 해주세요
-                  </Text>
-                )}
-              </View>
-              <View style={styles.imageContainer}>
-                <Image
-                  source={require('../../assets/images/Wave.png')}
-                  style={styles.image}
-                />
-              </View>
-              <LinearGradient
-                colors={['#2170CD', '#8FA0E8']}
-                start={{x: 0, y: 0.5}}
-                end={{x: 1, y: 0.5}}
-                style={styles.gradientButton}>
-                <TouchableOpacity
-                  onPress={startRecording}
-                  style={styles.roundButton}>
-                  <Image
-                    source={require('../../assets/images/voice.png')}
-                    style={styles.voiceImage}
-                  />
+    <>
+      <Modal transparent visible={visible} animationType="none">
+        <TouchableWithoutFeedback onPress={handleOverlayPress}>
+          <View style={styles.overlay}>
+            <Animated.View
+              style={[
+                styles.modalContainer,
+                {transform: [{translateY: slideAnim}]},
+              ]}>
+              <View style={styles.modalContent}>
+                <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                  <Text style={styles.closeButtonText}>X</Text>
                 </TouchableOpacity>
-              </LinearGradient>
-            </View>
-          </Animated.View>
-        </View>
-      </TouchableWithoutFeedback>
-    </Modal>
+                <View style={styles.textContainer}>
+                  <Text style={styles.boldText}>
+                    {transcribedText ? `${transcribedText}...` : `${message}`}
+                  </Text>
+                  {!transcribedText && (
+                    <Text style={styles.lightText}>
+                      주변 소음이 들리지 않도록 해주세요
+                    </Text>
+                  )}
+                </View>
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={require('../../assets/images/Wave.png')}
+                    style={styles.image}
+                  />
+                </View>
+                <LinearGradient
+                  colors={['#2170CD', '#8FA0E8']}
+                  start={{x: 0, y: 0.5}}
+                  end={{x: 1, y: 0.5}}
+                  style={styles.gradientButton}>
+                  <TouchableOpacity
+                    onPress={startRecording}
+                    style={styles.roundButton}>
+                    <Image
+                      source={require('../../assets/images/voice.png')}
+                      style={styles.voiceImage}
+                    />
+                  </TouchableOpacity>
+                </LinearGradient>
+              </View>
+            </Animated.View>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+      <VoiceInputErrorModal
+        visible={showErrorModal}
+        onClose={() => setShowErrorModal(false)}
+        onKeyboardInput={() => {
+          // 키보드 입력 모드로 전환
+          setShowErrorModal(false);
+          // 여기에 키보드 입력 모드 로직 추가
+        }}
+        onRetry={() => {
+          // 음성 입력 모드로 전환
+          setShowErrorModal(false);
+          setIsRecording(true);
+          startRecording();
+        }}
+      />
+    </>
   );
 };
 
