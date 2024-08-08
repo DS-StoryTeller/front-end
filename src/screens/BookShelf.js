@@ -139,12 +139,19 @@ const BookShelf = () => {
           renderShelf(index),
         )}
       </View>
-      <TouchableOpacity style={styles.squareButton}>
-        <Image
-          source={require('../../assets/images/temp_profile_pic.png')}
-          style={styles.squareButtonImage}
-        />
-      </TouchableOpacity>
+      <TouchableOpacity
+  style={styles.squareButton}
+  onPress={() => {
+    console.log('Profile 버튼이 눌렸습니다.');
+    navigation.navigate('Profile');
+  }}
+>
+  <Image
+    source={require('../../assets/images/temp_profile_pic.png')}
+    style={styles.squareButtonImage}
+  />
+</TouchableOpacity>
+
       <TouchableOpacity style={styles.roundButton} onPress={toggleModal}>
         <LinearGradient
           colors={['#2170CD', '#8FA0E8']}
