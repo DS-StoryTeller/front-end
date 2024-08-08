@@ -15,6 +15,7 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import Voice from '@react-native-voice/voice';
 import VoiceInputErrorModal from './VoiceInputErrorModal'; // 에러 모달 임포트
+import StoryGeneratorModal from './StoryGeneratorModal'; // StoryGeneratorModal 임포트
 
 const {height, width} = Dimensions.get('window');
 
@@ -29,6 +30,7 @@ const VoiceInputModal = ({
   const [isRecording, setIsRecording] = useState(false);
   const [transcribedText, setTranscribedText] = useState('');
   const [showErrorModal, setShowErrorModal] = useState(false); // 에러 모달 상태 추가
+  const [showStoryGeneratorModal, setShowStoryGeneratorModal] = useState(false); // StoryGeneratorModal 상태 추가
 
   useEffect(() => {
     if (visible) {
@@ -74,39 +76,15 @@ const VoiceInputModal = ({
     requestMicrophonePermission();
   }, []);
 
-  const createStory = useCallback(
-    async prompt => {
-      try {
-        const response = await fetchWithAuth(
-          `/books/create?profileId=${profileId}`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({prompt}),
-          },
-        );
-        if (response.ok) {
-          console.log('Story created successfully');
-        } else {
-          console.error('Error creating story:', response.statusText);
-        }
-      } catch (error) {
-        console.error('Error creating story:', error);
-      }
-    },
-    [profileId, fetchWithAuth],
-  );
-
   const onSpeechResults = useCallback(
     event => {
       const text = event.value[0];
       setTranscribedText(text);
       setIsRecording(false);
-      createStory(text); // Transcribed text를 전달하여 createStory 호출
+      setShowStoryGeneratorModal(true); // StoryGeneratorModal 열기
+      onClose();
     },
-    [createStory],
+    [onClose],
   );
 
   const onSpeechError = useCallback(() => {
@@ -156,7 +134,7 @@ const VoiceInputModal = ({
                   </Text>
                   {!transcribedText && (
                     <Text style={styles.lightText}>
-                      주변 소음이 들리지 않도록 해주세요
+                        {transcribedText ? `${''}` : '주변 소음이 들리지 않도록 해주세요'}
                     </Text>
                   )}
                 </View>
@@ -199,6 +177,13 @@ const VoiceInputModal = ({
           setIsRecording(true);
           startRecording();
         }}
+      />
+      <StoryGeneratorModal
+        visible={showStoryGeneratorModal}
+        onClose={() => setShowStoryGeneratorModal(false)}
+        prompt={transcribedText}
+        profileId={profileId}
+        fetchWithAuth={fetchWithAuth}
       />
     </>
   );
