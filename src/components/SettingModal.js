@@ -4,12 +4,13 @@ import Ionic from 'react-native-vector-icons/Ionicons';
 import SpeedFilter from './SpeedFilter';
 import SizeFilter from './SizeFilter';
 
-const SettingModal = ({ isVisible, onClose, handleSizeFilter, profileId, bookId, initialSize, currentText }) => {
-    const [speed, setSpeed] = useState("1.0배속");
+const SettingModal = ({ isVisible, onClose, handleSizeFilter,handleSpeedFilter, profileId, bookId, initialSize, currentText, initialSpeed  }) => {
+    const [speed, setSpeed] = useState(initialSpeed);
     const [size, setSize] = useState(initialSize);
 
-    const handleSpeedFilter = (speed) => {
+    const handleSpeedFilterLocal = (speed) => {
         setSpeed(speed);
+        handleSpeedFilter(speed);
     }
     
     const handleSizeFilterLocal = (size) => {
@@ -19,8 +20,9 @@ const SettingModal = ({ isVisible, onClose, handleSizeFilter, profileId, bookId,
     
     
     useEffect(() => {
-        setSpeed("1.0배속");
-    }, []);
+        setSpeed(initialSpeed);
+    }, [initialSpeed]);
+
 
     useEffect(() => {
         setSize(initialSize);
@@ -45,7 +47,7 @@ const SettingModal = ({ isVisible, onClose, handleSizeFilter, profileId, bookId,
                 <View style={styles.buttonContainer}>
                     <Text style={styles.subtitle}>재생 속도</Text>
                     <View style={styles.buttonGroup}>
-                        <SpeedFilter handleSpeedFilter={handleSpeedFilter} profileId={profileId} bookId={bookId} currentText={currentText}/>
+                        <SpeedFilter handleSpeedFilter={handleSpeedFilterLocal} profileId={profileId} bookId={bookId} currentText={currentText}/>
                     </View>
                 </View>
                 <View style={styles.buttonContainer}>
