@@ -1,23 +1,74 @@
-import React, {useState} from 'react';
-import {Image, View, StyleSheet, TouchableOpacity, Text} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+// src/screens/BookShelf.js
+import React, { useState, useEffect } from 'react';
+import { Image, View, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import VoiceInputModal from '../components/VoiceInputModal';
-
-const books = Array.from({length: 12}, (_, index) => ({
-  // Increased the number of books to 12
-  id: String(index),
-}));
+import fetchWithAuth from '../api/fetchWithAuth';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { useNavigation } from '@react-navigation/native';
 
 const BookShelf = () => {
   const [selected, setSelected] = useState('ALL');
   const [modalVisible, setModalVisible] = useState(false);
+  const [books, setBooks] = useState([]);
+  const profileId = 3;
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        let endpoint = `/books/booklist?profileId=${profileId}`;
+        if (selected === 'FAVORITE') {
+          endpoint = `/books/favorites?profileId=${profileId}`;
+        } else if (selected === 'READING') {
+          endpoint = `/books/reading?profileId=${profileId}`;
+        }
+        const response = await fetchWithAuth(endpoint, {
+          method: 'GET',
+        });
+        const result = await response.json();
+        if (result.status === 200 && 
+            (result.code === 'SUCCESS_RETRIEVE_BOOKS' || 
+            result.code === 'SUCCESS_RETRIEVE_FAVORITE_BOOKS' || 
+            result.code === 'SUCCESS_RETRIEVE_READING_BOOKS')) {
+          setBooks(result.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch books:', error);
+      }
+    };
+
+    fetchBooks();
+  }, [selected]);
 
   const toggleModal = () => {
     setModalVisible(!modalVisible);
   };
 
-  const renderShelf = shelfIndex => {
+  const handleBookPress = (bookId) => {
+    navigation.navigate('BookRead', { profileId, bookId }); // BookRead 페이지로 네비게이션
+  };
+
+  const toggleFavorite = async (bookId) => {
+    try {
+      const response = await fetchWithAuth(`/books/favorite?profileId=${profileId}&bookId=${bookId}`, {
+        method: 'PUT',
+      });
+      const result = await response.json();
+      if (result.status === 200 && result.code === 'SUCCESS_UPDATE_FAVORITE') {
+        setBooks(prevBooks =>
+          prevBooks.map(book =>
+            book.bookId === bookId ? { ...book, isFavorite: !book.isFavorite } : book
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Failed to update favorite status:', error);
+    }
+  };
+
+  const renderShelf = (shelfIndex) => {
     const booksForShelf = books.slice(shelfIndex * 4, (shelfIndex + 1) * 4);
 
     return (
@@ -27,20 +78,36 @@ const BookShelf = () => {
           style={styles.shelf}
         />
         {booksForShelf.map((book, index) => (
-          <Image
-            key={book.id}
-            source={require('../../assets/images/book.png')}
+          <View
+            key={book.bookId}
             style={[
-              styles.bookImage,
-              {left: 355 + index * 160}, // Adjusted left value to move the books further right
+              styles.bookButton,
+              { left: 355 + index * 160 },
             ]}
-          />
+          >
+            <TouchableOpacity onPress={() => handleBookPress(book.bookId)}>
+              <Image
+                source={{ uri: book.coverImage }}
+                style={styles.bookImage}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.favoriteButton}
+              onPress={() => toggleFavorite(book.bookId)}
+            >
+              <Icon
+                name={book.isFavorite ? 'star' : 'star-o'}
+                size={24}
+                color={book.isFavorite ? 'gold' : 'gray'}
+              />
+            </TouchableOpacity>
+          </View>
         ))}
       </View>
     );
   };
 
-  const numberOfShelves = Math.ceil(books.length / 4);
+  const numberOfShelves = Math.max(Math.ceil(books.length / 4), 3);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -68,22 +135,30 @@ const BookShelf = () => {
         />
       </View>
       <View style={styles.shelfWrapper}>
-        {Array.from({length: numberOfShelves}).map((_, index) =>
+        {Array.from({ length: numberOfShelves }).map((_, index) =>
           renderShelf(index),
         )}
       </View>
-      <TouchableOpacity style={styles.squareButton}>
-        <Image
-          source={require('../../assets/images/temp_profile_pic.png')}
-          style={styles.squareButtonImage}
-        />
-      </TouchableOpacity>
+      <TouchableOpacity
+  style={styles.squareButton}
+  onPress={() => {
+    console.log('Profile 버튼이 눌렸습니다.');
+    navigation.navigate('Profile');
+  }}
+>
+  <Image
+    source={require('../../assets/images/temp_profile_pic.png')}
+    style={styles.squareButtonImage}
+  />
+</TouchableOpacity>
+
       <TouchableOpacity style={styles.roundButton} onPress={toggleModal}>
         <LinearGradient
           colors={['#2170CD', '#8FA0E8']}
           style={styles.roundButtonGradient}
-          start={{x: 0, y: 0}}
-          end={{x: 1, y: 0}}>
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+        >
           <Image
             source={require('../../assets/images/drawing.png')}
             style={styles.roundButtonImage}
@@ -94,23 +169,27 @@ const BookShelf = () => {
         visible={modalVisible}
         onClose={toggleModal}
         message="동화를 만들고 싶은 주제를 말해주세요"
+        profileId={profileId}
+        fetchWithAuth={fetchWithAuth}
       />
     </SafeAreaView>
   );
 };
 
-const RadioButton = ({title, selected, onPress, style, textStyle}) => (
+const RadioButton = ({ title, selected, onPress, style, textStyle }) => (
   <TouchableOpacity onPress={onPress} style={[styles.radioButton, style]}>
     {selected ? (
       <LinearGradient
         colors={['#F8C683', '#FF8C43']}
-        style={[styles.radioButtonGradient, styles.selected, style]}>
+        style={[styles.radioButtonGradient, styles.selected, style]}
+      >
         <Text
           style={[
             styles.radioButtonText,
             styles.radioButtonTextSelected,
             textStyle,
-          ]}>
+          ]}
+        >
           {title}
         </Text>
       </LinearGradient>
@@ -170,7 +249,7 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     borderColor: '#FF8C43',
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 3,
   },
@@ -200,19 +279,26 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 100,
     resizeMode: 'contain',
-    top: 20, // Moved shelf image down
+    top: 20,
+  },
+  bookButton: {
+    position: 'absolute',
+    top: -68,
   },
   bookImage: {
     width: 140,
     height: 130,
     resizeMode: 'contain',
+  },
+  favoriteButton: {
     position: 'absolute',
-    top: -68, // Moved the book image down
-    left: 355, // Adjusted left value to move the book images further right
+    bottom: 5,
+    left: 5,
+    backgroundColor: 'transparent',
   },
   squareButton: {
     position: 'absolute',
-    top: 20, // Moved square button down
+    top: 20,
     right: 20,
     width: 110,
     height: 110,
@@ -229,7 +315,7 @@ const styles = StyleSheet.create({
   },
   roundButton: {
     position: 'absolute',
-    bottom: 5, // Moved round button down
+    bottom: 5,
     alignSelf: 'center',
     width: 80,
     height: 80,

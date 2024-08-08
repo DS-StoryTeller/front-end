@@ -14,7 +14,7 @@ import LinearGradient from 'react-native-linear-gradient';
 
 const {height, width} = Dimensions.get('window');
 
-const StoryGeneratorModal = ({visible, onClose, message}) => {
+const StoryGeneratorModal = ({visible, onClose, prompt, fetchWithAuth, profileId}) => {
   const slideAnim = useRef(new Animated.Value(height)).current;
 
   useEffect(() => {
@@ -37,6 +37,29 @@ const StoryGeneratorModal = ({visible, onClose, message}) => {
     // 모달 창 외부를 터치했을 때 아무 작업도 하지 않도록 빈 함수로 처리
   };
 
+  const createStory = async () => {
+    try {
+      const response = await fetchWithAuth(
+        `/books/create?profileId=${profileId}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({prompt}),
+        },
+      );
+      if (response.ok) {
+        console.log('Story created successfully');
+        onClose();
+      } else {
+        console.error('Error creating story:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error creating story:', error);
+    }
+  };
+
   return (
     <Modal transparent visible={visible} animationType="none">
       <TouchableWithoutFeedback onPress={handleOverlayPress}>
@@ -51,7 +74,7 @@ const StoryGeneratorModal = ({visible, onClose, message}) => {
                 <Text style={styles.closeButtonText}>X</Text>
               </TouchableOpacity>
               <View style={styles.textContainer}>
-                <Text style={styles.boldText}>공주님과 모험을 떠나는 용사</Text>
+                <Text style={styles.boldText}>{prompt}</Text>
                 <Text style={styles.lightText}>
                   해당 주제로 동화를 만들까요?
                 </Text>
@@ -63,9 +86,7 @@ const StoryGeneratorModal = ({visible, onClose, message}) => {
                   end={{x: 1, y: 0.5}}
                   style={styles.gradientButton}>
                   <TouchableOpacity
-                    onPress={() => {
-                      /* Handle Button Press */
-                    }}
+                    onPress={createStory}
                     style={styles.roundButton}>
                     <Image
                       source={require('../../assets/images/polygon.png')}
@@ -90,7 +111,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     width: width,
-    height: '50%',
+    height: '46.5%',
     justifyContent: 'flex-end',
     alignItems: 'center',
   },
@@ -109,8 +130,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   textContainer: {
-    marginTop: 50,
-    marginBottom: 20, // Increase marginBottom to create more space below the text
+    marginTop: 40,
+    marginBottom: 20,
     alignItems: 'center',
   },
   boldText: {
@@ -123,7 +144,7 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontWeight: '300',
     textAlign: 'center',
-    lineHeight: 40, // Increase lineHeight for more spacing within the text block
+    lineHeight: 40,
   },
   closeButton: {
     position: 'absolute',
@@ -139,7 +160,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 70,
+    marginTop: 60,
   },
   gradientButton: {
     width: 80,
@@ -156,8 +177,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonImage: {
-    width: 30, // Decrease image width
-    height: 40, // Decrease image height
+    width: 30,
+    height: 40,
     resizeMode: 'contain',
   },
 });

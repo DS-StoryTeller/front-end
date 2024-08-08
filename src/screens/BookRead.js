@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, Text, ImageBackground, View, TouchableOpacity, Alert, Animated, Modal, AppState, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, ImageBackground, View, TouchableOpacity, Alert, Animated, Modal, AppState, ActivityIndicator } from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useRoute } from '@react-navigation/native';
 import Ionic from 'react-native-vector-icons/Ionicons';
 import ProgressBar from '../components/ProgressBar';
 import SettingModal from '../components/SettingModal';
@@ -13,6 +13,9 @@ import Tts from 'react-native-tts';
 import { WebView } from 'react-native-webview';
 
 const BookRead = ({ navigation }) => {
+    const route = useRoute();
+    const { profileId, bookId } = route.params;  // 파라미터 받기
+
     const [title, setTitle] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPageCount, setTotalPageCount] = useState(0);
@@ -24,9 +27,6 @@ const BookRead = ({ navigation }) => {
     const [fontSize, setFontSize] = useState(18);
     const [initialSpeed, setInitialSpeed] = useState("1.0배속");
     const [initialSize, setInitialSize] = useState("MEDIUM");
-
-    const profileId = 2;
-    const bookId = 3;
 
     // 모달창
     const [isSettingModalVisible, setIsSettingModalVisible] = useState(false);
@@ -67,6 +67,15 @@ const BookRead = ({ navigation }) => {
         setIsWordModalVisible(false);
         setWordUrl('');
     };
+
+    useEffect(() => {
+        const loadData = async () => {
+            await fetchBookDetails();
+            await fetchSettings();
+            setIsLoading(false);
+        };
+        loadData();
+    }, [profileId, bookId]);
 
     // 페이지 세부정보 조회
     const fetchPageDetails = async (pageNumber) => {

@@ -9,7 +9,7 @@ import BookShelf from './src/screens/BookShelf';
 import BookRead from './src/screens/BookRead';
 import Quiz from './src/screens/Quiz';
 import Profile from './src/screens/Profile';
-import Question from './src/screens/Question'; 
+import Question from './src/screens/Question';
 import SplashScreen from 'react-native-splash-screen';
 
 const App = () => {
@@ -35,7 +35,7 @@ const App = () => {
         <Tab.Screen name="BookShelf" component={BookShelf} />
         <Tab.Screen name="BookRead" component={BookRead} />
         <Tab.Screen name="Quiz" component={Quiz} />
-        <Tab.Screen name="Profile" component={Profile} />
+        
       </Tab.Navigator>
     );
   };

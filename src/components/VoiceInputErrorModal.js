@@ -14,7 +14,12 @@ import LinearGradient from 'react-native-linear-gradient';
 
 const {height, width} = Dimensions.get('window');
 
-const VoiceInputErrorModal = ({visible, onClose, message}) => {
+const VoiceInputErrorModal = ({
+  visible,
+  onClose,
+  onKeyboardInput,
+  onRetry,
+}) => {
   const slideAnim = useRef(new Animated.Value(height)).current;
 
   useEffect(() => {
@@ -63,9 +68,7 @@ const VoiceInputErrorModal = ({visible, onClose, message}) => {
                   end={{x: 1, y: 0.5}}
                   style={styles.gradientButton}>
                   <TouchableOpacity
-                    onPress={() => {
-                      /* Handle Keyboard Input Press */
-                    }}
+                    onPress={onKeyboardInput}
                     style={styles.roundButton}>
                     <Image
                       source={require('../../assets/images/keyboard.png')}
@@ -78,11 +81,7 @@ const VoiceInputErrorModal = ({visible, onClose, message}) => {
                   start={{x: 0, y: 0.5}}
                   end={{x: 1, y: 0.5}}
                   style={[styles.gradientButton, styles.marginLeft]}>
-                  <TouchableOpacity
-                    onPress={() => {
-                      /* Handle Retry Press */
-                    }}
-                    style={styles.roundButton}>
+                  <TouchableOpacity onPress={onRetry} style={styles.roundButton}>
                     <Image
                       source={require('../../assets/images/microphone.png')}
                       style={styles.buttonImage}
@@ -106,7 +105,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     width: width,
-    height: '50%',
+    height: '51%',
     justifyContent: 'flex-end',
     alignItems: 'center',
   },
