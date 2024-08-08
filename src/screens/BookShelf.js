@@ -163,6 +163,7 @@ const BookShelf = () => {
         onClose={toggleModal}
         message="동화를 만들고 싶은 주제를 말해주세요"
         profileId={profileId}
+        fetchWithAuth={fetchWithAuth}
       />
     </SafeAreaView>
   );

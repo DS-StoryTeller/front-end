@@ -14,11 +14,10 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Voice from '@react-native-voice/voice';
-import {fetchWithAuth} from '../api/fetchWithAuth'; // fetchWithAuth 모듈 가져오기
 
 const {height, width} = Dimensions.get('window');
 
-const VoiceInputModal = ({visible, onClose, message, profileId}) => {
+const VoiceInputModal = ({visible, onClose, message, profileId, fetchWithAuth}) => {
   const slideAnim = useRef(new Animated.Value(height)).current;
   const [isRecording, setIsRecording] = useState(false);
   const [transcribedText, setTranscribedText] = useState('');
@@ -89,7 +88,7 @@ const VoiceInputModal = ({visible, onClose, message, profileId}) => {
         console.error('Error creating story:', error);
       }
     },
-    [profileId],
+    [profileId, fetchWithAuth], // fetchWithAuth를 의존성 배열에 추가
   );
 
   const onSpeechResults = useCallback(
@@ -100,7 +99,7 @@ const VoiceInputModal = ({visible, onClose, message, profileId}) => {
       createStory(text); // Transcribed text를 전달하여 createStory 호출
     },
     [createStory],
-  ); // createStory를 의존성 배열에 추가
+  );
 
   const startRecording = async () => {
     setIsRecording(true);
