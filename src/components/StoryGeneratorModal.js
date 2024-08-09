@@ -176,12 +176,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 15,
+    fontFamily: 'TAEBAEKfont',
+
   },
   lightText: {
     fontSize: 30,
     fontWeight: '300',
     textAlign: 'center',
     lineHeight: 40,
+    fontFamily: 'TAEBAEKmilkyway',
+
   },
   closeButton: {
     position: 'absolute',

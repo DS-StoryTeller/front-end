@@ -94,6 +94,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginVertical: 13,
         width: '100%',
+        fontFamily: 'TAEBAEKfont',
+
     },
     modalTextStyle: {
         top: 20,
@@ -111,7 +113,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 23,
         color: 'black',
-        fontFamily: 'sans-serif-light',
+        fontFamily: 'TAEBAEKmilkyway',
     },
     buttonContainer: {
         flexDirection: 'row',

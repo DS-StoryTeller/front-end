@@ -12,7 +12,8 @@ const BookShelf = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [books, setBooks] = useState([]);
   const [refreshKey, setRefreshKey] = useState(0); // 추가: 새로고침 키
-  const profileId = 3;
+
+  const profileId = 2;
   const navigation = useNavigation();
 
   // 책 목록 가져오기

@@ -75,6 +75,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'center',
     color: '#393939',
+    fontFamily: 'TAEBAEKfont',
+
   },
   buttonContainer: {
     flexDirection: 'row', // 가로로 정렬

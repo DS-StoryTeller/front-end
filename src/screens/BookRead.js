@@ -428,8 +428,8 @@ const BookRead = ({ navigation }) => {
                     <>
                         <ImageBackground source={{ uri: pageImage }} style={styles.page}>
                             <View style={styles.iconBox}>
-                                <TouchableOpacity style={styles.icon} onPress={openYesNoModal} >
-                                    <Ionic name="home" size={35} color="white" />
+                                <TouchableOpacity style={styles.icon}  onPress={openYesNoModal} >
+                                    <Ionic name="home-outline" size={35} color="black" />
                                 </TouchableOpacity>
                                 <YesNoModal isVisible={isYesNoModalVisible} onClose={closeYesNoModal}
                                     title={"정말 중단하시겠습니까?"}
@@ -441,7 +441,7 @@ const BookRead = ({ navigation }) => {
                                     bookId={bookId}
                                     currentPage={currentPage - 1} />
                                 <TouchableOpacity style={styles.icon} onPress={openSettingModal} >
-                                    <Ionic name="settings" size={35} color="white" />
+                                    <Ionic name="settings-outline" size={35} color="black"/>
                                 </TouchableOpacity>
                                 <SettingModal isVisible={isSettingModalVisible} onClose={closeSettingModal} handleSizeFilter={handleSizeFilter}
                                 handleSpeedFilter={handleSpeedFilter} profileId={profileId} bookId={bookId} initialSize={initialSize} initialSpeed={initialSpeed}
@@ -548,6 +548,8 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: 'black',
         textAlign: 'center',
+        fontFamily: 'TAEBAEKfont',
+
     },
     iconBox: {
         flexDirection: 'column',
@@ -556,17 +558,20 @@ const styles = StyleSheet.create({
         margin: 20,
     },
     icon: {
-        marginTop: 13,
+        marginTop: 10,
+        backgroundColor: 'white',
+        borderRadius: 10, 
     },
-
     bookText: {
         fontSize: 18,
         color: '#000000',
         textAlign: 'center',
         lineHeight: 30,
+        fontFamily: 'TAEBAEKfont',
+
     },
     wordBox: {
-        width: 130,
+        width: 150,
         height: 70,
         position: 'absolute',
         bottom: '10%',
@@ -581,6 +586,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 18,
         color: 'rgba(78,90,140,0.8)',
+        fontFamily: 'TAEBAEKmilkyway',
     },
     highlightedText: {
         backgroundColor: 'yellow',
@@ -603,6 +609,8 @@ const styles = StyleSheet.create({
     },
     highlightModalText: {
         paddingHorizontal: 10,
+        fontFamily: 'TAEBAEKmilkyway',
+
     },
     emptyContainer: {
         flex: 1,

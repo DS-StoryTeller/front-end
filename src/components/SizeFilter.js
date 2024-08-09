@@ -96,6 +96,8 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         color: '#000',
+        fontFamily: 'TAEBAEKmilkyway',
+
     },
     activeButton: {
         backgroundColor: '#F8BD66',
