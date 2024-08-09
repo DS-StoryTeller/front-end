@@ -14,7 +14,13 @@ import LinearGradient from 'react-native-linear-gradient';
 
 const {height, width} = Dimensions.get('window');
 
-const StoryGeneratorModal = ({visible, onClose, prompt, fetchWithAuth, profileId}) => {
+const StoryGeneratorModal = ({
+  visible,
+  onClose,
+  prompt,
+  fetchWithAuth,
+  profileId,
+}) => {
   const slideAnim = useRef(new Animated.Value(height)).current;
 
   useEffect(() => {
@@ -111,7 +117,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     width: width,
-    height: '46.5%',
+    height: '51%',
     justifyContent: 'flex-end',
     alignItems: 'center',
   },
