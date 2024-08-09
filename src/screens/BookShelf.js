@@ -1,5 +1,4 @@
-// src/screens/BookShelf.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Image, View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
@@ -12,44 +11,47 @@ const BookShelf = () => {
   const [selected, setSelected] = useState('ALL');
   const [modalVisible, setModalVisible] = useState(false);
   const [books, setBooks] = useState([]);
+  const [refreshKey, setRefreshKey] = useState(0); // 추가: 새로고침 키
   const profileId = 2;
   const navigation = useNavigation();
 
-  useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        let endpoint = `/books/booklist?profileId=${profileId}`;
-        if (selected === 'FAVORITE') {
-          endpoint = `/books/favorites?profileId=${profileId}`;
-        } else if (selected === 'READING') {
-          endpoint = `/books/reading?profileId=${profileId}`;
-        }
-        const response = await fetchWithAuth(endpoint, {
-          method: 'GET',
-        });
-        const result = await response.json();
-        if (result.status === 200 && 
-            (result.code === 'SUCCESS_RETRIEVE_BOOKS' || 
-            result.code === 'SUCCESS_RETRIEVE_FAVORITE_BOOKS' || 
-            result.code === 'SUCCESS_RETRIEVE_READING_BOOKS')) {
-          setBooks(result.data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch books:', error);
+  // 책 목록 가져오기
+  const fetchBooks = useCallback(async () => {
+    try {
+      let endpoint = `/books/booklist?profileId=${profileId}`;
+      if (selected === 'FAVORITE') {
+        endpoint = `/books/favorites?profileId=${profileId}`;
+      } else if (selected === 'READING') {
+        endpoint = `/books/reading?profileId=${profileId}`;
       }
-    };
+      const response = await fetchWithAuth(endpoint, { method: 'GET' });
+      const result = await response.json();
+      if (result.status === 200 && 
+          (result.code === 'SUCCESS_RETRIEVE_BOOKS' || 
+          result.code === 'SUCCESS_RETRIEVE_FAVORITE_BOOKS' || 
+          result.code === 'SUCCESS_RETRIEVE_READING_BOOKS')) {
+        setBooks(result.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch books:', error);
+    }
+  }, [selected, profileId]);
 
+  useEffect(() => {
     fetchBooks();
-  }, [selected]);
+  }, [fetchBooks, selected, refreshKey]); // 추가: refreshKey에 따라 업데이트
 
+  // 모달 토글
   const toggleModal = () => {
     setModalVisible(!modalVisible);
   };
 
+  // 책 클릭 시
   const handleBookPress = (bookId) => {
-    navigation.navigate('BookRead', { profileId, bookId }); // BookRead 페이지로 네비게이션
+    navigation.navigate('BookRead', { profileId, bookId });
   };
 
+  // 즐겨찾기 토글
   const toggleFavorite = async (bookId) => {
     try {
       const response = await fetchWithAuth(`/books/favorite?profileId=${profileId}&bookId=${bookId}`, {
@@ -68,6 +70,7 @@ const BookShelf = () => {
     }
   };
 
+  // 책장 렌더링
   const renderShelf = (shelfIndex) => {
     const booksForShelf = books.slice(shelfIndex * 4, (shelfIndex + 1) * 4);
 
@@ -140,17 +143,17 @@ const BookShelf = () => {
         )}
       </View>
       <TouchableOpacity
-  style={styles.squareButton}
-  onPress={() => {
-    console.log('Profile 버튼이 눌렸습니다.');
-    navigation.navigate('Profile');
-  }}
->
-  <Image
-    source={require('../../assets/images/temp_profile_pic.png')}
-    style={styles.squareButtonImage}
-  />
-</TouchableOpacity>
+        style={styles.squareButton}
+        onPress={() => {
+          console.log('Profile 버튼이 눌렸습니다.');
+          navigation.navigate('Profile');
+        }}
+      >
+        <Image
+          source={require('../../assets/images/temp_profile_pic.png')}
+          style={styles.squareButtonImage}
+        />
+      </TouchableOpacity>
 
       <TouchableOpacity style={styles.roundButton} onPress={toggleModal}>
         <LinearGradient
@@ -171,6 +174,7 @@ const BookShelf = () => {
         message="동화를 만들고 싶은 주제를 말해주세요"
         profileId={profileId}
         fetchWithAuth={fetchWithAuth}
+        refreshBooks={() => setRefreshKey(prevKey => prevKey + 1)} // 추가: 새로고침 함수 전달
       />
     </SafeAreaView>
   );
@@ -207,7 +211,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingTop: 30,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF7EC',
   },
   radioContainer: {
     flexDirection: 'row',
