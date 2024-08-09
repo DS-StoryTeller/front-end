@@ -30,8 +30,10 @@ const styles = StyleSheet.create({
         paddingLeft: 5,
     },
     buttonText: {
-        fontSize: 27,
+        fontSize: 20,
         color: '#FFFFFF',
+        fontFamily: 'TAEBAEKfont',
+
     },
  
 })

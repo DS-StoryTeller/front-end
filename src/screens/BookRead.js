@@ -548,6 +548,8 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: 'black',
         textAlign: 'center',
+        fontFamily: 'TAEBAEKfont',
+
     },
     iconBox: {
         flexDirection: 'column',
@@ -565,9 +567,11 @@ const styles = StyleSheet.create({
         color: '#000000',
         textAlign: 'center',
         lineHeight: 30,
+        fontFamily: 'TAEBAEKfont',
+
     },
     wordBox: {
-        width: 130,
+        width: 150,
         height: 70,
         position: 'absolute',
         bottom: '10%',
@@ -582,6 +586,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 18,
         color: 'rgba(78,90,140,0.8)',
+        fontFamily: 'TAEBAEKmilkyway',
     },
     highlightedText: {
         backgroundColor: 'yellow',
@@ -604,6 +609,8 @@ const styles = StyleSheet.create({
     },
     highlightModalText: {
         paddingHorizontal: 10,
+        fontFamily: 'TAEBAEKmilkyway',
+
     },
     emptyContainer: {
         flex: 1,

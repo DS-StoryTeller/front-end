@@ -92,6 +92,8 @@ const styles = StyleSheet.create({
         paddingLeft: 2,
         color: 'black',
         fontSize: 20,
+        fontFamily: 'TAEBAEKfont',
+
     },
     close: {
         justifyContent: 'center',
@@ -104,6 +106,8 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 17,
         color: 'black',
+        fontFamily: 'TAEBAEKfont',
+
     },
     buttonGroup: {
         flexDirection: 'row',

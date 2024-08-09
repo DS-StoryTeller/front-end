@@ -78,7 +78,7 @@ const Login = ({ navigation }) => {
 
                         <View style={styles.bigBox}>
                             <View style={styles.textBox}>
-                                <Text style={styles.titleText}>
+                                <Text style={[styles.titleText, styles.titleApp]}>
                                     <Text style={styles.titleApp}>StoryTeller</Text>
                                     에
                                 </Text>
@@ -180,6 +180,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F2F2EF',
         borderRadius: 13,
         fontSize: 15,
+        fontFamily: 'TAEBAEKmilkyway',
 
     },
     textBox: {
@@ -191,12 +192,13 @@ const styles = StyleSheet.create({
     titleApp: {
         alignItems: 'left',
         fontSize: 23,
-        color: '#4E5A8C'
-
+        color: '#4E5A8C',
+        fontFamily: 'TAEBAEKfont',
     },
     titleText: {
         fontSize: 20,
-        color: '#393939'
+        color: '#393939',
+        fontFamily: 'TAEBAEKfont',
     },
     buttonContainer: {
         width: '85%',
@@ -214,6 +216,7 @@ const styles = StyleSheet.create({
     buttonText: {
         color: 'white',
         fontSize: 20,
+        fontFamily: 'TAEBAEKfont',
     },
     orContainer: {
         width: '85%',
@@ -253,6 +256,7 @@ const styles = StyleSheet.create({
     socialButtonText: {
         color: '#393939',
         fontSize: 15,
+        fontFamily: 'TAEBAEKmilkyway',
     },
     signInContainer: {
         marginTop: 15,
@@ -264,15 +268,19 @@ const styles = StyleSheet.create({
     signIn: {
         fontSize: 13,
         color: '#393939',
-        textAlign: 'center'
+        textAlign: 'center',
+        fontFamily: 'TAEBAEKfont',
     },
     signInBold: {
         color: '#4E5A8C',
         textDecorationLine: 'underline',
+        fontFamily: 'TAEBAEKfont',
+
     },
     subTitle: {
         color: '#393939',
         fontSize: 15,
+        fontFamily: 'TAEBAEKfont',
     },
     scrollViewContent: {
         flexGrow: 1,

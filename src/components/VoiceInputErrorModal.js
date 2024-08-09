@@ -125,20 +125,24 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     marginTop: 50,
-    marginBottom: 20, // Increase marginBottom to create more space below the text
+    marginBottom: 20, 
     alignItems: 'center',
   },
   boldText: {
     fontSize: 35,
     fontWeight: 'bold',
     color: '#000',
-    marginBottom: 15, // Increase marginBottom to create more space between text elements
+    marginBottom: 15, 
+    fontFamily: 'TAEBAEKfont',
+
   },
   lightText: {
     fontSize: 30,
     fontWeight: '300',
     textAlign: 'center',
-    lineHeight: 40, // Increase lineHeight for more spacing within the text block
+    lineHeight: 40, 
+    fontFamily: 'TAEBAEKmilkyway',
+
   },
   closeButton: {
     position: 'absolute',
