@@ -1,5 +1,5 @@
 // src/components/StoryGeneratorModal.js
-import React, {useRef, useEffect} from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
   View,
   Modal,
@@ -12,8 +12,9 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import StoryCreationModal from './StoryCreationModal';
 
-const {height, width} = Dimensions.get('window');
+const { height, width } = Dimensions.get('window');
 
 const StoryGeneratorModal = ({
   visible,
@@ -21,9 +22,12 @@ const StoryGeneratorModal = ({
   prompt,
   fetchWithAuth,
   profileId,
-  refreshBooks, // 추가: 새로고침 함수 전달
+  refreshBooks,
 }) => {
   const slideAnim = useRef(new Animated.Value(height)).current;
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage1, setSuccessMessage1] = useState('');
+  const [successMessage2, setSuccessMessage2] = useState('');
 
   useEffect(() => {
     if (visible) {
@@ -47,6 +51,11 @@ const StoryGeneratorModal = ({
 
   const createStory = async () => {
     try {
+      // 진행 상태 모달을 띄웁니다.
+      setSuccessMessage1('동화를 만들고 있어요');
+      setSuccessMessage2('잠시만 기다려주세요');
+      setShowSuccessModal(true);
+
       const response = await fetchWithAuth(
         `/books/create?profileId=${profileId}`,
         {
@@ -54,13 +63,21 @@ const StoryGeneratorModal = ({
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({prompt}),
+          body: JSON.stringify({ prompt }),
         },
       );
+
       if (response.ok) {
         console.log('Story created successfully');
-        onClose();
-        refreshBooks(); // 동화 생성 후 새로고침
+        // 성공 상태로 모달 메시지 업데이트
+        setSuccessMessage1('동화가 만들어졌어요');
+        setSuccessMessage2('책을 클릭하여 이야기를 들어주세요');
+        // 새로고침 및 모달 닫기
+        refreshBooks();
+        setTimeout(() => {
+          onClose();
+          setShowSuccessModal(false);
+        }, 3000); // 3초 후 모달 닫기
       } else {
         console.error('Error creating story:', response.statusText);
       }
@@ -70,45 +87,56 @@ const StoryGeneratorModal = ({
   };
 
   return (
-    <Modal transparent visible={visible} animationType="none">
-      <TouchableWithoutFeedback onPress={handleOverlayPress}>
-        <View style={styles.overlay}>
-          <Animated.View
-            style={[
-              styles.modalContainer,
-              {transform: [{translateY: slideAnim}]},
-            ]}>
-            <View style={styles.modalContent}>
-              <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                <Text style={styles.closeButtonText}>X</Text>
-              </TouchableOpacity>
-              <View style={styles.textContainer}>
-                <Text style={styles.boldText}>{prompt}</Text>
-                <Text style={styles.lightText}>
-                  해당 주제로 동화를 만들까요?
-                </Text>
+    <>
+      <Modal transparent visible={visible} animationType="none">
+        <TouchableWithoutFeedback onPress={handleOverlayPress}>
+          <View style={styles.overlay}>
+            <Animated.View
+              style={[
+                styles.modalContainer,
+                { transform: [{ translateY: slideAnim }] },
+              ]}
+            >
+              <View style={styles.modalContent}>
+                <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                  <Text style={styles.closeButtonText}>X</Text>
+                </TouchableOpacity>
+                <View style={styles.textContainer}>
+                  <Text style={styles.boldText}>{prompt}</Text>
+                  <Text style={styles.lightText}>
+                    해당 주제로 동화를 만들까요?
+                  </Text>
+                </View>
+                <View style={styles.buttonContainer}>
+                  <LinearGradient
+                    colors={['#2170CD', '#8FA0E8']}
+                    start={{ x: 0, y: 0.5 }}
+                    end={{ x: 1, y: 0.5 }}
+                    style={styles.gradientButton}
+                  >
+                    <TouchableOpacity
+                      onPress={createStory}
+                      style={styles.roundButton}
+                    >
+                      <Image
+                        source={require('../../assets/images/polygon.png')}
+                        style={styles.buttonImage}
+                      />
+                    </TouchableOpacity>
+                  </LinearGradient>
+                </View>
               </View>
-              <View style={styles.buttonContainer}>
-                <LinearGradient
-                  colors={['#2170CD', '#8FA0E8']}
-                  start={{x: 0, y: 0.5}}
-                  end={{x: 1, y: 0.5}}
-                  style={styles.gradientButton}>
-                  <TouchableOpacity
-                    onPress={createStory}
-                    style={styles.roundButton}>
-                    <Image
-                      source={require('../../assets/images/polygon.png')}
-                      style={styles.buttonImage}
-                    />
-                  </TouchableOpacity>
-                </LinearGradient>
-              </View>
-            </View>
-          </Animated.View>
-        </View>
-      </TouchableWithoutFeedback>
-    </Modal>
+            </Animated.View>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+      <StoryCreationModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message1={successMessage1}
+        message2={successMessage2}
+      />
+    </>
   );
 };
 
@@ -131,7 +159,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: -2},
+    shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 5,
