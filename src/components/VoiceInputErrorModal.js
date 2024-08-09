@@ -58,7 +58,7 @@ const VoiceInputErrorModal = ({
               <View style={styles.textContainer}>
                 <Text style={styles.boldText}>음성이 잘 들리지 않아요</Text>
                 <Text style={styles.lightText}>
-                  키보드로 입력하거나 다시 음성을 들려주세요.
+                  키보드로 입력하거나 다시 음성을 들려주세요
                 </Text>
               </View>
               <View style={styles.buttonContainer}>
