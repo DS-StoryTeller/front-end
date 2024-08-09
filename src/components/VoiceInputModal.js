@@ -1,3 +1,4 @@
+// src/components/VoiceInputModal.js
 import React, {useRef, useEffect, useState, useCallback} from 'react';
 import {
   View,
@@ -14,8 +15,8 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Voice from '@react-native-voice/voice';
-import VoiceInputErrorModal from './VoiceInputErrorModal'; // 에러 모달 임포트
-import StoryGeneratorModal from './StoryGeneratorModal'; // StoryGeneratorModal 임포트
+import VoiceInputErrorModal from './VoiceInputErrorModal';
+import StoryGeneratorModal from './StoryGeneratorModal';
 
 const {height, width} = Dimensions.get('window');
 
@@ -25,12 +26,13 @@ const VoiceInputModal = ({
   message,
   profileId,
   fetchWithAuth,
+  refreshBooks, // 추가: 새로고침 함수 전달
 }) => {
   const slideAnim = useRef(new Animated.Value(height)).current;
   const [isRecording, setIsRecording] = useState(false);
   const [transcribedText, setTranscribedText] = useState('');
-  const [showErrorModal, setShowErrorModal] = useState(false); // 에러 모달 상태 추가
-  const [showStoryGeneratorModal, setShowStoryGeneratorModal] = useState(false); // StoryGeneratorModal 상태 추가
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [showStoryGeneratorModal, setShowStoryGeneratorModal] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -81,16 +83,16 @@ const VoiceInputModal = ({
       const text = event.value[0];
       setTranscribedText(text);
       setIsRecording(false);
-      setShowStoryGeneratorModal(true); // StoryGeneratorModal 열기
+      setShowStoryGeneratorModal(true);
       onClose();
     },
     [onClose],
   );
 
   const onSpeechError = useCallback(() => {
-    setShowErrorModal(true); // 음성 인식 오류 시 에러 모달 표시
+    setShowErrorModal(true);
     setIsRecording(false);
-    onClose(); // VoiceInputModal 닫기
+    onClose();
   }, [onClose]);
 
   const startRecording = async () => {
@@ -103,12 +105,12 @@ const VoiceInputModal = ({
   };
 
   const handleOverlayPress = () => {
-    // 모달 창 외부를 터치했을 때 아무 작업도 하지 않도록 빈 함수로 처리
+    // Do nothing
   };
 
   useEffect(() => {
     Voice.onSpeechResults = onSpeechResults;
-    Voice.onSpeechError = onSpeechError; // 음성 인식 오류 처리 핸들러 추가
+    Voice.onSpeechError = onSpeechError;
     return () => {
       Voice.destroy().then(Voice.removeAllListeners);
     };
@@ -182,6 +184,7 @@ const VoiceInputModal = ({
         prompt={transcribedText}
         profileId={profileId}
         fetchWithAuth={fetchWithAuth}
+        refreshBooks={refreshBooks} // 추가: 새로고침 함수 전달
       />
     </>
   );

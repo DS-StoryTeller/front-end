@@ -1,3 +1,4 @@
+// src/components/StoryGeneratorModal.js
 import React, {useRef, useEffect} from 'react';
 import {
   View,
@@ -20,6 +21,7 @@ const StoryGeneratorModal = ({
   prompt,
   fetchWithAuth,
   profileId,
+  refreshBooks, // 추가: 새로고침 함수 전달
 }) => {
   const slideAnim = useRef(new Animated.Value(height)).current;
 
@@ -58,6 +60,7 @@ const StoryGeneratorModal = ({
       if (response.ok) {
         console.log('Story created successfully');
         onClose();
+        refreshBooks(); // 동화 생성 후 새로고침
       } else {
         console.error('Error creating story:', response.statusText);
       }
