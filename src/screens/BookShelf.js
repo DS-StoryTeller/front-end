@@ -12,7 +12,7 @@ const BookShelf = () => {
   const [selected, setSelected] = useState('ALL');
   const [modalVisible, setModalVisible] = useState(false);
   const [books, setBooks] = useState([]);
-  const profileId = 3;
+  const profileId = 2;
   const navigation = useNavigation();
 
   useEffect(() => {
