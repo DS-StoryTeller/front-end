@@ -130,13 +130,11 @@ const VoiceInputModal = ({
                 </TouchableOpacity>
                 <View style={styles.textContainer}>
                   <Text style={styles.boldText}>
-                    {transcribedText ? `${transcribedText}...` : `${message}`}
+                    {message}
                   </Text>
-                  {!transcribedText && (
                     <Text style={styles.lightText}>
-                        {transcribedText ? `${''}` : '주변 소음이 들리지 않도록 해주세요'}
+                        주변 소음이 들리지 않도록 해주세요
                     </Text>
-                  )}
                 </View>
                 <View style={styles.imageContainer}>
                   <Image
