@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingTop: 30,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF7EC',
   },
   radioContainer: {
     flexDirection: 'row',
