@@ -15,8 +15,10 @@ const App = () => {
   const Stack = createNativeStackNavigator();
 
   useEffect(() => {
+    setTimeout(() => {
       SplashScreen.hide();
-    }, []);
+    }, 300); // 0.5초 후에 스플래시 화면을 숨깁니다.
+  }, []);
 
   
 return (

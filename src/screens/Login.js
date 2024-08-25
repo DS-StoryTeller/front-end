@@ -34,7 +34,7 @@ const Login = ({ navigation }) => {
                 if (accessToken && refreshToken) { // 토큰 값 유효성 검사
                     await storeTokens(accessToken, refreshToken);
                     await storeUser(user);
-                    Alert.alert('로그인 성공', '로그인에 성공했습니다.');
+                    Alert.alert('로그인 성공', 'StoryTeller에 오신것을 환영합니다.');
 
                     // 저장된 토큰 확인
                     const storedAccessToken = await getAccessToken();

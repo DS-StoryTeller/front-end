@@ -11,7 +11,7 @@ const Profile = () => {
   const [selectedProfileIndex, setSelectedProfileIndex] = useState(null);
   const [modalType, setModalType] = useState(''); // 'edit' 또는 'select'
 
-  const profiles = ['프로필1', '프로필2', '프로필3'];
+  const profiles = ['John', 'Emily', 'Steve'];
 
   const renderProfiles = () => {
     return profiles.map((profile, index) => (
