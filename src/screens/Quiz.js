@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     marginTop: 'auto', // SafeAreaView의 하단으로 이동
-    marginBottom: 50, // 하단 여백 추가
+    marginBottom: 80, // 하단 여백 추가
     position: 'relative', // 상대 위치 지정
   },
   quizText: {
