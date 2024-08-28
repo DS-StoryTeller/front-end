@@ -1,17 +1,25 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import React, { useState, useCallback, useEffect } from 'react';
+import { View, Text, TouchableOpacity, Image, StyleSheet, BackHandler } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AddProfileModal from '../components/AddProfileModal';
-import { EditPinInputModal, SelectPinInputModal } from '../components/Modals'; // 공통 모달을 import
+import { SelectPinInputModal } from '../components/Modals';
+import EditPinInputModal from '../components/EditPinInputModal'; // Import EditPinInputModal
+import { useAuth } from '../context/AuthContext';
 
-const Profile = () => {
+const Profile = ({ navigation }) => {
+  const { isLoggedIn, selectedProfile, setSelectedProfile } = useAuth();
   const [isChangingProfile, setIsChangingProfile] = useState(false);
   const [isAddProfileModalVisible, setIsAddProfileModalVisible] = useState(false);
   const [isPinInputModalVisible, setIsPinInputModalVisible] = useState(false);
-  const [selectedProfileIndex, setSelectedProfileIndex] = useState(null);
+  const [isEditPinInputModalVisible, setIsEditPinInputModalVisible] = useState(false); // New state for EditPinInputModal
   const [modalType, setModalType] = useState(''); // 'edit' 또는 'select'
 
-  const profiles = ['John', 'Emily', 'Steve'];
+  // 프로필 데이터: 이름과 이미지 경로를 포함하는 객체 배열
+  const profiles = [
+    { name: 'John', image: require('../../assets/images/temp_profile_pic.png') },
+    { name: 'Emily', image: require('../../assets/images/temp_profile_pic2.png') },
+    { name: 'Steve', image: require('../../assets/images/temp_profile_pic3.png') },
+  ];
 
   const renderProfiles = () => {
     return profiles.map((profile, index) => (
@@ -24,15 +32,17 @@ const Profile = () => {
           onPress={() => {
             if (isChangingProfile) {
               setModalType('edit');
+              setSelectedProfile(profile.name); // 프로필 선택
+              setIsEditPinInputModalVisible(true); // Show EditPinInputModal
             } else {
               setModalType('select');
+              setSelectedProfile(profile.name); // 프로필 선택
+              setIsPinInputModalVisible(true);
             }
-            setSelectedProfileIndex(index);
-            setIsPinInputModalVisible(true);
           }}
         >
           <Image
-            source={require('../../assets/images/temp_profile_pic.png')}
+            source={profile.image}
             style={styles.profileImage}
           />
           {isChangingProfile && (
@@ -44,15 +54,38 @@ const Profile = () => {
             </View>
           )}
         </TouchableOpacity>
-        <Text style={styles.profileText}>{profile}</Text>
+        <Text style={styles.profileText}>{profile.name}</Text>
       </View>
     ));
   };
 
   const changeProfileText = () => {
     setIsChangingProfile(!isChangingProfile);
-    setSelectedProfileIndex(null);
+    setSelectedProfile(null);
   };
+
+  const handlePinCorrect = () => {
+    // 핀이 올바르면 BookShelf 화면으로 이동
+    navigation.navigate('BookShelf');
+  };
+
+  const handleBackPress = useCallback(() => {
+    // Always navigate to BookShelf on back press
+    navigation.navigate('BookShelf');
+    return true; // prevent default back action
+  }, [navigation]);
+
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+    return () => backHandler.remove();
+  }, [handleBackPress]);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      // 로그인되지 않은 상태라면 Login 화면으로 이동
+      navigation.navigate('Login');
+    }
+  }, [isLoggedIn, navigation]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -89,10 +122,12 @@ const Profile = () => {
       <SelectPinInputModal
         visible={isPinInputModalVisible && modalType === 'select'}
         onClose={() => setIsPinInputModalVisible(false)}
+        onPinCorrect={handlePinCorrect}
       />
       <EditPinInputModal
-        visible={isPinInputModalVisible && modalType === 'edit'}
-        onClose={() => setIsPinInputModalVisible(false)}
+        visible={isEditPinInputModalVisible}
+        onClose={() => setIsEditPinInputModalVisible(false)}
+        onPinCorrect={handlePinCorrect}
       />
     </SafeAreaView>
   );
