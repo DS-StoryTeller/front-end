@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+// SelectPinInputModal.js
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,7 +9,7 @@ import {
   Modal,
 } from 'react-native';
 
-const SelectPinInputModal = ({ visible, onClose }) => {
+const SelectPinInputModal = ({ visible, onClose, onPinCorrect }) => {
   const [pin, setPin] = useState(['', '', '', '']);
   const [selectedInput, setSelectedInput] = useState(null);
   const [error, setError] = useState('');
@@ -31,7 +32,8 @@ const SelectPinInputModal = ({ visible, onClose }) => {
       // Check if the entered PIN is correct
       if (newPin.join('') === correctPin) {
         setError(''); // Clear error message
-        onClose(); // Close the modal or perform desired action
+        onPinCorrect(); // Call the onPinCorrect callback
+        onClose(); // Close the modal
       } else {
         setError('PIN 번호가 틀렸습니다. 다시 입력해주세요.'); // Set error message
         setPin(['', '', '', '']); // Clear the PIN inputs
