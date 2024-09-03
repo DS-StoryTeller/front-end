@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Text, View, StyleSheet, TextInput, TouchableOpacity, Image, Button, Alert, ScrollView, KeyboardAvoidingView, Platform } from "react-native"
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Logo from '../../assets/images/logo.png';
@@ -6,11 +6,15 @@ import { storeTokens, storeUser, getAccessToken, getRefreshToken } from '../util
 import Config from '../config.js';
 import Kakao from '../../assets/images/kakao.png';
 import Google from '../../assets/images/google.png';
+import { login as kakaoLogin, logout as kakaoLogout, getProfile as kakaoGetProfile, getKakaoKeyHash } from '@react-native-seoul/kakao-login';
+
 
 
 const Login = ({ navigation }) => {
     const [user, setUser] = useState('')
     const [password, setPassword] = useState('')
+
+    
 
     const handleLogin = async () => {
         try {
@@ -54,6 +58,51 @@ const Login = ({ navigation }) => {
         } catch (error) {
             console.error(error);
             Alert.alert('로그인 에러', '로그인 중 오류가 발생했습니다.');
+        }
+    };
+
+    const handleKakaoLogin = async () => {
+        try {
+            const token = await kakaoLogin();
+            const profile = await kakaoGetProfile();
+
+            console.log('Kakao Token:', token);
+            console.log('Kakao Profile:', profile);
+
+            if (token && profile) {
+                if (profile.nickname) { 
+                    const accessToken = token.accessToken;  
+                    const refreshToken = token.refreshToken; 
+
+                    if (accessToken && refreshToken) {
+                        await storeTokens(accessToken, refreshToken);
+                        await storeUser(profile.nickname);
+                        Alert.alert('카카오 로그인 성공', `${profile.nickname}님, 환영합니다!`);
+    
+                        
+                        const storedAccessToken = await getAccessToken();
+                        const storedRefreshToken = await getRefreshToken();
+                        console.log('Stored access token:', storedAccessToken);
+                        console.log('Stored refresh token:', storedRefreshToken);
+    
+                        navigation.navigate('BookShelf');
+                    } else {
+                        console.error('Invalid tokens:', token);
+                        Alert.alert('로그인 실패', '유효한 토큰이 제공되지 않았습니다.');
+                    }
+                } else {
+                    console.warn('닉네임이 유효하지 않습니다.');
+                }
+            } else {
+                Alert.alert('카카오 로그인 실패', '로그인에 실패했습니다.');
+            }
+        } catch (error) {
+            if (error.message.includes('유효하지 않은 Key Hash입니다.')) {
+                Alert.alert('카카오 로그인 에러', 'Key Hash가 유효하지 않습니다.');
+            } else {
+                console.error(error);
+                Alert.alert('카카오 로그인 에러', '로그인 중 오류가 발생했습니다.');
+            }
         }
     };
 
@@ -121,6 +170,7 @@ const Login = ({ navigation }) => {
                             <View style={styles.socialButtonContainer}>
                                 <TouchableOpacity
                                     style={styles.socialButton}
+                                    onPress={handleKakaoLogin}
                                 >
                                     <Image source={Kakao} style={styles.icon} />
                                     <Text style={styles.socialButtonText}>카카오로 로그인하기</Text>
