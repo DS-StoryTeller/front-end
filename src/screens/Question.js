@@ -1,13 +1,47 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {useNavigation} from '@react-navigation/native'; // useNavigation 훅 import
-import QuestionInputModal from '../components/QuestionInputModal'; // 모달 컴포넌트 import
+import {useNavigation, useRoute} from '@react-navigation/native';
+import QuestionInputModal from '../components/QuestionInputModal';
+import fetchWithAuth from '../api/fetchWithAuth'; // fetchWithAuth import
 
 const Question = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [showGoodJobImage, setShowGoodJobImage] = useState(false);
+  const [quizQuestion, setQuizQuestion] = useState('');
   const navigation = useNavigation(); // useNavigation 훅 사용
+  const route = useRoute(); // useRoute 훅 사용
+
+  // profileId와 bookId는 route.params에서 가져오기
+  const {profileId, bookId} = route.params || {}; // route.params가 undefined일 때를 대비
+
+  useEffect(() => {
+    // profileId와 bookId가 존재할 때만 퀴즈를 가져오기
+    if (profileId && bookId) {
+      fetchQuiz(profileId, bookId);
+    } else {
+      console.error('profileId 또는 bookId가 정의되지 않았습니다.');
+    }
+  }, [profileId, bookId]);
+
+  const fetchQuiz = async (profileId, bookId) => {
+    try {
+      const response = await fetchWithAuth(
+        `/books/create/quiz?profileId=${profileId}&bookId=${bookId}`,
+        {
+          method: 'POST',
+        },
+      );
+      const result = await response.json();
+      if (result.status === 201 && result.code === 'SUCCESS_CREATE_QUIZ') {
+        setQuizQuestion(result.data.question);
+      } else {
+        console.error('퀴즈를 가져오는 데 실패했습니다:', result.message);
+      }
+    } catch (error) {
+      console.error('퀴즈를 가져오는 데 실패했습니다:', error);
+    }
+  };
 
   const openModal = () => {
     setModalVisible(true);
@@ -33,8 +67,7 @@ const Question = () => {
     <View style={styles.container}>
       <View style={styles.quizBox}>
         <Text style={styles.quizText}>
-          Q. 만약 토비가 다른 동물 친구를 만났다면,{'\n'}그 동물은 무엇이었을까요?
-          {'\n'}그 동물과 토비는 어떤 모험을 떠날 수 있었을까요?
+          {quizQuestion || '퀴즈를 가져오는 중입니다...'}
         </Text>
       </View>
       <View style={styles.buttonContainer}>
