@@ -1,4 +1,3 @@
-// SelectPinInputModal.js
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -7,12 +6,16 @@ import {
   TouchableOpacity,
   StyleSheet,
   Modal,
+  Keyboard,
+  Platform,
+  KeyboardAvoidingView
 } from 'react-native';
 
 const SelectPinInputModal = ({ visible, onClose, onPinCorrect }) => {
   const [pin, setPin] = useState(['', '', '', '']);
   const [selectedInput, setSelectedInput] = useState(null);
   const [error, setError] = useState('');
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const inputRefs = useRef([]);
 
   const correctPin = '0000'; // 올바른 PIN 번호
@@ -45,7 +48,22 @@ const SelectPinInputModal = ({ visible, onClose, onPinCorrect }) => {
   };
 
   useEffect(() => {
-    // Reset PIN input and focus on the first input when modal is opened
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+      setIsKeyboardVisible(true);
+    });
+
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setIsKeyboardVisible(false);
+    });
+
+    // Clean up listeners on unmount
+    return () => {
+      keyboardDidHideListener.remove();
+      keyboardDidShowListener.remove();
+    };
+  }, []);
+
+  useEffect(() => {
     if (visible) {
       setPin(['', '', '', '']);
       setError(''); // Clear any existing error message
@@ -61,14 +79,20 @@ const SelectPinInputModal = ({ visible, onClose, onPinCorrect }) => {
       animationType="slide"
       visible={visible}
       onRequestClose={onClose}>
-      <View style={styles.modalContainer}>
+      <KeyboardAvoidingView
+        style={styles.modalContainer}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+      >
         <View style={styles.modalContent}>
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <Text style={styles.closeButtonText}>X</Text>
           </TouchableOpacity>
-          <Text style={styles.modalHeader}>
-            {error || '이 프로필을 선택하려면 PIN 번호를 입력하세요.'}
-          </Text>
+          {!isKeyboardVisible && (
+            <Text style={styles.modalHeader}>
+              {error || '이 프로필을 선택하려면 PIN 번호를 입력하세요.'}
+            </Text>
+          )}
           <View style={styles.pinContainer}>
             {pin.map((digit, index) => (
               <TextInput
@@ -88,7 +112,7 @@ const SelectPinInputModal = ({ visible, onClose, onPinCorrect }) => {
             ))}
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };
