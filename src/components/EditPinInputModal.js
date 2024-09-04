@@ -1,4 +1,4 @@
-import React, {useState, useRef, useCallback} from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,16 +6,18 @@ import {
   TouchableOpacity,
   StyleSheet,
   Modal,
+  Keyboard, // 추가된 부분
 } from 'react-native';
 import EditProfileModal from './EditProfileModal'; // 상대경로는 프로젝트 구조에 맞게 조정
 
-const EditPinInputModal = ({visible, onClose}) => {
+const EditPinInputModal = ({ visible, onClose }) => {
   const [pin, setPin] = useState(['', '', '', '']);
   const [isEditProfileModalVisible, setIsEditProfileModalVisible] =
     useState(false);
   const [selectedInput, setSelectedInput] = useState(null);
   const [error, setError] = useState('');
   const inputRefs = useRef([]);
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false); // 추가된 부분
 
   // 올바른 PIN번호
   const correctPin = '0000';
@@ -53,6 +55,26 @@ const EditPinInputModal = ({visible, onClose}) => {
     onClose(); // 부모 컴포넌트의 onClose 호출
   }, [onClose]);
 
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      () => {
+        setKeyboardVisible(true); // 키보드가 나타났을 때
+      }
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setKeyboardVisible(false); // 키보드가 사라졌을 때
+      }
+    );
+
+    return () => {
+      keyboardDidHideListener.remove();
+      keyboardDidShowListener.remove();
+    };
+  }, []);
+
   return (
     <>
       <Modal
@@ -65,9 +87,12 @@ const EditPinInputModal = ({visible, onClose}) => {
             <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
               <Text style={styles.closeButtonText}>X</Text>
             </TouchableOpacity>
-            <Text style={styles.modalHeader}>
-              {error || '이 프로필을 관리하려면 PIN 번호를 입력하세요.'}
-            </Text>
+            {/* 키보드가 보일 때 텍스트 숨기기 */}
+            {!isKeyboardVisible && (
+              <Text style={styles.modalHeader}>
+                {error || '이 프로필을 관리하려면 PIN 번호를 입력하세요.'}
+              </Text>
+            )}
             <View style={styles.pinContainer}>
               {pin.map((digit, index) => (
                 <TextInput
@@ -157,13 +182,13 @@ const styles = StyleSheet.create({
     color: '#393939',
     fontWeight: '900',
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 5,
     elevation: 5,
   },
   selectedPinInput: {
-    transform: [{scale: 1.1}],
+    transform: [{ scale: 1.1 }],
   },
 });
 
