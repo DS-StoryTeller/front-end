@@ -7,6 +7,8 @@ import Config from '../config.js';
 import Kakao from '../../assets/images/kakao.png';
 import Google from '../../assets/images/google.png';
 import { login as kakaoLogin, logout as kakaoLogout, getProfile as kakaoGetProfile, getKakaoKeyHash } from '@react-native-seoul/kakao-login';
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+
 
 
 
@@ -14,7 +16,14 @@ const Login = ({ navigation }) => {
     const [user, setUser] = useState('')
     const [password, setPassword] = useState('')
 
-    
+
+    useEffect(() => {
+        GoogleSignin.configure({
+            webClientId: '743052355294-uf3lfukm8q5t7ko63aisv46laioqi539.apps.googleusercontent.com',
+            offlineAccess: true,
+        });
+    }, []);
+
 
     const handleLogin = async () => {
         try {
@@ -70,21 +79,21 @@ const Login = ({ navigation }) => {
             console.log('Kakao Profile:', profile);
 
             if (token && profile) {
-                if (profile.nickname) { 
-                    const accessToken = token.accessToken;  
-                    const refreshToken = token.refreshToken; 
+                if (profile.nickname) {
+                    const accessToken = token.accessToken;
+                    const refreshToken = token.refreshToken;
 
                     if (accessToken && refreshToken) {
                         await storeTokens(accessToken, refreshToken);
                         await storeUser(profile.nickname);
                         Alert.alert('카카오 로그인 성공', `${profile.nickname}님, 환영합니다!`);
-    
-                        
+
+
                         const storedAccessToken = await getAccessToken();
                         const storedRefreshToken = await getRefreshToken();
                         console.log('Stored access token:', storedAccessToken);
                         console.log('Stored refresh token:', storedRefreshToken);
-    
+
                         navigation.navigate('BookShelf');
                     } else {
                         console.error('Invalid tokens:', token);
@@ -106,13 +115,43 @@ const Login = ({ navigation }) => {
         }
     };
 
-    const checkTokens = async () => {
-        const storedAccessToken = await getAccessToken();
-        const storedRefreshToken = await getRefreshToken();
-        console.log('Stored access token:', storedAccessToken);
-        console.log('Stored refresh token:', storedRefreshToken);
-        Alert.alert('Stored Tokens', `Access Token: ${storedAccessToken}\nRefresh Token: ${storedRefreshToken}`);
+
+    const handleGoogleLogin = async () => {
+        try {
+            await GoogleSignin.hasPlayServices(); // Google Play 서비스 확인
+            // 현재 로그인되어 있는지 확인
+            const currentUser = await GoogleSignin.getCurrentUser();
+            if (currentUser) {
+                await GoogleSignin.signOut(); // 이미 로그인되어 있으면 로그아웃
+                Alert.alert("로그아웃 완료", "구글 로그아웃이 완료되었습니다.");
+            }
+
+
+            // const { idToken } = await GoogleSignin.signIn(); // 구글 로그인 실행
+
+            // if (!idToken) {
+            //     throw new Error('No idToken received'); // idToken을 받지 못한 경우
+            // }
+
+            // console.log('Received idToken:', idToken);
+            // Alert.alert('idToken', `Token: ${idToken}`);
+
+            // // 이후 서버로 idToken 보내기 등 추가 로직 실행
+        } catch (error) {
+            console.error('Error during Google Signin:', error);
+            if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+                Alert.alert('로그인 취소', '로그인을 취소하셨습니다.');
+            } else if (error.code === statusCodes.IN_PROGRESS) {
+                Alert.alert('로그인 진행 중', '로그인이 진행 중입니다.');
+            } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+                Alert.alert('Google Play 서비스 오류', 'Google Play 서비스가 설치되어 있지 않습니다.');
+            } else {
+                Alert.alert('로그인 에러', '로그인 중 오류가 발생했습니다.');
+            }
+        }
     };
+
+
 
 
     return (
@@ -176,7 +215,7 @@ const Login = ({ navigation }) => {
                                     <Text style={styles.socialButtonText}>카카오로 로그인하기</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    style={styles.socialButton}
+                                    style={styles.socialButton} onPress={handleGoogleLogin}
                                 >
                                     <Image source={Google} style={styles.icon} />
                                     <Text style={styles.socialButtonText}>구글로 로그인하기</Text>
@@ -296,12 +335,12 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         borderWidth: 1,
         borderColor: '#4E5A8C',
-        flexDirection: 'row', 
+        flexDirection: 'row',
     },
     icon: {
-        width: 20, 
+        width: 20,
         height: 20,
-        marginRight: 5, 
+        marginRight: 5,
     },
     socialButtonText: {
         color: '#393939',
