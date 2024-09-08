@@ -72,48 +72,61 @@ const Login = ({ navigation }) => {
 
     const handleKakaoLogin = async () => {
         try {
-            const token = await kakaoLogin();
-            const profile = await kakaoGetProfile();
-
-            console.log('Kakao Token:', token);
-            console.log('Kakao Profile:', profile);
-
+            const token = await kakaoLogin(); 
+            const profile = await kakaoGetProfile(); 
+    
             if (token && profile) {
-                if (profile.nickname) {
-                    const accessToken = token.accessToken;
-                    const refreshToken = token.refreshToken;
+                const { id, nickname, email } = profile; 
+    
+                const response = await fetch(`${Config.API_BASE_URL}/kakao-login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        id: id, 
+                        role: 'ROLE_USER', 
+                        nickname: nickname,
+                        email: email,
+                    }),
+                });
+    
+            const accessToken = response.headers.get('access'); 
+            const refreshToken = response.headers.get('refresh');
 
+
+                const data = await response.json();
+    
+                if (response.ok) {
                     if (accessToken && refreshToken) {
+
                         await storeTokens(accessToken, refreshToken);
-                        await storeUser(profile.nickname);
-                        Alert.alert('카카오 로그인 성공', `${profile.nickname}님, 환영합니다!`);
-
-
+                        await storeUser(nickname);
+                        Alert.alert('카카오 로그인 성공', `${nickname}님, 환영합니다!`);
+    
                         const storedAccessToken = await getAccessToken();
                         const storedRefreshToken = await getRefreshToken();
                         console.log('Stored access token:', storedAccessToken);
                         console.log('Stored refresh token:', storedRefreshToken);
-
+    
                         navigation.navigate('BookShelf');
                     } else {
-                        console.error('Invalid tokens:', token);
+                        console.error('유효하지 않은 토큰:', data);
                         Alert.alert('로그인 실패', '유효한 토큰이 제공되지 않았습니다.');
                     }
                 } else {
-                    console.warn('닉네임이 유효하지 않습니다.');
+                    console.error('로그인 실패:', data);
+                    Alert.alert('로그인 실패', data.message || '로그인에 실패했습니다.');
                 }
             } else {
                 Alert.alert('카카오 로그인 실패', '로그인에 실패했습니다.');
             }
         } catch (error) {
-            if (error.message.includes('유효하지 않은 Key Hash입니다.')) {
-                Alert.alert('카카오 로그인 에러', 'Key Hash가 유효하지 않습니다.');
-            } else {
-                console.error(error);
-                Alert.alert('카카오 로그인 에러', '로그인 중 오류가 발생했습니다.');
-            }
+            console.error('카카오 로그인 중 오류:', error);
+            Alert.alert('카카오 로그인 에러', '로그인 중 오류가 발생했습니다.');
         }
     };
+    
 
 
     const handleGoogleLogin = async () => {
