@@ -21,6 +21,7 @@ const Login = ({ navigation }) => {
         GoogleSignin.configure({
             webClientId: '743052355294-uf3lfukm8q5t7ko63aisv46laioqi539.apps.googleusercontent.com',
             offlineAccess: true,
+            // forceCodeForRefreshToken: true,
         });
     }, []);
 
@@ -72,6 +73,7 @@ const Login = ({ navigation }) => {
 
     const handleKakaoLogin = async () => {
         try {
+          
             const token = await kakaoLogin(); 
             const profile = await kakaoGetProfile(); 
     
@@ -128,28 +130,46 @@ const Login = ({ navigation }) => {
     };
     
 
-
     const handleGoogleLogin = async () => {
         try {
-            await GoogleSignin.hasPlayServices(); // Google Play 서비스 확인
-            // 현재 로그인되어 있는지 확인
-            const currentUser = await GoogleSignin.getCurrentUser();
-            if (currentUser) {
-                await GoogleSignin.signOut(); // 이미 로그인되어 있으면 로그아웃
-                Alert.alert("로그아웃 완료", "구글 로그아웃이 완료되었습니다.");
+            await GoogleSignin.hasPlayServices();
+    
+            const userInfo = await GoogleSignin.signIn(); 
+    
+            console.log(userInfo);
+    
+            const { idToken } = userInfo.data;
+    
+            if (!idToken) {
+                console.error('No idToken received', userInfo); 
+                throw new Error('No idToken received'); 
             }
-
-
-            // const { idToken } = await GoogleSignin.signIn(); // 구글 로그인 실행
-
-            // if (!idToken) {
-            //     throw new Error('No idToken received'); // idToken을 받지 못한 경우
-            // }
-
-            // console.log('Received idToken:', idToken);
-            // Alert.alert('idToken', `Token: ${idToken}`);
-
-            // // 이후 서버로 idToken 보내기 등 추가 로직 실행
+    
+            console.log('Received idToken:', idToken);
+            Alert.alert('ID Token:', `Token: ${idToken}`);
+    
+            const { serverAuthCode } = userInfo.data;
+    
+            if (serverAuthCode) {
+                const response = await fetch(`${Config.API_BASE_URL}/google-login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ code: serverAuthCode }),
+                });
+    
+                const accessToken = response.headers.get('access');
+                const refreshToken = response.headers.get('refresh');
+    
+                if (response.ok && accessToken && refreshToken) {
+                    await storeTokens(accessToken, refreshToken);
+                    Alert.alert('구글 로그인 성공', '로그인이 성공적으로 완료되었습니다.');
+                    navigation.navigate('BookShelf');
+                } else {
+                    Alert.alert('구글 로그인 실패', '액세스 토큰을 받지 못했습니다.');
+                }
+            }
         } catch (error) {
             console.error('Error during Google Signin:', error);
             if (error.code === statusCodes.SIGN_IN_CANCELLED) {
@@ -159,13 +179,11 @@ const Login = ({ navigation }) => {
             } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
                 Alert.alert('Google Play 서비스 오류', 'Google Play 서비스가 설치되어 있지 않습니다.');
             } else {
-                Alert.alert('로그인 에러', '로그인 중 오류가 발생했습니다.');
+                Alert.alert('로그인 에러', `로그인 중 오류가 발생했습니다: ${error.message}`);
             }
         }
     };
-
-
-
+    
 
     return (
         <SafeAreaView style={styles.container}>
