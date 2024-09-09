@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderRadius: 32,
         marginHorizontal: 25,
-        overflow: 'hidden', // Ensure gradient is within button bounds
+        overflow: 'hidden',
     },
     gradient: {
         flex: 1,
@@ -36,8 +36,8 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         fontSize: 25,
-        fontWeight: '900', // Make text bold
-        color: '#000000', // Text color
+        fontWeight: '900',
+        color: '#393939',
     }
 });
 
