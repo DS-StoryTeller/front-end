@@ -1,10 +1,47 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import VoiceInputModal from '../components/VoiceInputModal'; // 모달 컴포넌트 import
+import {useNavigation, useRoute} from '@react-navigation/native';
+import QuestionInputModal from '../components/QuestionInputModal';
+import fetchWithAuth from '../api/fetchWithAuth'; // fetchWithAuth import
 
 const Question = () => {
   const [modalVisible, setModalVisible] = useState(false);
+  const [showGoodJobImage, setShowGoodJobImage] = useState(false);
+  const [quizQuestion, setQuizQuestion] = useState('');
+  const navigation = useNavigation(); // useNavigation 훅 사용
+  const route = useRoute(); // useRoute 훅 사용
+
+  // profileId와 bookId는 route.params에서 가져오기
+  const {profileId, bookId} = route.params || {}; // route.params가 undefined일 때를 대비
+
+  useEffect(() => {
+    // profileId와 bookId가 존재할 때만 퀴즈를 가져오기
+    if (profileId && bookId) {
+      fetchQuiz(profileId, bookId);
+    } else {
+      console.error('profileId 또는 bookId가 정의되지 않았습니다.');
+    }
+  }, [profileId, bookId]);
+
+  const fetchQuiz = async (profileId, bookId) => {
+    try {
+      const response = await fetchWithAuth(
+        `/books/create/quiz?profileId=${profileId}&bookId=${bookId}`,
+        {
+          method: 'POST',
+        },
+      );
+      const result = await response.json();
+      if (result.status === 201 && result.code === 'SUCCESS_CREATE_QUIZ') {
+        setQuizQuestion(result.data.question);
+      } else {
+        console.error('퀴즈를 가져오는 데 실패했습니다:', result.message);
+      }
+    } catch (error) {
+      console.error('퀴즈를 가져오는 데 실패했습니다:', error);
+    }
+  };
 
   const openModal = () => {
     setModalVisible(true);
@@ -14,13 +51,23 @@ const Question = () => {
     setModalVisible(false);
   };
 
+  const handleModalClose = () => {
+    // 모달이 닫힌 후 2초 뒤에 goodjob.png를 표시
+    setTimeout(() => {
+      setShowGoodJobImage(true);
+      // goodjob.png를 3초 후에 숨기고 QuizEnd로 이동
+      setTimeout(() => {
+        setShowGoodJobImage(false); // goodjob.png 숨기기
+        navigation.navigate('QuizEnd'); // QuizEnd.js로 이동
+      }, 3000); // 3초 후
+    }, 2000); // 2초 후
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.quizBox}>
         <Text style={styles.quizText}>
-          Q.만약 토비가 다른 동물 친구를 만났다면,{'\n'}그 동물은
-          무엇이었을까요?
-          {'\n'}그 동물과 토비는 어떤 모험을 떠날 수 있었을까요?
+          {quizQuestion || '퀴즈를 가져오는 중입니다...'}
         </Text>
       </View>
       <View style={styles.buttonContainer}>
@@ -38,11 +85,23 @@ const Question = () => {
           </LinearGradient>
         </TouchableOpacity>
       </View>
-      <VoiceInputModal
+      <QuestionInputModal
         visible={modalVisible}
-        onClose={closeModal}
-        message="정답을 말해주세요"
+        onClose={() => {
+          closeModal(); // 모달을 닫는다.
+          handleModalClose(); // 모달이 닫힌 후 이미지 표시 및 페이지 이동 처리
+        }}
+        onSpeechEnd={() => {}} // 음성 응답이 끝났을 때 호출될 함수 전달
       />
+      {showGoodJobImage && (
+        <View style={styles.goodJobContainer}>
+          <Image
+            source={require('../../assets/images/goodjob.png')}
+            style={styles.goodJobImage}
+            resizeMode="contain"
+          />
+        </View>
+      )}
     </View>
   );
 };
@@ -76,7 +135,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#393939',
     fontFamily: 'TAEBAEKfont',
-
   },
   buttonContainer: {
     flexDirection: 'row', // 가로로 정렬
@@ -101,6 +159,19 @@ const styles = StyleSheet.create({
   icon: {
     width: 60, // 아이콘의 너비
     height: 60, // 아이콘의 높이
+  },
+  goodJobContainer: {
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  goodJobImage: {
+    width: 800, // 이미지 크기 조정
+    height: 800,
   },
 });
 
