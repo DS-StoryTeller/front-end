@@ -1,25 +1,53 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, BackHandler } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, {useState, useEffect, useCallback} from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  BackHandler,
+} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import AddProfileModal from '../components/AddProfileModal';
-import { SelectPinInputModal } from '../components/Modals';
-import EditPinInputModal from '../components/EditPinInputModal'; // Import EditPinInputModal
-import { useAuth } from '../context/AuthContext';
+import {SelectPinInputModal} from '../components/Modals';
+import EditPinInputModal from '../components/EditPinInputModal';
+import {useAuth} from '../context/AuthContext';
+import fetchWithAuth from '../api/fetchWithAuth'; // 인증된 fetch 함수
 
-const Profile = ({ navigation }) => {
-  const { isLoggedIn, selectedProfile, setSelectedProfile } = useAuth();
+const Profile = ({navigation}) => {
+  const {isLoggedIn, selectedProfile, setSelectedProfile} = useAuth();
+  const [profiles, setProfiles] = useState([]); // 프로필 데이터를 저장하는 상태
   const [isChangingProfile, setIsChangingProfile] = useState(false);
-  const [isAddProfileModalVisible, setIsAddProfileModalVisible] = useState(false);
+  const [isAddProfileModalVisible, setIsAddProfileModalVisible] =
+    useState(false);
   const [isPinInputModalVisible, setIsPinInputModalVisible] = useState(false);
-  const [isEditPinInputModalVisible, setIsEditPinInputModalVisible] = useState(false); // New state for EditPinInputModal
+  const [isEditPinInputModalVisible, setIsEditPinInputModalVisible] =
+    useState(false);
   const [modalType, setModalType] = useState(''); // 'edit' 또는 'select'
 
-  // 프로필 데이터: 이름과 이미지 경로를 포함하는 객체 배열
-  const profiles = [
-    { name: 'John', image: require('../../assets/images/temp_profile_pic.png') },
-    { name: 'Emily', image: require('../../assets/images/temp_profile_pic2.png') },
-    { name: 'Steve', image: require('../../assets/images/temp_profile_pic3.png') },
-  ];
+  // 백엔드에서 프로필 데이터를 가져오는 함수
+  const fetchProfiles = async () => {
+    try {
+      const response = await fetchWithAuth(`/profiles/profileList`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({userId: 1}), // userId를 JSON body로 전달
+      });
+
+      const result = await response.json();
+      if (result.status === 200 && result.code === 'SUCCESS_GET_PROFILE_LIST') {
+        setProfiles(result.data); // 프로필 목록을 상태에 저장
+      } else {
+        console.error('프로필을 가져오는 데 실패했습니다:', result.message);
+      }
+    } catch (error) {
+      console.error('프로필을 가져오는 데 실패했습니다:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfiles(); // 컴포넌트가 마운트될 때 프로필 목록 가져오기
+  }, []);
 
   const renderProfiles = () => {
     return profiles.map((profile, index) => (
@@ -33,16 +61,15 @@ const Profile = ({ navigation }) => {
             if (isChangingProfile) {
               setModalType('edit');
               setSelectedProfile(profile.name); // 프로필 선택
-              setIsEditPinInputModalVisible(true); // Show EditPinInputModal
+              setIsEditPinInputModalVisible(true); // EditPinInputModal 보이기
             } else {
               setModalType('select');
               setSelectedProfile(profile.name); // 프로필 선택
               setIsPinInputModalVisible(true);
             }
-          }}
-        >
+          }}>
           <Image
-            source={profile.image}
+            source={{uri: profile.imageUrl}} // 프로필의 이미지 URL
             style={styles.profileImage}
           />
           {isChangingProfile && (
@@ -65,24 +92,24 @@ const Profile = ({ navigation }) => {
   };
 
   const handlePinCorrect = () => {
-    // 핀이 올바르면 BookShelf 화면으로 이동
     navigation.navigate('BookShelf');
   };
 
   const handleBackPress = useCallback(() => {
-    // Always navigate to BookShelf on back press
     navigation.navigate('BookShelf');
-    return true; // prevent default back action
+    return true;
   }, [navigation]);
 
   useEffect(() => {
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      handleBackPress,
+    );
     return () => backHandler.remove();
   }, [handleBackPress]);
 
   useEffect(() => {
     if (!isLoggedIn) {
-      // 로그인되지 않은 상태라면 Login 화면으로 이동
       navigation.navigate('Login');
     }
   }, [isLoggedIn, navigation]);
@@ -90,28 +117,35 @@ const Profile = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.header}>
-        {isChangingProfile ? '관리할 프로필을 골라주세요' : '프로필을 선택해주세요'}
+        {isChangingProfile
+          ? '관리할 프로필을 골라주세요'
+          : '프로필을 선택해주세요'}
       </Text>
       <View style={styles.profilesContainer}>
         {renderProfiles()}
         {!isChangingProfile && (
           <TouchableOpacity
             style={styles.addButton}
-            onPress={() => setIsAddProfileModalVisible(true)}
-          >
+            onPress={() => setIsAddProfileModalVisible(true)}>
             <Text style={styles.plus}>+</Text>
           </TouchableOpacity>
         )}
       </View>
       <TouchableOpacity
-        style={[styles.changeProfileButton, { borderColor: '#393939', borderWidth: 2 }]}
-        onPress={changeProfileText}
-      >
+        style={[
+          styles.changeProfileButton,
+          {borderColor: '#393939', borderWidth: 2},
+        ]}
+        onPress={changeProfileText}>
         <Image
           source={require('../../assets/images/pen.png')}
           style={styles.penIcon}
         />
-        <Text style={[styles.changeProfileButtonText, { color: '#393939', marginLeft: 10 }]}>
+        <Text
+          style={[
+            styles.changeProfileButtonText,
+            {color: '#393939', marginLeft: 10},
+          ]}>
           프로필 관리
         </Text>
       </TouchableOpacity>
@@ -168,7 +202,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.3,
     shadowRadius: 5,
     elevation: 5,
@@ -197,7 +231,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     margin: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.3,
     shadowRadius: 5,
     elevation: 5,
