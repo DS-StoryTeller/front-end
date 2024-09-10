@@ -99,15 +99,12 @@ const AddProfileModal = ({visible, onClose, userId}) => {
       const result = await response.json();
 
       if (response.ok) {
-        alert('프로필이 성공적으로 생성되었습니다!');
         onClose(); // 모달 닫기
       } else {
         console.error('프로필 생성 실패:', result.message);
-        alert('프로필 생성에 실패했습니다.');
       }
     } catch (error) {
       console.error('프로필 생성 중 오류 발생:', error);
-      alert('프로필 생성 중 오류가 발생했습니다.');
     }
   };
 
