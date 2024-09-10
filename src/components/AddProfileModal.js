@@ -24,6 +24,7 @@ const AddProfileModal = ({visible, onClose, userId}) => {
   const [selectedProfilePic, setSelectedProfilePic] = useState(null);
   const [profilePictures, setProfilePictures] = useState([]);
   const [showYesNoModal, setShowYesNoModal] = useState(false);
+  const [defaultProfilePic, setDefaultProfilePic] = useState(null);
 
   const onChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
@@ -61,6 +62,11 @@ const AddProfileModal = ({visible, onClose, userId}) => {
           uri: {uri: item.imageUrl}, // 이미지 URL을 사용
         }));
         setProfilePictures(fetchedPictures);
+
+        // Set defaultProfilePic to the first image from fetched pictures
+        if (fetchedPictures.length > 0) {
+          setDefaultProfilePic(fetchedPictures[0].uri);
+        }
       } else {
         console.error('Failed to fetch profile pictures:', result.message);
       }
@@ -136,6 +142,7 @@ const AddProfileModal = ({visible, onClose, userId}) => {
             <Image
               source={
                 selectedProfilePic ||
+                defaultProfilePic ||
                 require('../../assets/images/temp_profile_pic.png')
               }
               style={styles.profileImage}
