@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, {useState, useRef, useCallback, useEffect} from 'react';
 import {
   View,
   Text,
@@ -8,16 +8,16 @@ import {
   Modal,
   Keyboard, // 추가된 부분
 } from 'react-native';
-import EditProfileModal from './EditProfileModal'; // 상대경로는 프로젝트 구조에 맞게 조정
+import EditProfileModal from './EditProfileModal';
 
-const EditPinInputModal = ({ visible, onClose }) => {
+const EditPinInputModal = ({visible, onClose}) => {
   const [pin, setPin] = useState(['', '', '', '']);
   const [isEditProfileModalVisible, setIsEditProfileModalVisible] =
     useState(false);
   const [selectedInput, setSelectedInput] = useState(null);
   const [error, setError] = useState('');
   const inputRefs = useRef([]);
-  const [isKeyboardVisible, setKeyboardVisible] = useState(false); // 추가된 부분
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
   // 올바른 PIN번호
   const correctPin = '0000';
@@ -60,13 +60,13 @@ const EditPinInputModal = ({ visible, onClose }) => {
       'keyboardDidShow',
       () => {
         setKeyboardVisible(true); // 키보드가 나타났을 때
-      }
+      },
     );
     const keyboardDidHideListener = Keyboard.addListener(
       'keyboardDidHide',
       () => {
         setKeyboardVisible(false); // 키보드가 사라졌을 때
-      }
+      },
     );
 
     return () => {
@@ -182,13 +182,13 @@ const styles = StyleSheet.create({
     color: '#393939',
     fontWeight: '900',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.3,
     shadowRadius: 5,
     elevation: 5,
   },
   selectedPinInput: {
-    transform: [{ scale: 1.1 }],
+    transform: [{scale: 1.1}],
   },
 });
 
