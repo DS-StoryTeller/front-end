@@ -16,27 +16,26 @@ import fetchWithAuth from '../api/fetchWithAuth'; // 인증된 fetch 함수
 
 const Profile = ({navigation}) => {
   const {isLoggedIn, selectedProfile, setSelectedProfile} = useAuth();
-  const [profiles, setProfiles] = useState([]); // 프로필 데이터를 저장하는 상태
+  const [profiles, setProfiles] = useState([]);
   const [isChangingProfile, setIsChangingProfile] = useState(false);
   const [isAddProfileModalVisible, setIsAddProfileModalVisible] =
     useState(false);
   const [isPinInputModalVisible, setIsPinInputModalVisible] = useState(false);
   const [isEditPinInputModalVisible, setIsEditPinInputModalVisible] =
     useState(false);
-  const [modalType, setModalType] = useState(''); // 'edit' 또는 'select'
+  const [modalType, setModalType] = useState('');
 
-  // 백엔드에서 프로필 데이터를 가져오는 함수
   const fetchProfiles = async () => {
     try {
       const response = await fetchWithAuth(`/profiles/profileList`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({userId: 1}), // userId를 JSON body로 전달
+        body: JSON.stringify({userId: 1}),
       });
 
       const result = await response.json();
       if (result.status === 200 && result.code === 'SUCCESS_GET_PROFILE_LIST') {
-        setProfiles(result.data); // 프로필 목록을 상태에 저장
+        setProfiles(result.data);
       } else {
         console.error('프로필을 가져오는 데 실패했습니다:', result.message);
       }
@@ -46,8 +45,13 @@ const Profile = ({navigation}) => {
   };
 
   useEffect(() => {
-    fetchProfiles(); // 컴포넌트가 마운트될 때 프로필 목록 가져오기
+    fetchProfiles();
   }, []);
+
+  const handleAddProfileModalClose = () => {
+    setIsAddProfileModalVisible(false);
+    fetchProfiles(); // 프로필 목록을 다시 가져옵니다.
+  };
 
   const renderProfiles = () => {
     return profiles.map((profile, index) => (
@@ -60,18 +64,15 @@ const Profile = ({navigation}) => {
           onPress={() => {
             if (isChangingProfile) {
               setModalType('edit');
-              setSelectedProfile(profile.name); // 프로필 선택
-              setIsEditPinInputModalVisible(true); // EditPinInputModal 보이기
+              setSelectedProfile(profile.name);
+              setIsEditPinInputModalVisible(true);
             } else {
               setModalType('select');
-              setSelectedProfile(profile.name); // 프로필 선택
+              setSelectedProfile(profile.name);
               setIsPinInputModalVisible(true);
             }
           }}>
-          <Image
-            source={{uri: profile.imageUrl}} // 프로필의 이미지 URL
-            style={styles.profileImage}
-          />
+          <Image source={{uri: profile.imageUrl}} style={styles.profileImage} />
           {isChangingProfile && (
             <View style={styles.overlay}>
               <Image
@@ -151,7 +152,7 @@ const Profile = ({navigation}) => {
       </TouchableOpacity>
       <AddProfileModal
         visible={isAddProfileModalVisible}
-        onClose={() => setIsAddProfileModalVisible(false)}
+        onClose={handleAddProfileModalClose} // 수정된 부분
       />
       <SelectPinInputModal
         visible={isPinInputModalVisible && modalType === 'select'}
