@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import AddProfileModal from '../components/AddProfileModal';
-import {SelectPinInputModal} from '../components/Modals';
+import SelectPinInputModal from '../components/SelectPinInputModal';
 import EditPinInputModal from '../components/EditPinInputModal';
 import {useAuth} from '../context/AuthContext';
 import fetchWithAuth from '../api/fetchWithAuth'; // 인증된 fetch 함수
@@ -24,6 +24,7 @@ const Profile = ({navigation}) => {
   const [isEditPinInputModalVisible, setIsEditPinInputModalVisible] =
     useState(false);
   const [modalType, setModalType] = useState('');
+  const [selectedProfileId, setSelectedProfileId] = useState(null); // 추가된 상태
 
   const fetchProfiles = async () => {
     try {
@@ -53,6 +54,25 @@ const Profile = ({navigation}) => {
     fetchProfiles(); // 프로필 목록을 다시 가져옵니다.
   };
 
+  const handlePinCorrect = profile => {
+    setSelectedProfile(profile.name); // 선택된 프로필 업데이트
+    navigation.navigate('BookShelf');
+  };
+
+  const handleProfilePress = profile => {
+    if (isChangingProfile) {
+      setModalType('edit');
+      setSelectedProfile(profile.name);
+      setSelectedProfileId(profile.id); // 선택된 프로필 ID 저장
+      setIsEditPinInputModalVisible(true);
+    } else {
+      setModalType('select');
+      setSelectedProfile(profile.name);
+      setSelectedProfileId(profile.id); // 선택된 프로필 ID 저장
+      setIsPinInputModalVisible(true);
+    }
+  };
+
   const renderProfiles = () => {
     return profiles.map((profile, index) => (
       <View key={index} style={styles.profileContainer}>
@@ -61,17 +81,7 @@ const Profile = ({navigation}) => {
             styles.profileButton,
             isChangingProfile && styles.profileButtonActive,
           ]}
-          onPress={() => {
-            if (isChangingProfile) {
-              setModalType('edit');
-              setSelectedProfile(profile.name);
-              setIsEditPinInputModalVisible(true);
-            } else {
-              setModalType('select');
-              setSelectedProfile(profile.name);
-              setIsPinInputModalVisible(true);
-            }
-          }}>
+          onPress={() => handleProfilePress(profile)}>
           <Image source={{uri: profile.imageUrl}} style={styles.profileImage} />
           {isChangingProfile && (
             <View style={styles.overlay}>
@@ -90,10 +100,6 @@ const Profile = ({navigation}) => {
   const changeProfileText = () => {
     setIsChangingProfile(!isChangingProfile);
     setSelectedProfile(null);
-  };
-
-  const handlePinCorrect = () => {
-    navigation.navigate('BookShelf');
   };
 
   const handleBackPress = useCallback(() => {
@@ -152,17 +158,20 @@ const Profile = ({navigation}) => {
       </TouchableOpacity>
       <AddProfileModal
         visible={isAddProfileModalVisible}
-        onClose={handleAddProfileModalClose} // 수정된 부분
+        onClose={handleAddProfileModalClose}
       />
+
       <SelectPinInputModal
         visible={isPinInputModalVisible && modalType === 'select'}
         onClose={() => setIsPinInputModalVisible(false)}
-        onPinCorrect={handlePinCorrect}
+        onPinCorrect={() => navigation.navigate('BookShelf')} // 수정된 부분
+        profileId={selectedProfileId} // 프로필 ID를 전달
       />
       <EditPinInputModal
         visible={isEditPinInputModalVisible}
         onClose={() => setIsEditPinInputModalVisible(false)}
-        onPinCorrect={handlePinCorrect}
+        onPinCorrect={() => navigation.navigate('BookShelf')}
+        profileId={selectedProfileId} // 프로필 ID 전달
       />
     </SafeAreaView>
   );
