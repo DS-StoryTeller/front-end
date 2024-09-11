@@ -12,8 +12,9 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import YesNoModal from './YesNoModal';
+import fetchWithAuth from '../api/fetchWithAuth'; // fetchWithAuth를 임포트하세요.
 
-const EditProfileModal = ({visible, onClose}) => {
+const EditProfileModal = ({visible, onClose, profileId}) => {
   const [name, setName] = useState('');
   const [birthdate, setBirthdate] = useState('');
   const [pin, setPin] = useState('');
@@ -23,6 +24,12 @@ const EditProfileModal = ({visible, onClose}) => {
   const [selectedProfilePic, setSelectedProfilePic] = useState(null);
   const [profilePictures, setProfilePictures] = useState([]);
   const [showYesNoModal, setShowYesNoModal] = useState(false);
+
+  const [profileData, setProfileData] = useState({
+    name: '',
+    birthDate: '',
+    imageUrl: '',
+  });
 
   const onChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
@@ -45,22 +52,30 @@ const EditProfileModal = ({visible, onClose}) => {
     setShowProfilePicModal(false);
   };
 
-  const fetchProfilePictures = async () => {
-    // Replace this with your backend fetch logic
-    const fetchedPictures = new Array(12).fill(null).map((_, index) => ({
-      id: index.toString(),
-      uri: require('../../assets/images/temp_profile_pic.png'), // Replace with different images if available
-    }));
-    setProfilePictures(fetchedPictures);
+  const fetchProfileData = async () => {
+    try {
+      const response = await fetchWithAuth(`/profiles/${profileId}`, 'GET');
+      const result = await response.json();
+      if (result.status === 200 && result.code === 'SUCCESS_GET_PROFILE') {
+        setProfileData(result.data);
+        setName(result.data.name);
+        setBirthdate(result.data.birthDate);
+        setSelectedProfilePic(result.data.imageUrl);
+      }
+    } catch (error) {
+      console.error('Error fetching profile data:', error);
+    }
   };
 
   useEffect(() => {
-    fetchProfilePictures();
-  }, []);
+    if (visible) {
+      fetchProfileData();
+    }
+  }, [visible]);
 
   const handleConfirm = () => {
     setShowYesNoModal(false);
-    onClose(); // Close the AddProfileModal
+    onClose(); // Close the EditProfileModal
   };
 
   const handleCloseButtonPress = () => {
@@ -69,7 +84,7 @@ const EditProfileModal = ({visible, onClose}) => {
 
   return (
     <>
-      {/* AddProfileModal */}
+      {/* EditProfileModal */}
       <Modal
         transparent={true}
         animationType="slide"
@@ -85,8 +100,9 @@ const EditProfileModal = ({visible, onClose}) => {
             <Text style={styles.modalHeader}>프로필 변경하기</Text>
             <Image
               source={
-                selectedProfilePic ||
-                require('../../assets/images/temp_profile_pic.png')
+                selectedProfilePic
+                  ? {uri: selectedProfilePic}
+                  : require('../../assets/images/temp_profile_pic.png')
               }
               style={styles.profileImage}
             />
