@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import YesNoModal from './YesNoModal';
-import fetchWithAuth from '../api/fetchWithAuth'; // fetchWithAuth를 임포트하세요.
+import fetchWithAuth from '../api/fetchWithAuth';
 
 const EditProfileModal = ({visible, onClose, profileId}) => {
   const [name, setName] = useState('');
@@ -67,11 +67,81 @@ const EditProfileModal = ({visible, onClose, profileId}) => {
     }
   };
 
+  const fetchProfilePictures = async () => {
+    try {
+      const response = await fetchWithAuth(`/profiles/photos`, 'GET');
+      const result = await response.json();
+      if (result.status === 200 && result.code === 'SUCCESS_PROFILE_PHOTOS') {
+        setProfilePictures(result.data.map(pic => ({uri: pic.imageUrl})));
+      }
+    } catch (error) {
+      console.error('Error fetching profile pictures:', error);
+    }
+  };
+
   useEffect(() => {
     if (visible) {
       fetchProfileData();
+      fetchProfilePictures(); // Fetch profile pictures when modal is visible
     }
   }, [visible]);
+
+  const handleSaveProfile = async () => {
+    if (!name || !birthdate || !pin) {
+      alert('모든 필드를 입력해 주세요.');
+      return;
+    }
+
+    if (!selectedProfilePic) {
+      alert('프로필 사진을 선택해 주세요.');
+      return;
+    }
+
+    try {
+      console.log('Saving profile...');
+
+      const response = await fetchWithAuth(`/profiles/${profileId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: name,
+          birthDate: birthdate,
+          imageUrl: selectedProfilePic,
+          pinNumber: pin,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.status === 200 && result.code === 'SUCCESS_UPDATE_PROFILE') {
+        alert('프로필이 성공적으로 저장되었습니다.');
+        onClose();
+      } else {
+        alert(result.message || '프로필 저장에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('프로필 저장 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleDeleteProfile = async () => {
+    try {
+      const response = await fetchWithAuth(`/profiles/${profileId}`, 'DELETE');
+      const result = await response.json();
+      if (result.status === 200 && result.code === 'SUCCESS_DELETE_PROFILE') {
+        alert('프로필이 성공적으로 삭제되었습니다.');
+        onClose(); // Close the EditProfileModal
+      } else {
+        alert('프로필 삭제에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('Error deleting profile:', error);
+      alert('프로필 삭제 중 오류가 발생했습니다.');
+    }
+  };
 
   const handleConfirm = () => {
     setShowYesNoModal(false);
@@ -102,7 +172,7 @@ const EditProfileModal = ({visible, onClose, profileId}) => {
               source={
                 selectedProfilePic
                   ? {uri: selectedProfilePic}
-                  : require('../../assets/images/temp_profile_pic.png')
+                  : require('../../assets/images/temp_profile_pic.png') // 기본 이미지를 사용하지 않음
               }
               style={styles.profileImage}
             />
@@ -150,9 +220,7 @@ const EditProfileModal = ({visible, onClose, profileId}) => {
             <View style={styles.buttonContainer}>
               <TouchableOpacity
                 style={styles.saveButton}
-                onPress={() => {
-                  /* 나중에 백엔드 로직 추가 예정 */
-                }}>
+                onPress={handleSaveProfile}>
                 <Image
                   source={require('../../assets/images/save.png')}
                   style={styles.saveIcon}
@@ -161,9 +229,7 @@ const EditProfileModal = ({visible, onClose, profileId}) => {
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.saveButton}
-                onPress={() => {
-                  /* 나중에 백엔드 로직 추가 예정 */
-                }}>
+                onPress={handleDeleteProfile}>
                 <Image
                   source={require('../../assets/images/delete.png')}
                   style={styles.saveIcon}
@@ -192,11 +258,11 @@ const EditProfileModal = ({visible, onClose, profileId}) => {
                 <TouchableOpacity
                   style={styles.profilePicItem}
                   onPress={() => handleProfilePicSelect(item.uri)}>
-                  <Image source={item.uri} style={styles.profilePic} />
+                  <Image source={item} style={styles.profilePic} />
                 </TouchableOpacity>
               )}
               numColumns={4}
-              keyExtractor={item => item.id}
+              keyExtractor={(item, index) => index.toString()}
               contentContainerStyle={styles.profilePicListContainer}
             />
           </View>
