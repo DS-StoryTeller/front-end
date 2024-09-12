@@ -77,6 +77,7 @@ const BookRead = ({ navigation }) => {
         loadData();
     }, [profileId, bookId]);
 
+  
     // 페이지 세부정보 조회
     const fetchPageDetails = async (pageNumber) => {
         try {
@@ -126,6 +127,8 @@ const BookRead = ({ navigation }) => {
     // 설정 세부정보 조회
     const fetchSettings = async () => {
         try {
+            console.log(`Fetching settings for profileId: ${profileId}, bookId: ${bookId}`);
+
             const response = await fetchWithAuth(`/settings/detail?profileId=${profileId}&bookId=${bookId}`);
             const result = await response.json();
             console.log('설정 세부정보 응답', result);
@@ -230,7 +233,7 @@ const BookRead = ({ navigation }) => {
     }, [bookText]);
 
     useEffect(() => {
-        setNextStepVisible(false); 
+        setNextStepVisible(false);
         if (bookText) {
             Tts.stop();
             Tts.speak(bookText);
@@ -428,7 +431,7 @@ const BookRead = ({ navigation }) => {
                     <>
                         <ImageBackground source={{ uri: pageImage }} style={styles.page}>
                             <View style={styles.iconBox}>
-                                <TouchableOpacity style={styles.icon}  onPress={openYesNoModal} >
+                                <TouchableOpacity style={styles.icon} onPress={openYesNoModal} >
                                     <Ionic name="home-outline" size={35} color="black" />
                                 </TouchableOpacity>
                                 <YesNoModal isVisible={isYesNoModalVisible} onClose={closeYesNoModal}
@@ -441,10 +444,10 @@ const BookRead = ({ navigation }) => {
                                     bookId={bookId}
                                     currentPage={currentPage - 1} />
                                 <TouchableOpacity style={styles.icon} onPress={openSettingModal} >
-                                    <Ionic name="settings-outline" size={35} color="black"/>
+                                    <Ionic name="settings-outline" size={35} color="black" />
                                 </TouchableOpacity>
                                 <SettingModal isVisible={isSettingModalVisible} onClose={closeSettingModal} handleSizeFilter={handleSizeFilter}
-                                handleSpeedFilter={handleSpeedFilter} profileId={profileId} bookId={bookId} initialSize={initialSize} initialSpeed={initialSpeed}
+                                    handleSpeedFilter={handleSpeedFilter} profileId={profileId} bookId={bookId} initialSize={initialSize} initialSpeed={initialSpeed}
                                     currentText={bookText} />
                             </View>
                         </ImageBackground>
@@ -560,7 +563,7 @@ const styles = StyleSheet.create({
     icon: {
         marginTop: 10,
         backgroundColor: 'white',
-        borderRadius: 10, 
+        borderRadius: 10,
     },
     bookText: {
         fontSize: 18,

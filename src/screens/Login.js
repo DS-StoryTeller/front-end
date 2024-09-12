@@ -73,44 +73,44 @@ const Login = ({ navigation }) => {
 
     const handleKakaoLogin = async () => {
         try {
-          
-            const token = await kakaoLogin(); 
-            const profile = await kakaoGetProfile(); 
-    
+
+            const token = await kakaoLogin();
+            const profile = await kakaoGetProfile();
+
             if (token && profile) {
-                const { id, nickname, email } = profile; 
-    
+                const { id, nickname, email } = profile;
+
                 const response = await fetch(`${Config.API_BASE_URL}/kakao-login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        id: id, 
-                        role: 'ROLE_USER', 
+                        id: id,
+                        role: 'ROLE_USER',
                         nickname: nickname,
                         email: email,
                     }),
                 });
-    
-            const accessToken = response.headers.get('access'); 
-            const refreshToken = response.headers.get('refresh');
+
+                const accessToken = response.headers.get('access');
+                const refreshToken = response.headers.get('refresh');
 
 
                 const data = await response.json();
-    
+
                 if (response.ok) {
                     if (accessToken && refreshToken) {
 
                         await storeTokens(accessToken, refreshToken);
                         await storeUser(nickname);
-                        Alert.alert('카카오 로그인 성공', `${nickname}님, 환영합니다!`);
-    
+                        Alert.alert('카카오 로그인 성공', `${nickname}님, StoryTeller에 오신것을 환영합니다`);
+
                         const storedAccessToken = await getAccessToken();
                         const storedRefreshToken = await getRefreshToken();
                         console.log('Stored access token:', storedAccessToken);
                         console.log('Stored refresh token:', storedRefreshToken);
-    
+
                         navigation.navigate('BookShelf');
                     } else {
                         console.error('유효하지 않은 토큰:', data);
@@ -128,47 +128,53 @@ const Login = ({ navigation }) => {
             Alert.alert('카카오 로그인 에러', '로그인 중 오류가 발생했습니다.');
         }
     };
-    
+
 
     const handleGoogleLogin = async () => {
         try {
             await GoogleSignin.hasPlayServices();
-    
-            const userInfo = await GoogleSignin.signIn(); 
-    
-            console.log(userInfo);
-    
+
+            const userInfo = await GoogleSignin.signIn();
+
             const { idToken } = userInfo.data;
-    
+
             if (!idToken) {
-                console.error('No idToken received', userInfo); 
-                throw new Error('No idToken received'); 
+                console.error('No idToken received', userInfo);
+                throw new Error('No idToken received');
             }
-    
-            console.log('Received idToken:', idToken);
-            Alert.alert('ID Token:', `Token: ${idToken}`);
-    
-            const { serverAuthCode } = userInfo.data;
-    
-            if (serverAuthCode) {
-                const response = await fetch(`${Config.API_BASE_URL}/google-login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ code: serverAuthCode }),
-                });
-    
-                const accessToken = response.headers.get('access');
-                const refreshToken = response.headers.get('refresh');
-    
-                if (response.ok && accessToken && refreshToken) {
-                    await storeTokens(accessToken, refreshToken);
-                    Alert.alert('구글 로그인 성공', '로그인이 성공적으로 완료되었습니다.');
-                    navigation.navigate('BookShelf');
-                } else {
-                    Alert.alert('구글 로그인 실패', '액세스 토큰을 받지 못했습니다.');
-                }
+
+            const role = "ROLE_USER";
+
+            const response = await fetch(`${Config.API_BASE_URL}/google-login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    idToken: idToken,
+                    role: role
+                }),
+            });
+
+            const accessToken = response.headers.get('access');
+            const refreshToken = response.headers.get('refresh');
+
+            const data = await response.json();
+            console.log('Server response data:', data); 
+
+            if (response.ok && accessToken && refreshToken) {
+                const { nickname } = data.data;
+
+                await storeTokens(accessToken, refreshToken);
+                await storeUser(nickname);
+
+                Alert.alert('구글 로그인 성공', `${nickname}님, StoryTeller에 오신것을 환영합니다`);
+                console.log('Stored Access Token:', accessToken);
+                console.log('Stored Refresh Token:', refreshToken);
+
+                navigation.navigate('BookShelf');
+            } else {
+                Alert.alert('구글 로그인 실패', '액세스 토큰을 받지 못했습니다.');
             }
         } catch (error) {
             console.error('Error during Google Signin:', error);
@@ -183,7 +189,7 @@ const Login = ({ navigation }) => {
             }
         }
     };
-    
+
 
     return (
         <SafeAreaView style={styles.container}>
