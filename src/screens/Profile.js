@@ -28,14 +28,16 @@ const Profile = ({navigation}) => {
 
   const fetchProfiles = async () => {
     try {
-      const response = await fetchWithAuth(`/profiles/profileList`, {
-        method: 'POST',
+      const response = await fetchWithAuth(`/users/1/profiles`, {
+        method: 'GET',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({userId: 1}),
       });
 
       const result = await response.json();
-      if (result.status === 200 && result.code === 'SUCCESS_GET_PROFILE_LIST') {
+      if (
+        response.status === 200 &&
+        result.code === 'SUCCESS_GET_PROFILE_LIST'
+      ) {
         setProfiles(result.data);
       } else {
         console.error('프로필을 가져오는 데 실패했습니다:', result.message);
