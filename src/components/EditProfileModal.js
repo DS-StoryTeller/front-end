@@ -24,6 +24,7 @@ const EditProfileModal = ({visible, onClose, profileId}) => {
   const [selectedProfilePic, setSelectedProfilePic] = useState(null);
   const [profilePictures, setProfilePictures] = useState([]);
   const [showYesNoModal, setShowYesNoModal] = useState(false);
+  const [yesNoModalType, setYesNoModalType] = useState(''); // To differentiate modal types
 
   const [profileData, setProfileData] = useState({
     name: '',
@@ -100,11 +101,9 @@ const EditProfileModal = ({visible, onClose, profileId}) => {
     try {
       console.log('Saving profile...');
 
-      const response = await fetchWithAuth(`/profiles/${profileId}`, {
+      const response = await fetchWithAuth({
+        url: `/profiles/${profileId}`,
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           name: name,
           birthDate: birthdate,
@@ -112,7 +111,6 @@ const EditProfileModal = ({visible, onClose, profileId}) => {
           pinNumber: pin,
         }),
       });
-
       const result = await response.json();
 
       if (result.status === 200 && result.code === 'SUCCESS_UPDATE_PROFILE') {
@@ -127,13 +125,30 @@ const EditProfileModal = ({visible, onClose, profileId}) => {
     }
   };
 
-  const handleDeleteProfile = async () => {
+  const handleDeleteProfile = () => {
+    setYesNoModalType('delete'); // Set modal type for deletion
+    setShowYesNoModal(true);
+  };
+
+  const handleConfirm = () => {
+    if (yesNoModalType === 'delete') {
+      handleDeleteProfileRequest(); // 프로필 삭제 요청 처리
+    } else {
+      setShowYesNoModal(false);
+      onClose(); // EditProfileModal 닫기
+    }
+  };
+
+  const handleDeleteProfileRequest = async () => {
     try {
-      const response = await fetchWithAuth(`/profiles/${profileId}`, 'DELETE');
+      const response = await fetchWithAuth({
+        url: `/profiles/${profileId}`,
+        method: 'DELETE',
+      });
       const result = await response.json();
       if (result.status === 200 && result.code === 'SUCCESS_DELETE_PROFILE') {
-        alert('프로필이 성공적으로 삭제되었습니다.');
-        onClose(); // Close the EditProfileModal
+        alert('프로필이 성공적으로 삭제되었습니다.2');
+        onClose(); // 삭제 후 EditProfileModal 닫기
       } else {
         alert('프로필 삭제에 실패했습니다.');
       }
@@ -143,12 +158,8 @@ const EditProfileModal = ({visible, onClose, profileId}) => {
     }
   };
 
-  const handleConfirm = () => {
-    setShowYesNoModal(false);
-    onClose(); // Close the EditProfileModal
-  };
-
   const handleCloseButtonPress = () => {
+    setYesNoModalType('close'); // Set modal type for closing
     setShowYesNoModal(true);
   };
 
@@ -269,15 +280,24 @@ const EditProfileModal = ({visible, onClose, profileId}) => {
         </View>
       </Modal>
 
-      {/* YesNoModal */}
       <YesNoModal
         isVisible={showYesNoModal}
         onClose={() => setShowYesNoModal(false)}
-        title="정말 나가시겠습니까?"
-        subtitle={`나가시면 수정하신 프로필의 정보는 \n 저장되지 않습니다.`}
-        buttonText1="확인"
+        title={
+          yesNoModalType === 'delete'
+            ? '정말 삭제하시겠습니까?'
+            : '정말 나가시겠습니까?'
+        }
+        subtitle={
+          yesNoModalType === 'delete'
+            ? '프로필의 모든 정보가 완전히 삭제되고 \n 다시 복구하실 수 없습니다.'
+            : '나가시면 수정하신 프로필의 정보는 \n 저장되지 않습니다.'
+        }
+        buttonText1={yesNoModalType === 'delete' ? '삭제' : '확인'}
         buttonText2="취소"
+        profileId={yesNoModalType === 'delete' ? profileId : null} // 프로필 ID 전달
         onConfirm={handleConfirm}
+        closeEditor={onClose}
       />
     </>
   );
