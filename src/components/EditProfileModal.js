@@ -101,9 +101,11 @@ const EditProfileModal = ({visible, onClose, profileId}) => {
     try {
       console.log('Saving profile...');
 
-      const response = await fetchWithAuth({
-        url: `/profiles/${profileId}`,
+      const response = await fetchWithAuth(`/profiles/${profileId}`, {
         method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           name: name,
           birthDate: birthdate,
@@ -111,6 +113,7 @@ const EditProfileModal = ({visible, onClose, profileId}) => {
           pinNumber: pin,
         }),
       });
+
       const result = await response.json();
 
       if (result.status === 200 && result.code === 'SUCCESS_UPDATE_PROFILE') {
@@ -128,34 +131,6 @@ const EditProfileModal = ({visible, onClose, profileId}) => {
   const handleDeleteProfile = () => {
     setYesNoModalType('delete'); // Set modal type for deletion
     setShowYesNoModal(true);
-  };
-
-  const handleConfirm = () => {
-    if (yesNoModalType === 'delete') {
-      handleDeleteProfileRequest(); // 프로필 삭제 요청 처리
-    } else {
-      setShowYesNoModal(false);
-      onClose(); // EditProfileModal 닫기
-    }
-  };
-
-  const handleDeleteProfileRequest = async () => {
-    try {
-      const response = await fetchWithAuth({
-        url: `/profiles/${profileId}`,
-        method: 'DELETE',
-      });
-      const result = await response.json();
-      if (result.status === 200 && result.code === 'SUCCESS_DELETE_PROFILE') {
-        alert('프로필이 성공적으로 삭제되었습니다.2');
-        onClose(); // 삭제 후 EditProfileModal 닫기
-      } else {
-        alert('프로필 삭제에 실패했습니다.');
-      }
-    } catch (error) {
-      console.error('Error deleting profile:', error);
-      alert('프로필 삭제 중 오류가 발생했습니다.');
-    }
   };
 
   const handleCloseButtonPress = () => {
@@ -296,7 +271,6 @@ const EditProfileModal = ({visible, onClose, profileId}) => {
         buttonText1={yesNoModalType === 'delete' ? '삭제' : '확인'}
         buttonText2="취소"
         profileId={yesNoModalType === 'delete' ? profileId : null} // 프로필 ID 전달
-        onConfirm={handleConfirm}
         closeEditor={onClose}
       />
     </>
