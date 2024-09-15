@@ -15,7 +15,7 @@ import {useAuth} from '../context/AuthContext';
 import fetchWithAuth from '../api/fetchWithAuth'; // 인증된 fetch 함수
 
 const Profile = ({navigation}) => {
-  const {isLoggedIn, selectedProfile, setSelectedProfile} = useAuth();
+  const {isLoggedIn, selectProfile} = useAuth();
   const [profiles, setProfiles] = useState([]);
   const [isChangingProfile, setIsChangingProfile] = useState(false);
   const [isAddProfileModalVisible, setIsAddProfileModalVisible] =
@@ -24,7 +24,7 @@ const Profile = ({navigation}) => {
   const [isEditPinInputModalVisible, setIsEditPinInputModalVisible] =
     useState(false);
   const [modalType, setModalType] = useState('');
-  const [selectedProfileId, setSelectedProfileId] = useState(null); // 추가된 상태
+  const [selectedProfileId, selectProfileId] = useState(null); // 추가된 상태
 
   const fetchProfiles = async () => {
     try {
@@ -56,21 +56,21 @@ const Profile = ({navigation}) => {
     fetchProfiles(); // 프로필 목록을 다시 가져옵니다.
   };
 
-  const handlePinCorrect = profile => {
-    setSelectedProfile(profile.name); // 선택된 프로필 업데이트
-    navigation.navigate('BookShelf');
+  const handlePinCorrect = () => {
+    // PIN이 맞으면 BookShelf으로 이동하면서 프로필 ID를 전달
+    navigation.navigate('BookShelf', {profileId: selectedProfileId});
   };
 
   const handleProfilePress = profile => {
     if (isChangingProfile) {
       setModalType('edit');
-      setSelectedProfile(profile.name);
-      setSelectedProfileId(profile.id); // 선택된 프로필 ID 저장
+      selectProfile(profile.id);
+      selectProfileId(profile.id); // 선택된 프로필 ID 저장
       setIsEditPinInputModalVisible(true);
     } else {
       setModalType('select');
-      setSelectedProfile(profile.name);
-      setSelectedProfileId(profile.id); // 선택된 프로필 ID 저장
+      selectProfile(profile.id);
+      selectProfileId(profile.id); // 선택된 프로필 ID 저장
       setIsPinInputModalVisible(true);
     }
   };
@@ -101,7 +101,7 @@ const Profile = ({navigation}) => {
 
   const changeProfileText = () => {
     setIsChangingProfile(!isChangingProfile);
-    setSelectedProfile(null);
+    selectProfile(null);
   };
 
   const handleBackPress = useCallback(() => {
@@ -166,13 +166,13 @@ const Profile = ({navigation}) => {
       <SelectPinInputModal
         visible={isPinInputModalVisible && modalType === 'select'}
         onClose={() => setIsPinInputModalVisible(false)}
-        onPinCorrect={() => navigation.navigate('BookShelf')} // 수정된 부분
+        onPinCorrect={handlePinCorrect} // 수정된 부분
         profileId={selectedProfileId} // 프로필 ID를 전달
       />
       <EditPinInputModal
         visible={isEditPinInputModalVisible}
         onClose={() => setIsEditPinInputModalVisible(false)}
-        onPinCorrect={() => navigation.navigate('BookShelf')}
+        onPinCorrect={handlePinCorrect}
         profileId={selectedProfileId} // 프로필 ID 전달
       />
     </SafeAreaView>

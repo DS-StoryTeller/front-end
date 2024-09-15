@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Image, View, StyleSheet, TouchableOpacity, Text } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, {useState, useEffect, useCallback} from 'react';
+import {Image, View, StyleSheet, TouchableOpacity, Text} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import VoiceInputModal from '../components/VoiceInputModal';
 import fetchWithAuth from '../api/fetchWithAuth';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
+import {useAuth} from '../context/AuthContext';
 
 const BookShelf = () => {
   const [selected, setSelected] = useState('ALL');
@@ -13,7 +14,8 @@ const BookShelf = () => {
   const [books, setBooks] = useState([]);
   const [refreshKey, setRefreshKey] = useState(0); // 추가: 새로고침 키
 
-  const profileId = 2;
+  const {profileId} = useAuth(); // useAuth 훅을 통해 profileId 받아오기
+  console.log(`프로필 id: ${profileId}`);
   const navigation = useNavigation();
 
   // 책 목록 가져오기
@@ -25,12 +27,14 @@ const BookShelf = () => {
       } else if (selected === 'READING') {
         endpoint = `/books/reading?profileId=${profileId}`;
       }
-      const response = await fetchWithAuth(endpoint, { method: 'GET' });
+      const response = await fetchWithAuth(endpoint, {method: 'GET'});
       const result = await response.json();
-      if (result.status === 200 && 
-          (result.code === 'SUCCESS_RETRIEVE_BOOKS' || 
-          result.code === 'SUCCESS_RETRIEVE_FAVORITE_BOOKS' || 
-          result.code === 'SUCCESS_RETRIEVE_READING_BOOKS')) {
+      if (
+        result.status === 200 &&
+        (result.code === 'SUCCESS_RETRIEVE_BOOKS' ||
+          result.code === 'SUCCESS_RETRIEVE_FAVORITE_BOOKS' ||
+          result.code === 'SUCCESS_RETRIEVE_READING_BOOKS')
+      ) {
         setBooks(result.data);
       }
     } catch (error) {
@@ -48,22 +52,27 @@ const BookShelf = () => {
   };
 
   // 책 클릭 시
-  const handleBookPress = (bookId) => {
-    navigation.navigate('BookRead', { profileId, bookId });
+  const handleBookPress = bookId => {
+    navigation.navigate('BookRead', {profileId, bookId});
   };
 
   // 즐겨찾기 토글
-  const toggleFavorite = async (bookId) => {
+  const toggleFavorite = async bookId => {
     try {
-      const response = await fetchWithAuth(`/books/favorite?profileId=${profileId}&bookId=${bookId}`, {
-        method: 'PUT',
-      });
+      const response = await fetchWithAuth(
+        `/books/favorite?profileId=${profileId}&bookId=${bookId}`,
+        {
+          method: 'PUT',
+        },
+      );
       const result = await response.json();
       if (result.status === 200 && result.code === 'SUCCESS_UPDATE_FAVORITE') {
         setBooks(prevBooks =>
           prevBooks.map(book =>
-            book.bookId === bookId ? { ...book, isFavorite: !book.isFavorite } : book
-          )
+            book.bookId === bookId
+              ? {...book, isFavorite: !book.isFavorite}
+              : book,
+          ),
         );
       }
     } catch (error) {
@@ -72,7 +81,7 @@ const BookShelf = () => {
   };
 
   // 책장 렌더링
-  const renderShelf = (shelfIndex) => {
+  const renderShelf = shelfIndex => {
     const booksForShelf = books.slice(shelfIndex * 4, (shelfIndex + 1) * 4);
 
     return (
@@ -84,21 +93,13 @@ const BookShelf = () => {
         {booksForShelf.map((book, index) => (
           <View
             key={book.bookId}
-            style={[
-              styles.bookButton,
-              { left: 355 + index * 160 },
-            ]}
-          >
+            style={[styles.bookButton, {left: 355 + index * 160}]}>
             <TouchableOpacity onPress={() => handleBookPress(book.bookId)}>
-              <Image
-                source={{ uri: book.coverImage }}
-                style={styles.bookImage}
-              />
+              <Image source={{uri: book.coverImage}} style={styles.bookImage} />
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.favoriteButton}
-              onPress={() => toggleFavorite(book.bookId)}
-            >
+              onPress={() => toggleFavorite(book.bookId)}>
               <Icon
                 name={book.isFavorite ? 'star' : 'star-o'}
                 size={24}
@@ -139,7 +140,7 @@ const BookShelf = () => {
         />
       </View>
       <View style={styles.shelfWrapper}>
-        {Array.from({ length: numberOfShelves }).map((_, index) =>
+        {Array.from({length: numberOfShelves}).map((_, index) =>
           renderShelf(index),
         )}
       </View>
@@ -148,8 +149,7 @@ const BookShelf = () => {
         onPress={() => {
           console.log('Profile 버튼이 눌렸습니다.');
           navigation.navigate('Profile');
-        }}
-      >
+        }}>
         <Image
           source={require('../../assets/images/temp_profile_pic.png')}
           style={styles.squareButtonImage}
@@ -160,9 +160,8 @@ const BookShelf = () => {
         <LinearGradient
           colors={['#2170CD', '#8FA0E8']}
           style={styles.roundButtonGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-        >
+          start={{x: 0, y: 0}}
+          end={{x: 1, y: 0}}>
           <Image
             source={require('../../assets/images/drawing.png')}
             style={styles.roundButtonImage}
@@ -181,20 +180,18 @@ const BookShelf = () => {
   );
 };
 
-const RadioButton = ({ title, selected, onPress, style, textStyle }) => (
+const RadioButton = ({title, selected, onPress, style, textStyle}) => (
   <TouchableOpacity onPress={onPress} style={[styles.radioButton, style]}>
     {selected ? (
       <LinearGradient
         colors={['#F8C683', '#FF8C43']}
-        style={[styles.radioButtonGradient, styles.selected, style]}
-      >
+        style={[styles.radioButtonGradient, styles.selected, style]}>
         <Text
           style={[
             styles.radioButtonText,
             styles.radioButtonTextSelected,
             textStyle,
-          ]}
-        >
+          ]}>
           {title}
         </Text>
       </LinearGradient>
@@ -254,7 +251,7 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     borderColor: '#FF8C43',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.3,
     shadowRadius: 3,
   },
