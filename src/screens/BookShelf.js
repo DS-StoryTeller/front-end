@@ -13,7 +13,7 @@ const BookShelf = () => {
   const [books, setBooks] = useState([]);
   const [refreshKey, setRefreshKey] = useState(0); // 추가: 새로고침 키
 
-  const profileId = 2;
+  const profileId = 1;
   const navigation = useNavigation();
 
   // 책 목록 가져오기
@@ -155,7 +155,6 @@ const BookShelf = () => {
           style={styles.squareButtonImage}
         />
       </TouchableOpacity>
-
       <TouchableOpacity style={styles.roundButton} onPress={toggleModal}>
         <LinearGradient
           colors={['#2170CD', '#8FA0E8']}
