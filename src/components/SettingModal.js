@@ -67,13 +67,14 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+        marginTop: 2,
         marginBottom: 10,
         width: '100%',
         paddingHorizontal: 20,
     },
     modalView: {
         width: '40%',
-        height: '40%',
+        height: '43%',
         backgroundColor: "white",
         borderRadius: 20,
         padding: 15,
@@ -91,12 +92,13 @@ const styles = StyleSheet.create({
     modalTextStyle: {
         paddingLeft: 2,
         color: 'black',
-        fontSize: 20,
+        fontSize: 27,
         fontFamily: 'TAEBAEKfont',
 
     },
     close: {
         justifyContent: 'center',
+        marginBottom: 26,
     },
     buttonContainer: {
         justifyContent: 'center',
@@ -104,7 +106,7 @@ const styles = StyleSheet.create({
     },
     subtitle: {
         textAlign: 'center',
-        fontSize: 17,
+        fontSize: 20,
         color: 'black',
         fontFamily: 'TAEBAEKfont',
 

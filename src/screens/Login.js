@@ -1,15 +1,24 @@
+
 import React, { useState, useEffect } from 'react'
 import { Text, View, StyleSheet, TextInput, TouchableOpacity, Image, Button, Alert, ScrollView, KeyboardAvoidingView, Platform } from "react-native"
 import { SafeAreaView } from 'react-native-safe-area-context'
+import {useAuth} from '../context/AuthContext';
 import Logo from '../../assets/images/logo.png';
-import { storeTokens, storeUser, getAccessToken, getRefreshToken } from '../utils/storage';
-import Config from '../config.js';
 import Kakao from '../../assets/images/kakao.png';
-import Google from '../../assets/images/google.png';
+
 import { login as kakaoLogin, logout as kakaoLogout, getProfile as kakaoGetProfile, getKakaoKeyHash } from '@react-native-seoul/kakao-login';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+import Config from '../config.js';
+import {storeTokens, storeUser} from '../utils/storage';
+import OkModal from '../components/OkModal.js';
 
-
+const Login = ({navigation}) => {
+  const [user, setUser] = useState('');
+  const [password, setPassword] = useState('');
+  const {login} = useAuth(); // AuthContext에서 로그인 함수 가져오기
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
 
 
 const Login = ({ navigation }) => {
@@ -37,39 +46,46 @@ const Login = ({ navigation }) => {
                 body: formData,
             });
 
-            const data = await response.json();
 
-            console.log('Server response:', response.status, data);
+      const response = await fetch(`${Config.API_BASE_URL}/login`, {
+        method: 'POST',
+        body: formData,
+      });
 
-            if (response.ok) {
-                const accessToken = response.headers.get('access');
-                const refreshToken = response.headers.get('refresh');
+      const data = await response.json();
 
-                if (accessToken && refreshToken) { // 토큰 값 유효성 검사
-                    await storeTokens(accessToken, refreshToken);
-                    await storeUser(user);
-                    Alert.alert('로그인 성공', 'StoryTeller에 오신것을 환영합니다.');
+      console.log('Server response:', response.status, data);
 
-                    // 저장된 토큰 확인
-                    const storedAccessToken = await getAccessToken();
-                    const storedRefreshToken = await getRefreshToken();
-                    console.log('Stored access token:', storedAccessToken);
-                    console.log('Stored refresh token:', storedRefreshToken);
+      if (response.ok) {
+        const accessToken = response.headers.get('access');
+        const refreshToken = response.headers.get('refresh');
 
+        if (accessToken && refreshToken) {
+          await storeTokens(accessToken, refreshToken);
+          await storeUser(user);
 
-                    navigation.navigate('BookShelf');
-                } else {
-                    console.error('Invalid tokens:', data);
-                    Alert.alert('로그인 실패', '유효한 토큰이 제공되지 않았습니다.');
-                }
-            } else {
-                Alert.alert('로그인 실패', data.message || '로그인에 실패했습니다.');
-            }
-        } catch (error) {
-            console.error(error);
-            Alert.alert('로그인 에러', '로그인 중 오류가 발생했습니다.');
-        }
-    };
+          // 로그인 상태 업데이트
+          login();
+
+          // Profile 화면으로 이동
+          navigation.navigate('Profile');
+        } else {
+          console.error('Invalid tokens:', data);
+          setModalTitle('로그인 실패');
+          setModalMessage('유효한 토큰이 제공되지 않았습니다.');
+          setModalVisible(true);
+        } else {
+        setModalTitle('로그인 실패');
+        setModalMessage(data.message || '로그인에 실패했습니다.');
+        setModalVisible(true);
+      }
+    } catch (error) {
+      console.error(error);
+      setModalTitle('로그인 에러');
+      setModalMessage('로그인 중 오류가 발생했습니다.');
+      setModalVisible(true);
+    }
+  };
 
     const handleKakaoLogin = async () => {
         try {
@@ -401,23 +417,22 @@ const styles = StyleSheet.create({
         color: '#4E5A8C',
         textDecorationLine: 'underline',
         fontFamily: 'TAEBAEKfont',
-
-    },
-    subTitle: {
-        color: '#393939',
-        fontSize: 15,
-        fontFamily: 'TAEBAEKfont',
-    },
-    scrollViewContent: {
-        flexGrow: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: '100%',
-    },
-    contentWrapper: {
-        width: '100%',
-        alignItems: 'center',
-    },
+  },
+  subTitle: {
+    color: '#393939',
+    fontSize: 15,
+    fontFamily: 'TAEBAEKfont',
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+  },
+  contentWrapper: {
+    width: '100%',
+    alignItems: 'center',
+  },
 });
 
-export default Login
+export default Login;
