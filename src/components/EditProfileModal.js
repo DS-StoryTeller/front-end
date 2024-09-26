@@ -12,6 +12,7 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import YesNoModal from './YesNoModal';
 import fetchWithAuth from '../api/fetchWithAuth';
+import OkModal from './OkModal.js';
 
 const EditProfileModal = ({visible, onClose, profileId, onProfileUpdate}) => {
   const [name, setName] = useState('');
@@ -24,6 +25,9 @@ const EditProfileModal = ({visible, onClose, profileId, onProfileUpdate}) => {
   const [profilePictures, setProfilePictures] = useState([]);
   const [showYesNoModal, setShowYesNoModal] = useState(false);
   const [yesNoModalType, setYesNoModalType] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
 
   const [profileData, setProfileData] = useState({
     name: '',
@@ -88,12 +92,16 @@ const EditProfileModal = ({visible, onClose, profileId, onProfileUpdate}) => {
 
   const handleSaveProfile = async () => {
     if (!name || !birthdate || !pin) {
-      alert('모든 필드를 입력해 주세요.');
+      setModalTitle('모든 필드를 입력해 주세요');
+      setModalMessage('빠트린 것이 없는지 다시 확인해주세요.');
+      setModalVisible(true);
       return;
     }
 
     if (!selectedProfilePic) {
-      alert('프로필 사진을 선택해 주세요.');
+      setModalTitle('프로필 사진을 선택해 주세요');
+      setModalMessage('빠트린 것이 없는지 다시 확인해주세요.');
+      setModalVisible(true);
       return;
     }
 
@@ -119,11 +127,15 @@ const EditProfileModal = ({visible, onClose, profileId, onProfileUpdate}) => {
         onProfileUpdate();
         onClose();
       } else {
-        alert(result.message || '프로필 저장에 실패했습니다.');
+        setModalTitle('프로필 저장 실패');
+        setModalMessage('프로필 저장에 실패했습니다. 다시 시도해주세요.');
+        setModalVisible(true);
       }
     } catch (error) {
       console.error('Error updating profile:', error);
-      alert('프로필 저장 중 오류가 발생했습니다.');
+      setModalTitle('프로필 저장 실패');
+      setModalMessage('프로필 저장 중 오류가 발생했습니다. 다시 시도해주세요.');
+      setModalVisible(true);
     }
   };
 
@@ -254,6 +266,12 @@ const EditProfileModal = ({visible, onClose, profileId, onProfileUpdate}) => {
         </View>
       </Modal>
 
+      <OkModal
+        isVisible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        title={modalTitle}
+        message={modalMessage}
+      />
       <YesNoModal
         isVisible={showYesNoModal}
         onClose={() => setShowYesNoModal(false)}
