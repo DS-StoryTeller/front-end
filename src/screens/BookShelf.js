@@ -12,10 +12,10 @@ const BookShelf = () => {
   const [selected, setSelected] = useState('ALL');
   const [modalVisible, setModalVisible] = useState(false);
   const [books, setBooks] = useState([]);
-  const [refreshKey, setRefreshKey] = useState(0); // 추가: 새로고침 키
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [imageUrl, setImageUrl] = useState(''); // 추가: 프로필 이미지 URL 상태
 
   const {profileId} = useAuth(); // useAuth 훅을 통해 profileId 받아오기
-  console.log(`프로필 id: ${profileId}`);
   const navigation = useNavigation();
 
   // 책 목록 가져오기
@@ -42,9 +42,25 @@ const BookShelf = () => {
     }
   }, [selected, profileId]);
 
+  // 프로필 정보 가져오기
+  const fetchProfile = useCallback(async () => {
+    try {
+      const response = await fetchWithAuth(`/profiles/${profileId}`, {
+        method: 'GET',
+      });
+      const result = await response.json();
+      if (result.status === 200 && result.code === 'SUCCESS_GET_PROFILE') {
+        setImageUrl(result.data.imageUrl); // 프로필 이미지 설정
+      }
+    } catch (error) {
+      console.error('Failed to fetch profile:', error);
+    }
+  }, [profileId]);
+
   useEffect(() => {
     fetchBooks();
-  }, [fetchBooks, selected, refreshKey]); // 추가: refreshKey에 따라 업데이트
+    fetchProfile(); // 프로필 정보 가져오기
+  }, [fetchBooks, fetchProfile, selected, refreshKey]);
 
   // 모달 토글
   const toggleModal = () => {
@@ -144,16 +160,21 @@ const BookShelf = () => {
           renderShelf(index),
         )}
       </View>
+
       <TouchableOpacity
         style={styles.squareButton}
         onPress={() => {
           console.log('Profile 버튼이 눌렸습니다.');
           navigation.navigate('Profile');
         }}>
-        <Image
-          source={require('../../assets/images/temp_profile_pic.png')}
-          style={styles.squareButtonImage}
-        />
+        {imageUrl ? ( // imageUrl이 있으면 해당 이미지 사용
+          <Image source={{uri: imageUrl}} style={styles.squareButtonImage} />
+        ) : (
+          <Image
+            source={require('../../assets/images/temp_profile_pic.png')} // 기본 이미지
+            style={styles.squareButtonImage}
+          />
+        )}
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.roundButton} onPress={toggleModal}>
@@ -174,7 +195,7 @@ const BookShelf = () => {
         message="동화를 만들고 싶은 주제를 말해주세요"
         profileId={profileId}
         fetchWithAuth={fetchWithAuth}
-        refreshBooks={() => setRefreshKey(prevKey => prevKey + 1)} // 추가: 새로고침 함수 전달
+        refreshBooks={() => setRefreshKey(prevKey => prevKey + 1)}
       />
     </SafeAreaView>
   );
