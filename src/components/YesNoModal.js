@@ -17,6 +17,7 @@ const YesNoModal = ({
   currentPage,
   onConfirm,
   closeEditor,
+  onProfileUpdate,
 }) => {
   const navigation = useNavigation();
 
@@ -69,6 +70,7 @@ const YesNoModal = ({
           // Close YesNoModal and EditProfileModal
           onClose(); // Close YesNoModal
           closeEditor();
+          onProfileUpdate();
           // onConfirm();
           // Additional logic if needed for EditProfileModal
           // You might want to ensure EditProfileModal is also closed if necessary

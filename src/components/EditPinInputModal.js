@@ -11,7 +11,7 @@ import {
 import fetchWithAuth from '../api/fetchWithAuth'; // 인증된 fetch 함수
 import EditProfileModal from './EditProfileModal';
 
-const EditPinInputModal = ({visible, onClose, profileId}) => {
+const EditPinInputModal = ({visible, onClose, profileId, onProfileUpdate}) => {
   const [pin, setPin] = useState(['', '', '', '']);
   const [isEditProfileModalVisible, setIsEditProfileModalVisible] =
     useState(false);
@@ -168,7 +168,8 @@ const EditPinInputModal = ({visible, onClose, profileId}) => {
         <EditProfileModal
           visible={isEditProfileModalVisible}
           onClose={() => setIsEditProfileModalVisible(false)}
-          profileId={profileId} // profileId 전달
+          profileId={profileId}
+          onProfileUpdate={onProfileUpdate}
         />
       )}
     </>

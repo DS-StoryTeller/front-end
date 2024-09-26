@@ -5,16 +5,15 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
-  StyleSheet,
   Modal,
-  Platform,
   FlatList,
+  StyleSheet,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import YesNoModal from './YesNoModal';
 import fetchWithAuth from '../api/fetchWithAuth';
 
-const EditProfileModal = ({visible, onClose, profileId}) => {
+const EditProfileModal = ({visible, onClose, profileId, onProfileUpdate}) => {
   const [name, setName] = useState('');
   const [birthdate, setBirthdate] = useState('');
   const [pin, setPin] = useState('');
@@ -24,7 +23,7 @@ const EditProfileModal = ({visible, onClose, profileId}) => {
   const [selectedProfilePic, setSelectedProfilePic] = useState(null);
   const [profilePictures, setProfilePictures] = useState([]);
   const [showYesNoModal, setShowYesNoModal] = useState(false);
-  const [yesNoModalType, setYesNoModalType] = useState(''); // To differentiate modal types
+  const [yesNoModalType, setYesNoModalType] = useState('');
 
   const [profileData, setProfileData] = useState({
     name: '',
@@ -83,7 +82,7 @@ const EditProfileModal = ({visible, onClose, profileId}) => {
   useEffect(() => {
     if (visible) {
       fetchProfileData();
-      fetchProfilePictures(); // Fetch profile pictures when modal is visible
+      fetchProfilePictures();
     }
   }, [visible]);
 
@@ -117,7 +116,7 @@ const EditProfileModal = ({visible, onClose, profileId}) => {
       const result = await response.json();
 
       if (result.status === 200 && result.code === 'SUCCESS_UPDATE_PROFILE') {
-        alert('프로필이 성공적으로 저장되었습니다.');
+        onProfileUpdate();
         onClose();
       } else {
         alert(result.message || '프로필 저장에 실패했습니다.');
@@ -129,12 +128,12 @@ const EditProfileModal = ({visible, onClose, profileId}) => {
   };
 
   const handleDeleteProfile = () => {
-    setYesNoModalType('delete'); // Set modal type for deletion
+    setYesNoModalType('delete');
     setShowYesNoModal(true);
   };
 
   const handleCloseButtonPress = () => {
-    setYesNoModalType('close'); // Set modal type for closing
+    setYesNoModalType('close');
     setShowYesNoModal(true);
   };
 
@@ -272,6 +271,7 @@ const EditProfileModal = ({visible, onClose, profileId}) => {
         buttonText2="취소"
         profileId={yesNoModalType === 'delete' ? profileId : null} // 프로필 ID 전달
         closeEditor={onClose}
+        onProfileUpdate={onProfileUpdate}
       />
     </>
   );

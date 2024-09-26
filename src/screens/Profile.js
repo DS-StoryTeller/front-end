@@ -75,6 +75,10 @@ const Profile = ({navigation}) => {
     }
   };
 
+  const handleProfileUpdate = () => {
+    fetchProfiles(); // 프로필 목록 업데이트
+  };
+
   const renderProfiles = () => {
     return profiles.map((profile, index) => (
       <View key={index} style={styles.profileContainer}>
@@ -168,12 +172,14 @@ const Profile = ({navigation}) => {
         onClose={() => setIsPinInputModalVisible(false)}
         onPinCorrect={handlePinCorrect} // 수정된 부분
         profileId={selectedProfileId} // 프로필 ID를 전달
+        onProfileUpdate={handleProfileUpdate} // 프로필 수정 후 업데이트
       />
       <EditPinInputModal
         visible={isEditPinInputModalVisible}
         onClose={() => setIsEditPinInputModalVisible(false)}
         onPinCorrect={handlePinCorrect}
         profileId={selectedProfileId} // 프로필 ID 전달
+        onProfileUpdate={handleProfileUpdate} // 프로필 수정 후 업데이트
       />
     </SafeAreaView>
   );
