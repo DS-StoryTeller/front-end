@@ -2,28 +2,22 @@
 import React, { useState, useEffect } from 'react'
 import { Text, View, StyleSheet, TextInput, TouchableOpacity, Image, Button, Alert, ScrollView, KeyboardAvoidingView, Platform } from "react-native"
 import { SafeAreaView } from 'react-native-safe-area-context'
-import {useAuth} from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import Logo from '../../assets/images/logo.png';
 import Kakao from '../../assets/images/kakao.png';
-
 import { login as kakaoLogin, logout as kakaoLogout, getProfile as kakaoGetProfile, getKakaoKeyHash } from '@react-native-seoul/kakao-login';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import Config from '../config.js';
-import {storeTokens, storeUser} from '../utils/storage';
+import { storeTokens, storeUser } from '../utils/storage';
 import OkModal from '../components/OkModal.js';
 
-const Login = ({navigation}) => {
-  const [user, setUser] = useState('');
-  const [password, setPassword] = useState('');
-  const {login} = useAuth(); // AuthContext에서 로그인 함수 가져오기
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalTitle, setModalTitle] = useState('');
-  const [modalMessage, setModalMessage] = useState('');
-
-
 const Login = ({ navigation }) => {
-    const [user, setUser] = useState('')
-    const [password, setPassword] = useState('')
+    const [user, setUser] = useState('');
+    const [password, setPassword] = useState('');
+    const { login } = useAuth(); // AuthContext에서 로그인 함수 가져오기
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalTitle, setModalTitle] = useState('');
+    const [modalMessage, setModalMessage] = useState('');
 
 
     useEffect(() => {
@@ -46,46 +40,41 @@ const Login = ({ navigation }) => {
                 body: formData,
             });
 
+            const data = await response.json();
 
-      const response = await fetch(`${Config.API_BASE_URL}/login`, {
-        method: 'POST',
-        body: formData,
-      });
+            console.log('Server response:', response.status, data);
 
-      const data = await response.json();
+            if (response.ok) {
+                const accessToken = response.headers.get('access');
+                const refreshToken = response.headers.get('refresh');
 
-      console.log('Server response:', response.status, data);
+                if (accessToken && refreshToken) {
+                    await storeTokens(accessToken, refreshToken);
+                    await storeUser(user);
 
-      if (response.ok) {
-        const accessToken = response.headers.get('access');
-        const refreshToken = response.headers.get('refresh');
+                    // 로그인 상태 업데이트
+                    login();
 
-        if (accessToken && refreshToken) {
-          await storeTokens(accessToken, refreshToken);
-          await storeUser(user);
-
-          // 로그인 상태 업데이트
-          login();
-
-          // Profile 화면으로 이동
-          navigation.navigate('Profile');
-        } else {
-          console.error('Invalid tokens:', data);
-          setModalTitle('로그인 실패');
-          setModalMessage('유효한 토큰이 제공되지 않았습니다.');
-          setModalVisible(true);
-        } else {
-        setModalTitle('로그인 실패');
-        setModalMessage(data.message || '로그인에 실패했습니다.');
-        setModalVisible(true);
-      }
-    } catch (error) {
-      console.error(error);
-      setModalTitle('로그인 에러');
-      setModalMessage('로그인 중 오류가 발생했습니다.');
-      setModalVisible(true);
-    }
-  };
+                    // Profile 화면으로 이동
+                    navigation.navigate('Profile');
+                } else {
+                    console.error('Invalid tokens:', data);
+                    setModalTitle('로그인 실패');
+                    setModalMessage('유효한 토큰이 제공되지 않았습니다.');
+                    setModalVisible(true);
+                } 
+            } else {
+                setModalTitle('로그인 실패');
+                setModalMessage(data.message || '로그인에 실패했습니다.');
+                setModalVisible(true);
+            }
+        } catch (error) {
+            console.error(error);
+            setModalTitle('로그인 에러');
+            setModalMessage('로그인 중 오류가 발생했습니다.');
+            setModalVisible(true);
+        }
+    };
 
     const handleKakaoLogin = async () => {
         try {
@@ -176,7 +165,7 @@ const Login = ({ navigation }) => {
             const refreshToken = response.headers.get('refresh');
 
             const data = await response.json();
-            console.log('Server response data:', data); 
+            console.log('Server response data:', data);
 
             if (response.ok && accessToken && refreshToken) {
                 const { nickname } = data.data;
@@ -417,22 +406,22 @@ const styles = StyleSheet.create({
         color: '#4E5A8C',
         textDecorationLine: 'underline',
         fontFamily: 'TAEBAEKfont',
-  },
-  subTitle: {
-    color: '#393939',
-    fontSize: 15,
-    fontFamily: 'TAEBAEKfont',
-  },
-  scrollViewContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-  },
-  contentWrapper: {
-    width: '100%',
-    alignItems: 'center',
-  },
+    },
+    subTitle: {
+        color: '#393939',
+        fontSize: 15,
+        fontFamily: 'TAEBAEKfont',
+    },
+    scrollViewContent: {
+        flexGrow: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+    },
+    contentWrapper: {
+        width: '100%',
+        alignItems: 'center',
+    },
 });
 
 export default Login;
