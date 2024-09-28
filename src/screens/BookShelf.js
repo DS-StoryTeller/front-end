@@ -13,7 +13,7 @@ const BookShelf = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [books, setBooks] = useState([]);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [imageUrl, setImageUrl] = useState(''); // 추가: 프로필 이미지 URL 상태
+  const [imageUrl, setImageUrl] = useState(''); // 프로필 이미지 URL 상태
 
   const {profileId} = useAuth(); // useAuth 훅을 통해 profileId 받아오기
   const navigation = useNavigation();
@@ -176,7 +176,6 @@ const BookShelf = () => {
           />
         )}
       </TouchableOpacity>
-
       <TouchableOpacity style={styles.roundButton} onPress={toggleModal}>
         <LinearGradient
           colors={['#2170CD', '#8FA0E8']}

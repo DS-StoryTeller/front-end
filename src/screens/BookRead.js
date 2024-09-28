@@ -245,6 +245,7 @@ const BookRead = ({navigation}) => {
     setNextStepVisible(false);
     setIsTtsFinished(false);
 
+
     return () => {
       finishListener.remove();
     };
@@ -272,6 +273,7 @@ const BookRead = ({navigation}) => {
       return () => {
         Tts.stop();
         setNextStepVisible(false);
+
       };
     }, []),
   );

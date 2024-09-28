@@ -86,32 +86,55 @@ android {
         debug {
             storeFile file('debug.keystore')
             storePassword 'android'
-            keyAlias 'androiddebugkey'
+            keyAlias 'androiddebugkey1'
             keyPassword 'android'
+
+            
         }
+        //  storeFile file('C:/Users/username/keystore/my-release-key.keystore') 
+        // storePassword 'release'                                  
+        // keyPassword 'release'  
+          release {
+             
+        storeFile file("C:/Users/YeYoungCho/Cojac/StoryTeller/android/app/my_release_key.keystore")
+        storePassword "release"  
+        keyAlias "my_key_alias"       
+        keyPassword "release"     
+    
+        }
+    }
+     lintOptions {
+        abortOnError false 
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
-        release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+         release {
+            signingConfig signingConfigs.release // 릴리즈용 서명 설정
             minifyEnabled enableProguardInReleaseBuilds
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 }
 
 dependencies {
-    // The version of react-native is set by the React Native Gradle Plugin
+    implementation "com.kakao.sdk:v2-user:2.11.0"
+     implementation 'com.google.android.gms:play-services-auth:19.2.0'
+    
     implementation("com.facebook.react:react-android")
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
     } else {
         implementation jscFlavor
+    }
+}
+
+// Task dependency to resolve the issue with LintModelWriterTask and copyReactNativeVectorIconFonts
+tasks.whenTaskAdded { task ->
+    if (task.name == "generateDebugLintReportModel" || task.name == "lintAnalyzeDebug") {
+        task.dependsOn(":app:copyReactNativeVectorIconFonts")
     }
 }
 
