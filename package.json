@@ -28,6 +28,7 @@
     "react": "18.2.0",
     "react-native": "0.74.1",
     "react-native-base64": "^0.2.1",
+    "react-native-dotenv": "^3.4.11",
     "react-native-fs": "^2.20.0",
     "react-native-linear-gradient": "^2.8.3",
     "react-native-progress": "^5.0.1",
