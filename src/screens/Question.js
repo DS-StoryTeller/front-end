@@ -3,7 +3,7 @@ import {View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import QuestionInputModal from '../components/QuestionInputModal';
-import fetchWithAuth from '../api/fetchWithAuth'; // fetchWithAuth import
+import fetchWithAuth from '../api/fetchWithAuth';
 
 const Question = () => {
   const [modalVisible, setModalVisible] = useState(false);

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   View,
   Text,
@@ -8,55 +8,88 @@ import {
   Modal,
   Keyboard,
   Platform,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
 } from 'react-native';
+import fetchWithAuth from '../api/fetchWithAuth';
 
-const SelectPinInputModal = ({ visible, onClose, onPinCorrect }) => {
+const SelectPinInputModal = ({visible, onClose, onPinCorrect, profileId}) => {
   const [pin, setPin] = useState(['', '', '', '']);
   const [selectedInput, setSelectedInput] = useState(null);
   const [error, setError] = useState('');
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const inputRefs = useRef([]);
 
-  const correctPin = '0000'; // 올바른 PIN 번호
-
   const handlePinChange = (index, value) => {
     let newPin = [...pin];
     newPin[index] = value;
     setPin(newPin);
 
-    // Move to next input if value is not empty and it's not the last input
     if (value && index < pin.length - 1) {
       inputRefs.current[index + 1].focus();
     }
 
-    // Check if all inputs are filled
     if (newPin.every(digit => digit.length > 0)) {
-      // Check if the entered PIN is correct
-      if (newPin.join('') === correctPin) {
-        setError(''); // Clear error message
-        onPinCorrect(); // Call the onPinCorrect callback
-        onClose(); // Close the modal
-      } else {
-        setError('PIN 번호가 틀렸습니다. 다시 입력해주세요.'); // Set error message
-        setPin(['', '', '', '']); // Clear the PIN inputs
-        if (inputRefs.current[0]) {
-          inputRefs.current[0].focus(); // Focus on the first input
+      verifyPin(newPin.join(''));
+    }
+  };
+
+  const verifyPin = async enteredPin => {
+    if (!profileId) {
+      setError('프로필 ID가 없습니다. 다시 시도해주세요.');
+      return;
+    }
+
+    try {
+      const response = await fetchWithAuth(
+        `/profiles/${profileId}/pin-number/verifications`,
+        {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({pinNumber: enteredPin}),
+        },
+      );
+
+      const result = await response.json();
+
+      if (
+        result.status === 200 &&
+        result.code === 'SUCCESS_VERIFICATION_PIN_NUMBER'
+      ) {
+        if (result.data.valid) {
+          setError('');
+          onPinCorrect(profileId); // PIN이 맞으면 콜백 호출
+          onClose(); // 모달 닫기
+        } else {
+          setError('PIN 번호가 틀렸습니다. 다시 입력해주세요.');
+          setPin(['', '', '', '']);
+          if (inputRefs.current[0]) {
+            inputRefs.current[0].focus();
+          }
         }
+      } else {
+        setError('PIN 검증에 실패했습니다.');
       }
+    } catch (error) {
+      setError('서버 오류로 PIN 검증에 실패했습니다.');
+      console.error('PIN 검증 중 오류 발생:', error);
     }
   };
 
   useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
-      setIsKeyboardVisible(true);
-    });
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      () => {
+        setIsKeyboardVisible(true);
+      },
+    );
 
-    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
-      setIsKeyboardVisible(false);
-    });
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setIsKeyboardVisible(false);
+      },
+    );
 
-    // Clean up listeners on unmount
     return () => {
       keyboardDidHideListener.remove();
       keyboardDidShowListener.remove();
@@ -66,7 +99,7 @@ const SelectPinInputModal = ({ visible, onClose, onPinCorrect }) => {
   useEffect(() => {
     if (visible) {
       setPin(['', '', '', '']);
-      setError(''); // Clear any existing error message
+      setError('');
       if (inputRefs.current[0]) {
         inputRefs.current[0].focus();
       }
@@ -82,8 +115,7 @@ const SelectPinInputModal = ({ visible, onClose, onPinCorrect }) => {
       <KeyboardAvoidingView
         style={styles.modalContainer}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
-      >
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}>
         <View style={styles.modalContent}>
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <Text style={styles.closeButtonText}>X</Text>
@@ -173,13 +205,13 @@ const styles = StyleSheet.create({
     color: '#393939',
     fontWeight: '900',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.3,
     shadowRadius: 5,
     elevation: 5,
   },
   selectedPinInput: {
-    transform: [{ scale: 1.1 }],
+    transform: [{scale: 1.1}],
   },
 });
 

@@ -5,15 +5,16 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
-  StyleSheet,
   Modal,
-  Platform,
   FlatList,
+  StyleSheet,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import YesNoModal from './YesNoModal';
+import fetchWithAuth from '../api/fetchWithAuth';
+import OkModal from './OkModal.js';
 
-const EditProfileModal = ({visible, onClose}) => {
+const EditProfileModal = ({visible, onClose, profileId, onProfileUpdate}) => {
   const [name, setName] = useState('');
   const [birthdate, setBirthdate] = useState('');
   const [pin, setPin] = useState('');
@@ -23,6 +24,16 @@ const EditProfileModal = ({visible, onClose}) => {
   const [selectedProfilePic, setSelectedProfilePic] = useState(null);
   const [profilePictures, setProfilePictures] = useState([]);
   const [showYesNoModal, setShowYesNoModal] = useState(false);
+  const [yesNoModalType, setYesNoModalType] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
+
+  const [profileData, setProfileData] = useState({
+    name: '',
+    birthDate: '',
+    imageUrl: '',
+  });
 
   const onChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
@@ -45,31 +56,102 @@ const EditProfileModal = ({visible, onClose}) => {
     setShowProfilePicModal(false);
   };
 
+  const fetchProfileData = async () => {
+    try {
+      const response = await fetchWithAuth(`/profiles/${profileId}`, 'GET');
+      const result = await response.json();
+      if (result.status === 200 && result.code === 'SUCCESS_GET_PROFILE') {
+        setProfileData(result.data);
+        setName(result.data.name);
+        setBirthdate(result.data.birthDate);
+        setSelectedProfilePic(result.data.imageUrl);
+      }
+    } catch (error) {
+      console.error('Error fetching profile data:', error);
+    }
+  };
+
   const fetchProfilePictures = async () => {
-    // Replace this with your backend fetch logic
-    const fetchedPictures = new Array(12).fill(null).map((_, index) => ({
-      id: index.toString(),
-      uri: require('../../assets/images/temp_profile_pic.png'), // Replace with different images if available
-    }));
-    setProfilePictures(fetchedPictures);
+    try {
+      const response = await fetchWithAuth(`/profiles/photos`, 'GET');
+      const result = await response.json();
+      if (result.status === 200 && result.code === 'SUCCESS_PROFILE_PHOTOS') {
+        setProfilePictures(result.data.map(pic => ({uri: pic.imageUrl})));
+      }
+    } catch (error) {
+      console.error('Error fetching profile pictures:', error);
+    }
   };
 
   useEffect(() => {
-    fetchProfilePictures();
-  }, []);
+    if (visible) {
+      fetchProfileData();
+      fetchProfilePictures();
+    }
+  }, [visible]);
 
-  const handleConfirm = () => {
-    setShowYesNoModal(false);
-    onClose(); // Close the AddProfileModal
+  const handleSaveProfile = async () => {
+    if (!name || !birthdate || !pin) {
+      setModalTitle('모든 필드를 입력해 주세요');
+      setModalMessage('빠트린 것이 없는지 다시 확인해주세요.');
+      setModalVisible(true);
+      return;
+    }
+
+    if (!selectedProfilePic) {
+      setModalTitle('프로필 사진을 선택해 주세요');
+      setModalMessage('빠트린 것이 없는지 다시 확인해주세요.');
+      setModalVisible(true);
+      return;
+    }
+
+    try {
+      console.log('Saving profile...');
+
+      const response = await fetchWithAuth(`/profiles/${profileId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: name,
+          birthDate: birthdate,
+          imageUrl: selectedProfilePic,
+          pinNumber: pin,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.status === 200 && result.code === 'SUCCESS_UPDATE_PROFILE') {
+        onProfileUpdate();
+        onClose();
+      } else {
+        setModalTitle('프로필 저장 실패');
+        setModalMessage('프로필 저장에 실패했습니다. 다시 시도해주세요.');
+        setModalVisible(true);
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      setModalTitle('프로필 저장 실패');
+      setModalMessage('프로필 저장 중 오류가 발생했습니다. 다시 시도해주세요.');
+      setModalVisible(true);
+    }
+  };
+
+  const handleDeleteProfile = () => {
+    setYesNoModalType('delete');
+    setShowYesNoModal(true);
   };
 
   const handleCloseButtonPress = () => {
+    setYesNoModalType('close');
     setShowYesNoModal(true);
   };
 
   return (
     <>
-      {/* AddProfileModal */}
+      {/* EditProfileModal */}
       <Modal
         transparent={true}
         animationType="slide"
@@ -85,8 +167,9 @@ const EditProfileModal = ({visible, onClose}) => {
             <Text style={styles.modalHeader}>프로필 변경하기</Text>
             <Image
               source={
-                selectedProfilePic ||
-                require('../../assets/images/temp_profile_pic.png')
+                selectedProfilePic
+                  ? {uri: selectedProfilePic}
+                  : require('../../assets/images/temp_profile_pic.png') // 기본 이미지를 사용하지 않음
               }
               style={styles.profileImage}
             />
@@ -134,9 +217,7 @@ const EditProfileModal = ({visible, onClose}) => {
             <View style={styles.buttonContainer}>
               <TouchableOpacity
                 style={styles.saveButton}
-                onPress={() => {
-                  /* 나중에 백엔드 로직 추가 예정 */
-                }}>
+                onPress={handleSaveProfile}>
                 <Image
                   source={require('../../assets/images/save.png')}
                   style={styles.saveIcon}
@@ -145,9 +226,7 @@ const EditProfileModal = ({visible, onClose}) => {
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.saveButton}
-                onPress={() => {
-                  /* 나중에 백엔드 로직 추가 예정 */
-                }}>
+                onPress={handleDeleteProfile}>
                 <Image
                   source={require('../../assets/images/delete.png')}
                   style={styles.saveIcon}
@@ -176,26 +255,41 @@ const EditProfileModal = ({visible, onClose}) => {
                 <TouchableOpacity
                   style={styles.profilePicItem}
                   onPress={() => handleProfilePicSelect(item.uri)}>
-                  <Image source={item.uri} style={styles.profilePic} />
+                  <Image source={item} style={styles.profilePic} />
                 </TouchableOpacity>
               )}
               numColumns={4}
-              keyExtractor={item => item.id}
+              keyExtractor={(item, index) => index.toString()}
               contentContainerStyle={styles.profilePicListContainer}
             />
           </View>
         </View>
       </Modal>
 
-      {/* YesNoModal */}
+      <OkModal
+        isVisible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        title={modalTitle}
+        message={modalMessage}
+      />
       <YesNoModal
         isVisible={showYesNoModal}
         onClose={() => setShowYesNoModal(false)}
-        title="정말 나가시겠습니까?"
-        subtitle={`나가시면 수정하신 프로필의 정보는 \n 저장되지 않습니다.`}
-        buttonText1="확인"
+        title={
+          yesNoModalType === 'delete'
+            ? '정말 삭제하시겠습니까?'
+            : '정말 나가시겠습니까?'
+        }
+        subtitle={
+          yesNoModalType === 'delete'
+            ? '프로필의 모든 정보가 완전히 삭제되고 \n 다시 복구하실 수 없습니다.'
+            : '나가시면 수정하신 프로필의 정보는 \n 저장되지 않습니다.'
+        }
+        buttonText1={yesNoModalType === 'delete' ? '삭제' : '확인'}
         buttonText2="취소"
-        onConfirm={handleConfirm}
+        profileId={yesNoModalType === 'delete' ? profileId : null} // 프로필 ID 전달
+        closeEditor={onClose}
+        onProfileUpdate={onProfileUpdate}
       />
     </>
   );

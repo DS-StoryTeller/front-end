@@ -1,26 +1,32 @@
-import React, { createContext, useContext, useState } from 'react';
+// AuthContext.js
+import React, {createContext, useContext, useState} from 'react';
 
-// AuthContext 생성
 const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+export const AuthProvider = ({children}) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [selectedProfile, setSelectedProfile] = useState(null); // 프로필 선택 상태
+  const [profileId, setProfileId] = useState(null);
 
   const login = () => setIsLoggedIn(true);
+
   const logout = () => {
     setIsLoggedIn(false);
-    setSelectedProfile(null); // 로그아웃 시 프로필 선택 해제
+    setProfileId(null);
+  };
+
+  const selectProfile = id => {
+    console.log('selectProfile 호출, 전달된 ID:', id);
+    setProfileId(id);
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout, selectedProfile, setSelectedProfile }}>
+    <AuthContext.Provider
+      value={{isLoggedIn, login, logout, profileId, selectProfile}}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// useAuth 훅
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
