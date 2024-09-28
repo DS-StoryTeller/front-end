@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, {useState, useRef, useCallback, useEffect} from 'react';
 import {
   View,
   Text,
@@ -6,21 +6,24 @@ import {
   TouchableOpacity,
   StyleSheet,
   Modal,
-  Keyboard, // 추가된 부분
+  Keyboard,
 } from 'react-native';
-import EditProfileModal from './EditProfileModal'; // 상대경로는 프로젝트 구조에 맞게 조정
+import fetchWithAuth from '../api/fetchWithAuth'; // 인증된 fetch 함수
+import EditProfileModal from './EditProfileModal';
 
-const EditPinInputModal = ({ visible, onClose }) => {
+const EditPinInputModal = ({visible, onClose, profileId, onProfileUpdate}) => {
   const [pin, setPin] = useState(['', '', '', '']);
   const [isEditProfileModalVisible, setIsEditProfileModalVisible] =
     useState(false);
   const [selectedInput, setSelectedInput] = useState(null);
   const [error, setError] = useState('');
   const inputRefs = useRef([]);
-  const [isKeyboardVisible, setKeyboardVisible] = useState(false); // 추가된 부분
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
-  // 올바른 PIN번호
-  const correctPin = '0000';
+  // profileId가 제대로 전달되는지 확인하는 로그
+  useEffect(() => {
+    console.log('Received profileId:', profileId); // profileId가 잘 전달되는지 확인
+  }, [profileId]);
 
   // PIN 변경 핸들러
   const handlePinChange = (index, value) => {
@@ -28,29 +31,75 @@ const EditPinInputModal = ({ visible, onClose }) => {
     newPin[index] = value;
     setPin(newPin);
 
-    // 현재 값이 비어 있지 않고 마지막 입력이 아닌 경우 다음 입력으로 포커스 이동
     if (value && index < pin.length - 1) {
       inputRefs.current[index + 1].focus();
     }
 
     // 모든 입력이 완료된 경우 PIN을 확인
     if (newPin.every(digit => digit.length > 0)) {
-      // PIN이 올바른지 확인
-      if (newPin.join('') === correctPin) {
-        setIsEditProfileModalVisible(true); // EditProfileModal 표시
-        setError(''); // 오류 메시지 초기화
-        onClose(); // PinInputModal 닫기
-      } else {
-        setError('PIN 번호가 틀렸습니다. 다시 입력해주세요.'); // 오류 메시지 설정
-        setPin(['', '', '', '']); // PIN 상태 초기화
-        inputRefs.current[0].focus(); // 첫 번째 입력 칸으로 포커스 이동
-      }
+      verifyPin(newPin.join('')); // PIN 검증 호출
     }
+  };
+
+  // PIN 검증 API 호출 함수
+  const verifyPin = async enteredPin => {
+    if (!profileId) {
+      console.error('profileId가 전달되지 않았습니다.');
+      setError('프로필 ID가 없습니다. 다시 시도해주세요.');
+      return;
+    }
+
+    try {
+      console.log(
+        'Fetching with URL:',
+        `/profiles/${profileId}/pin-number/verifications`,
+      );
+      console.log('Request body:', JSON.stringify({pinNumber: enteredPin}));
+
+      const response = await fetchWithAuth(
+        `/profiles/${profileId}/pin-number/verifications`,
+        {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({pinNumber: enteredPin}),
+        },
+      );
+
+      const result = await response.json();
+      console.log('Response from API:', result);
+
+      if (
+        result.status === 200 &&
+        result.code === 'SUCCESS_VERIFICATION_PIN_NUMBER'
+      ) {
+        if (result.data.valid) {
+          setIsEditProfileModalVisible(true);
+          setError('');
+          onClose();
+        } else {
+          setError('PIN 번호가 틀렸습니다. 다시 입력해주세요.');
+          resetPin();
+        }
+      } else {
+        console.error('PIN 검증 실패:', result.message);
+        setError('PIN 검증에 실패했습니다.');
+        resetPin();
+      }
+    } catch (error) {
+      console.error('PIN 검증 중 오류 발생:', error);
+      setError('서버 오류로 PIN 검증에 실패했습니다.');
+      resetPin();
+    }
+  };
+
+  const resetPin = () => {
+    setPin(['', '', '', '']); // PIN 초기화
+    inputRefs.current[0].focus(); // 첫 번째 입력으로 포커스 이동
   };
 
   // 모달 닫기 핸들러
   const handleClose = useCallback(() => {
-    setPin(['', '', '', '']); // PIN 상태 초기화
+    resetPin(); // PIN 초기화
     setError(''); // 오류 메시지 초기화
     onClose(); // 부모 컴포넌트의 onClose 호출
   }, [onClose]);
@@ -59,14 +108,14 @@ const EditPinInputModal = ({ visible, onClose }) => {
     const keyboardDidShowListener = Keyboard.addListener(
       'keyboardDidShow',
       () => {
-        setKeyboardVisible(true); // 키보드가 나타났을 때
-      }
+        setKeyboardVisible(true);
+      },
     );
     const keyboardDidHideListener = Keyboard.addListener(
       'keyboardDidHide',
       () => {
-        setKeyboardVisible(false); // 키보드가 사라졌을 때
-      }
+        setKeyboardVisible(false);
+      },
     );
 
     return () => {
@@ -87,7 +136,6 @@ const EditPinInputModal = ({ visible, onClose }) => {
             <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
               <Text style={styles.closeButtonText}>X</Text>
             </TouchableOpacity>
-            {/* 키보드가 보일 때 텍스트 숨기기 */}
             {!isKeyboardVisible && (
               <Text style={styles.modalHeader}>
                 {error || '이 프로필을 관리하려면 PIN 번호를 입력하세요.'}
@@ -120,6 +168,8 @@ const EditPinInputModal = ({ visible, onClose }) => {
         <EditProfileModal
           visible={isEditProfileModalVisible}
           onClose={() => setIsEditProfileModalVisible(false)}
+          profileId={profileId}
+          onProfileUpdate={onProfileUpdate}
         />
       )}
     </>
@@ -182,13 +232,13 @@ const styles = StyleSheet.create({
     color: '#393939',
     fontWeight: '900',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.3,
     shadowRadius: 5,
     elevation: 5,
   },
   selectedPinInput: {
-    transform: [{ scale: 1.1 }],
+    transform: [{scale: 1.1}],
   },
 });
 

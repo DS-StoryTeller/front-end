@@ -12,8 +12,9 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import YesNoModal from './YesNoModal';
+import fetchWithAuth from '../api/fetchWithAuth'; // fetchWithAuth 불러오기
 
-const AddProfileModal = ({visible, onClose}) => {
+const AddProfileModal = ({visible, onClose, userId}) => {
   const [name, setName] = useState('');
   const [birthdate, setBirthdate] = useState('');
   const [pin, setPin] = useState('');
@@ -23,6 +24,7 @@ const AddProfileModal = ({visible, onClose}) => {
   const [selectedProfilePic, setSelectedProfilePic] = useState(null);
   const [profilePictures, setProfilePictures] = useState([]);
   const [showYesNoModal, setShowYesNoModal] = useState(false);
+  const [defaultProfilePic, setDefaultProfilePic] = useState(null);
 
   const onChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
@@ -30,10 +32,12 @@ const AddProfileModal = ({visible, onClose}) => {
     setDate(currentDate);
 
     let tempDate = new Date(currentDate);
-    let fDate = `${tempDate.getFullYear()}-${
-      tempDate.getMonth() + 1
-    }-${tempDate.getDate()}`;
-    setBirthdate(fDate);
+    let day = `0${tempDate.getDate()}`.slice(-2); // 두 자리 수로 포맷
+    let month = `0${tempDate.getMonth() + 1}`.slice(-2); // 두 자리 수로 포맷
+    let year = tempDate.getFullYear();
+
+    let formattedDate = `${year}-${month}-${day}`;
+    setBirthdate(formattedDate);
   };
 
   const showDatepicker = () => {
@@ -46,17 +50,69 @@ const AddProfileModal = ({visible, onClose}) => {
   };
 
   const fetchProfilePictures = async () => {
-    // Replace this with your backend fetch logic
-    const fetchedPictures = new Array(12).fill(null).map((_, index) => ({
-      id: index.toString(),
-      uri: require('../../assets/images/temp_profile_pic.png'), // Replace with different images if available
-    }));
-    setProfilePictures(fetchedPictures);
+    try {
+      const response = await fetchWithAuth('/profiles/photos', {
+        method: 'GET',
+      });
+      const result = await response.json();
+
+      if (result.status === 200 && result.code === 'SUCCESS_PROFILE_PHOTOS') {
+        const fetchedPictures = result.data.map((item, index) => ({
+          id: index.toString(),
+          uri: {uri: item.imageUrl}, // 이미지 URL을 사용
+        }));
+        setProfilePictures(fetchedPictures);
+
+        // Set defaultProfilePic to the first image from fetched pictures
+        if (fetchedPictures.length > 0) {
+          setDefaultProfilePic(fetchedPictures[0].uri);
+        }
+      } else {
+        console.error('Failed to fetch profile pictures:', result.message);
+      }
+    } catch (error) {
+      console.error('Error fetching profile pictures:', error);
+    }
   };
 
   useEffect(() => {
     fetchProfilePictures();
   }, []);
+
+  const handleSaveProfile = async () => {
+    if (!name || !birthdate || !pin || !selectedProfilePic) {
+      alert('모든 필드를 입력하고 프로필 사진을 선택해주세요.');
+      return;
+    }
+
+    const profileData = {
+      name: name,
+      imageUrl: selectedProfilePic.uri, // 선택한 프로필 사진의 URL
+      userId: 1, // 예를 들어, 실제 userId 값을 사용해야 합니다.
+      birthDate: birthdate,
+      pinNumber: pin,
+    };
+
+    try {
+      const response = await fetchWithAuth('/profiles', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(profileData),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        onClose(); // 모달 닫기
+      } else {
+        console.error('프로필 생성 실패:', result.message);
+      }
+    } catch (error) {
+      console.error('프로필 생성 중 오류 발생:', error);
+    }
+  };
 
   const handleConfirm = () => {
     setShowYesNoModal(false);
@@ -86,6 +142,7 @@ const AddProfileModal = ({visible, onClose}) => {
             <Image
               source={
                 selectedProfilePic ||
+                defaultProfilePic ||
                 require('../../assets/images/temp_profile_pic.png')
               }
               style={styles.profileImage}
@@ -133,9 +190,7 @@ const AddProfileModal = ({visible, onClose}) => {
             </View>
             <TouchableOpacity
               style={styles.saveButton}
-              onPress={() => {
-                /* 나중에 백엔드 로직 추가 예정 */
-              }}>
+              onPress={handleSaveProfile}>
               <Image
                 source={require('../../assets/images/save.png')}
                 style={styles.saveIcon}
