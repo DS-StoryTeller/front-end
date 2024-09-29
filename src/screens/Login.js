@@ -75,7 +75,6 @@ const Login = ({navigation}) => {
         if (accessToken && refreshToken) {
           await storeTokens(accessToken, refreshToken);
           await storeUser(user);
-          Alert.alert('로그인 성공', 'StoryTeller에 오신것을 환영합니다.');
 
           // 로그인 상태 업데이트
           login();
@@ -85,8 +84,9 @@ const Login = ({navigation}) => {
           console.log('Stored access token:', storedAccessToken);
           console.log('Stored refresh token:', storedRefreshToken);
 
-          // Profile 화면으로 이동
-          navigation.navigate('Profile');
+          // Profile 화면으로 이동하면서 id값을 전달
+          navigation.navigate('Profile', {userId: data.data.id});
+          console.log('전달할 데이터:', data.data.id);
         } else {
           console.error('Invalid tokens:', data);
           setModalTitle('로그인 실패');

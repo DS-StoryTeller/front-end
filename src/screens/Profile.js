@@ -12,9 +12,11 @@ import AddProfileModal from '../components/AddProfileModal';
 import SelectPinInputModal from '../components/SelectPinInputModal';
 import EditPinInputModal from '../components/EditPinInputModal';
 import {useAuth} from '../context/AuthContext';
-import fetchWithAuth from '../api/fetchWithAuth'; // 인증된 fetch 함수
+import fetchWithAuth from '../api/fetchWithAuth';
 
-const Profile = ({navigation}) => {
+const Profile = ({navigation, route}) => {
+  const {userId} = route.params || {};
+  console.log(`유저 id: ${userId}`);
   const {isLoggedIn, selectProfile} = useAuth();
   const [profiles, setProfiles] = useState([]);
   const [isChangingProfile, setIsChangingProfile] = useState(false);
@@ -24,11 +26,11 @@ const Profile = ({navigation}) => {
   const [isEditPinInputModalVisible, setIsEditPinInputModalVisible] =
     useState(false);
   const [modalType, setModalType] = useState('');
-  const [selectedProfileId, selectProfileId] = useState(null); // 추가된 상태
+  const [selectedProfileId, selectProfileId] = useState(null);
 
   const fetchProfiles = async () => {
     try {
-      const response = await fetchWithAuth(`/users/1/profiles`, {
+      const response = await fetchWithAuth(`/users/${userId}/profiles`, {
         method: 'GET',
         headers: {'Content-Type': 'application/json'},
       });
