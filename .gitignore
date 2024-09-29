@@ -75,3 +75,7 @@ yarn-error.log
 
 #env
 .env
+
+#my_release_key
+key.properties
+
