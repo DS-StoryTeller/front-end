@@ -30,7 +30,7 @@ const Profile = ({navigation, route}) => {
 
   const fetchProfiles = async () => {
     try {
-      const response = await fetchWithAuth(`/users/${userId}/profiles`, {
+      const response = await fetchWithAuth(`/users/1/profiles`, {
         method: 'GET',
         headers: {'Content-Type': 'application/json'},
       });

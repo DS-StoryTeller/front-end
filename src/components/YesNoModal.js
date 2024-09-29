@@ -84,11 +84,10 @@ const YesNoModal = ({
         );
       }
     } else if (buttonText1 === '확인') {
-      // Call the onConfirm function to close AddProfileModal
-      closeEditor();
       if (onConfirm) {
         onConfirm();
       }
+      closeEditor();
     }
   };
 
