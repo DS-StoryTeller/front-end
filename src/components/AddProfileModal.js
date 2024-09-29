@@ -26,7 +26,7 @@ const AddProfileModal = ({visible, onClose, userId}) => {
   const [showYesNoModal, setShowYesNoModal] = useState(false);
   const [defaultProfilePic, setDefaultProfilePic] = useState(null);
 
-  const onChange = (event, selectedDate) => {
+  const onChange = (event, selectedDate, userId) => {
     const currentDate = selectedDate || date;
     setShowDatePicker(Platform.OS === 'ios');
     setDate(currentDate);
@@ -88,7 +88,7 @@ const AddProfileModal = ({visible, onClose, userId}) => {
     const profileData = {
       name: name,
       imageUrl: selectedProfilePic.uri, // 선택한 프로필 사진의 URL
-      userId: 1, // 예를 들어, 실제 userId 값을 사용해야 합니다.
+      userId: 1,
       birthDate: birthdate,
       pinNumber: pin,
     };
@@ -105,6 +105,12 @@ const AddProfileModal = ({visible, onClose, userId}) => {
       const result = await response.json();
 
       if (response.ok) {
+        // 입력값 초기화
+        setName('');
+        setBirthdate('');
+        setPin('');
+        setSelectedProfilePic(null);
+        setDate(new Date()); // 날짜 초기화
         onClose(); // 모달 닫기
       } else {
         console.error('프로필 생성 실패:', result.message);

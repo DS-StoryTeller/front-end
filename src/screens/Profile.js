@@ -167,6 +167,7 @@ const Profile = ({navigation, route}) => {
       <AddProfileModal
         visible={isAddProfileModalVisible}
         onClose={handleAddProfileModalClose}
+        userId={userId}
       />
 
       <SelectPinInputModal
