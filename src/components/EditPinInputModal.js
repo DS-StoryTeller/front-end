@@ -25,6 +25,13 @@ const EditPinInputModal = ({visible, onClose, profileId, onProfileUpdate}) => {
     console.log('Received profileId:', profileId); // profileId가 잘 전달되는지 확인
   }, [profileId]);
 
+  // 모달이 열릴 때 PIN을 초기화
+  useEffect(() => {
+    if (visible) {
+      resetPin();
+    }
+  }, [visible]);
+
   // PIN 변경 핸들러
   const handlePinChange = (index, value) => {
     let newPin = [...pin];
