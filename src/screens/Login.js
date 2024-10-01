@@ -75,7 +75,6 @@ const Login = ({navigation}) => {
         if (accessToken && refreshToken) {
           await storeTokens(accessToken, refreshToken);
           await storeUser(user);
-          Alert.alert('로그인 성공', 'StoryTeller에 오신것을 환영합니다.');
 
           // 로그인 상태 업데이트
           login();
@@ -85,8 +84,9 @@ const Login = ({navigation}) => {
           console.log('Stored access token:', storedAccessToken);
           console.log('Stored refresh token:', storedRefreshToken);
 
-          // Profile 화면으로 이동
-          navigation.navigate('Profile');
+          // Profile 화면으로 이동하면서 id값을 전달
+          navigation.navigate('Profile', {userId: data.data.id});
+          console.log('전달할 데이터:', data.data.id);
         } else {
           console.error('Invalid tokens:', data);
           setModalTitle('로그인 실패');
@@ -146,7 +146,8 @@ const Login = ({navigation}) => {
             console.log('Stored access token:', storedAccessToken);
             console.log('Stored refresh token:', storedRefreshToken);
 
-            navigation.navigate('Profile');
+            // Profile 화면으로 이동하면서 id값을 전달
+            navigation.navigate('Profile', {userId: data.data.id});
           } else {
             console.error('유효하지 않은 토큰:', data);
             Alert.alert('로그인 실패', '유효한 토큰이 제공되지 않았습니다.');
@@ -211,7 +212,8 @@ const Login = ({navigation}) => {
         console.log('Stored Access Token:', accessToken);
         console.log('Stored Refresh Token:', refreshToken);
 
-        navigation.navigate('Profile');
+        // Profile 화면으로 이동하면서 id값을 전달
+        navigation.navigate('Profile', {userId: data.data.id});
       } else {
         Alert.alert('구글 로그인 실패', '액세스 토큰을 받지 못했습니다.');
       }

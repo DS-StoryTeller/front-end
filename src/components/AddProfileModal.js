@@ -15,6 +15,7 @@ import YesNoModal from './YesNoModal';
 import fetchWithAuth from '../api/fetchWithAuth'; // fetchWithAuth 불러오기
 
 const AddProfileModal = ({visible, onClose, userId}) => {
+  console.log('AddProfileModal에서 받은 유저 id:', userId); // userId 확인
   const [name, setName] = useState('');
   const [birthdate, setBirthdate] = useState('');
   const [pin, setPin] = useState('');
@@ -88,10 +89,12 @@ const AddProfileModal = ({visible, onClose, userId}) => {
     const profileData = {
       name: name,
       imageUrl: selectedProfilePic.uri, // 선택한 프로필 사진의 URL
-      userId: 1, // 예를 들어, 실제 userId 값을 사용해야 합니다.
+      userId: userId,
       birthDate: birthdate,
       pinNumber: pin,
     };
+
+    console.log(`프로필 추가 유저 id: ${userId}`);
 
     try {
       const response = await fetchWithAuth('/profiles', {
@@ -105,6 +108,12 @@ const AddProfileModal = ({visible, onClose, userId}) => {
       const result = await response.json();
 
       if (response.ok) {
+        // 입력값 초기화
+        setName('');
+        setBirthdate('');
+        setPin('');
+        setSelectedProfilePic(null);
+        setDate(new Date()); // 날짜 초기화
         onClose(); // 모달 닫기
       } else {
         console.error('프로필 생성 실패:', result.message);
