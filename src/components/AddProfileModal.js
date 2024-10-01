@@ -15,6 +15,7 @@ import YesNoModal from './YesNoModal';
 import fetchWithAuth from '../api/fetchWithAuth'; // fetchWithAuth 불러오기
 
 const AddProfileModal = ({visible, onClose, userId}) => {
+  console.log('AddProfileModal에서 받은 유저 id:', userId); // userId 확인
   const [name, setName] = useState('');
   const [birthdate, setBirthdate] = useState('');
   const [pin, setPin] = useState('');
@@ -26,7 +27,7 @@ const AddProfileModal = ({visible, onClose, userId}) => {
   const [showYesNoModal, setShowYesNoModal] = useState(false);
   const [defaultProfilePic, setDefaultProfilePic] = useState(null);
 
-  const onChange = (event, selectedDate, userId) => {
+  const onChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
     setShowDatePicker(Platform.OS === 'ios');
     setDate(currentDate);
@@ -88,10 +89,12 @@ const AddProfileModal = ({visible, onClose, userId}) => {
     const profileData = {
       name: name,
       imageUrl: selectedProfilePic.uri, // 선택한 프로필 사진의 URL
-      userId: 1,
+      userId: userId,
       birthDate: birthdate,
       pinNumber: pin,
     };
+
+    console.log(`프로필 추가 유저 id: ${userId}`);
 
     try {
       const response = await fetchWithAuth('/profiles', {

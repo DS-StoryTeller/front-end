@@ -16,6 +16,7 @@ const BookShelf = () => {
   const [imageUrl, setImageUrl] = useState(''); // 프로필 이미지 URL 상태
 
   const {profileId} = useAuth(); // useAuth 훅을 통해 profileId 받아오기
+  console.log(`메인 페이지의 프로필 id: ${profileId}`);
   const navigation = useNavigation();
 
   // 책 목록 가져오기

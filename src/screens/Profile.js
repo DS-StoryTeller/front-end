@@ -16,7 +16,7 @@ import fetchWithAuth from '../api/fetchWithAuth';
 
 const Profile = ({navigation, route}) => {
   const {userId} = route.params || {};
-  console.log(`유저 id: ${userId}`);
+  console.log(`프로필 페이지의 유저 id: ${userId}`);
   const {isLoggedIn, selectProfile} = useAuth();
   const [profiles, setProfiles] = useState([]);
   const [isChangingProfile, setIsChangingProfile] = useState(false);
@@ -30,7 +30,7 @@ const Profile = ({navigation, route}) => {
 
   const fetchProfiles = async () => {
     try {
-      const response = await fetchWithAuth(`/users/1/profiles`, {
+      const response = await fetchWithAuth(`/users/${userId}/profiles`, {
         method: 'GET',
         headers: {'Content-Type': 'application/json'},
       });
