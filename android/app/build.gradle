@@ -98,7 +98,7 @@ android {
             
         }
         release {
-            storeFile file(keystoreProperties['storeFile']) 
+            storeFile file("../android/app/my_release_key.keystore")
             storePassword keystoreProperties['storePassword']
             keyAlias keystoreProperties['keyAlias']
             keyPassword keystoreProperties['keyPassword']   

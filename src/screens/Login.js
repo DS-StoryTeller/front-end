@@ -194,6 +194,8 @@ const Login = ({navigation}) => {
       const accessToken = response.headers.get('access');
       const refreshToken = response.headers.get('refresh');
 
+      console.log(accessToken);
+      console.log(refreshToken);
       const data = await response.json();
       console.log('Server response data:', data);
 
