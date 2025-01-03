@@ -25,7 +25,7 @@ const YesNoModal = ({
     if (buttonText1 === '중단하기') {
       try {
         const response = await fetchWithAuth(
-          `/books/current?profileId=${profileId}&bookId=${bookId}&currentPage=${currentPage}`,
+          `/profiles/${profileId}/books/${bookId}/current?currentPage=${currentPage}`,
           {
             method: 'PUT',
             headers: {
